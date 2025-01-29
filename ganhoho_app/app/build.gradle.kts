@@ -70,4 +70,7 @@ dependencies {
 
 
     implementation("com.kizitonwose.calendar:compose:2.6.2")
+    implementation("androidx.navigation:navigation-compose:2.8.4")
+    implementation("androidx.compose.material:material:1.7.5")
+
 }
