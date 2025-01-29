@@ -1,8 +1,7 @@
-package com.ssafy.ganhoho
+package com.ssafy.ganhoho.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -16,10 +15,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
@@ -27,14 +23,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.ssafy.ganhoho.R
+import com.ssafy.ganhoho.ui.bottom_navigation.AppNavHost
 import com.ssafy.ganhoho.ui.bottom_navigation.CustomBottomNavigation
-import com.ssafy.ganhoho.ui.friend.FriendScreen
-import com.ssafy.ganhoho.ui.group.GroupScreen
-import com.ssafy.ganhoho.ui.home.HomeScreen
-import com.ssafy.ganhoho.ui.pill.PillScreen
 import com.ssafy.ganhoho.ui.theme.GANHOHOTheme
-import com.ssafy.ganhoho.ui.work_schedule.WorkScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,7 +38,8 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainScreen()
+                   // MainScreen()
+                    MainNavHost()
                 }
             }
         }
@@ -54,7 +49,13 @@ class MainActivity : ComponentActivity() {
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
 fun MainScreen() {
-    val selectedItem = remember { mutableIntStateOf(2) } // 기본 Home
+
+    val navController = rememberNavController()
+
+    // 현재 활성화된 경로(route)를 추적
+    val currentBackStackEntry =
+        navController.currentBackStackEntryAsState().value  // currentRoute 자동 업데이트
+    val currentRoute = currentBackStackEntry?.destination?.route ?: "home"
 
     BoxWithConstraints {
         val screenWidth = with(LocalDensity.current) { constraints.maxWidth.toDp() }
@@ -62,72 +63,46 @@ fun MainScreen() {
 
         Scaffold(
             floatingActionButton = {
-                val fabOffsetX = calculateFabOffset(selectedItem.intValue, itemWidth)
+
+                val fabOffsetX = calculateFabOffset(currentRoute, itemWidth)
 
                 FloatingActionButton(
                     onClick = {
-                        when (selectedItem.intValue) {
-                            0 -> Log.d("FAB", "Work FAB clicked!")
-                            1 -> Log.d("FAB", "Pill FAB clicked!")
-                            2 -> Log.d("FAB", "Home FAB clicked!")
-                            3 -> Log.d("FAB", "Group FAB clicked!")
-                            4 -> Log.d("FAB", "Friend FAB clicked!")
-                            else -> Log.d("FAB", "Default FAB clicked!")
+                        if (currentRoute != "home") {
+                            navController.navigate("home")
                         }
                     },
-                    containerColor = if (selectedItem.intValue == selectedItem.intValue) Color(
-                        0xFF79C7E3
-                    ) else Color(
-                        0xFF5661FF
-                    ),
+                    containerColor = Color(0xFF79C7E3),
                     shape = CircleShape,
                     modifier = Modifier
                         .offset(x = fabOffsetX, y = (-10).dp) // FAB 이동
                         .size(70.dp)
                 ) {
                     Icon(
-                        painter = when (selectedItem.intValue) {
-                            0 -> painterResource(id = R.drawable.nav_work)
-                            1 -> painterResource(id = R.drawable.nav_pill)
-                            3 -> painterResource(id = R.drawable.nav_group)
-                            4 -> painterResource(id = R.drawable.nav_friend)
-                            else -> painterResource(id = R.drawable.nav_home)
-                        },
+                        painter = painterResource(
+                            id = when (currentRoute) {
+                                "work" -> R.drawable.nav_work
+                                "pill" -> R.drawable.nav_pill
+                                "group" -> R.drawable.nav_group
+                                "friend" -> R.drawable.nav_friend
+                                else -> R.drawable.nav_home
+                            }
+                        ),
                         contentDescription = "FAB Icon",
                         tint = Color.White,
                         modifier = Modifier.size(24.dp)
                     )
 
-                    // ✅ FAB 버튼 밑에 텍스트 추가
-                    Text(
-                        text = when (selectedItem.intValue) {
-                            0 -> "근무"
-                            1 -> "알약"
-                            3 -> "그룹"
-                            4 -> "친구"
-                            else -> "홈"
-                        },
-                        fontSize = 12.sp,
-                        color = Color.White,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
                 }
             },
             isFloatingActionButtonDocked = true,
             floatingActionButtonPosition = FabPosition.Center,
             bottomBar = {
-                // CustomBottomAppBar(selectedItem = selectedItem.value, itemWidth = itemWidth) {
-                CustomBottomNavigation(selectedItem)
-                // }
+                CustomBottomNavigation(navController)
             },
         ) { innerPadding ->
-            when (selectedItem.intValue) {
-                0 -> WorkScreen(modifier = Modifier.padding(innerPadding))
-                1 -> PillScreen(modifier = Modifier.padding(innerPadding))
-                2 -> HomeScreen(modifier = Modifier.padding(innerPadding))
-                3 -> GroupScreen(modifier = Modifier.padding(innerPadding))
-                4 -> FriendScreen(modifier = Modifier.padding(innerPadding))
-            }
+
+            AppNavHost(navController = navController, modifier = Modifier.padding(innerPadding))
         }
     }
 }
@@ -179,13 +154,13 @@ fun MainScreen() {
 
 // ✅ FAB 버튼 위치 계산
 @Composable
-fun calculateFabOffset(selectedIndex: Int, itemWidth: Dp): Dp {
-    return when (selectedIndex) {
-        0 -> -itemWidth * 2 // 알약 찾기 위치 (왼쪽)
-        1 -> -itemWidth // 알약 찾기 위치 (왼쪽)
-        2 -> 0.dp // 홈 위치 (중앙)
-        3 -> itemWidth  // 그룹 위치 (오른쪽)
-        4 -> itemWidth * 2 // 그룹 위치 (오른쪽)
+fun calculateFabOffset(currentRoute: String, itemWidth: Dp): Dp {
+    return when (currentRoute) {
+        "work" -> -itemWidth * 2 // 알약 찾기 위치 (왼쪽)
+        "pill" -> -itemWidth // 알약 찾기 위치 (왼쪽)
+        "home" -> 0.dp // 홈 위치 (중앙)
+        "group" -> itemWidth  // 그룹 위치 (오른쪽)
+        "friend" -> itemWidth * 2 // 그룹 위치 (오른쪽)
         else -> 0.dp
     }
 }

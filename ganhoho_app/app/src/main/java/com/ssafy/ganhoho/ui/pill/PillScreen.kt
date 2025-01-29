@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 @Composable
-fun PillScreen(modifier: Modifier = Modifier) {
+fun PillScreen(modifier : Modifier = Modifier) {
     
     Text(text = "약 검색 화면")
 }

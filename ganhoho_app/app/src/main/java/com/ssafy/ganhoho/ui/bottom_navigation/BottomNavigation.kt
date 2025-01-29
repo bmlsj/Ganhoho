@@ -20,22 +20,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.ssafy.ganhoho.R
 
 @Composable
-fun CustomBottomNavigation(selectedItem: MutableState<Int>) {
+fun CustomBottomNavigation(navController: NavController) {
 
     // 리소스를 명확히 선언하여 수정
     val items = listOf(
-        Pair("근무 일정", R.drawable.nav_work),
-        Pair("알약 찾기", R.drawable.nav_pill),
-        Pair("홈", R.drawable.nav_home),
-        Pair("그룹", R.drawable.nav_group),
-        Pair("친구", R.drawable.nav_friend)
+        Pair("work", R.drawable.nav_work),
+        Pair("pill", R.drawable.nav_pill),
+        Pair("home", R.drawable.nav_home),
+        Pair("group", R.drawable.nav_group),
+        Pair("friend", R.drawable.nav_friend)
     )
+
+    val currentRoute = navController.currentBackStackEntryAsState().value
 
     Row(
         modifier = Modifier
@@ -44,26 +50,50 @@ fun CustomBottomNavigation(selectedItem: MutableState<Int>) {
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        items.forEachIndexed { index, item ->
+        items.forEach { (route, icon) ->
+
+            when (route) {
+                "work" -> stringResource(id = R.string.nav_work)
+                "pill" -> stringResource(id = R.string.nav_pill)
+                "home" -> stringResource(id = R.string.nav_home)
+                "group" -> stringResource(id = R.string.nav_group)
+                "friend" -> stringResource(id = R.string.nav_friend)
+                else -> route
+            }
+
+            val isSelected = currentRoute?.destination?.route == route
+
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
                 modifier = Modifier
                     .padding(horizontal = 8.dp)
                     .weight(1f)
-                    .clickable { selectedItem.value = index }
+                    .clickable {
+                        if (!isSelected) {  // 클릭된 목적지가 현재 경로와 다를때만 실행(중복 클릭 방지)
+                            navController.navigate(route) {
+                                // 시작 화면으로 돌아가는 경로 저장
+                                // 시작 화면 자체는 제거하지 않고, 그위의 스택만 제거
+                                popUpTo(navController.graph.startDestinationId) { inclusive = false }
+                                
+                                // 스택의 맨 위에 현재 화면이 있는 경우, 재생성 하지 않음
+                                // 중복된 화면 인스턴스 방지
+                                launchSingleTop = true
+                            }
+                        }
+                    }
             ) {
                 Icon(
-                    painter = painterResource(id = item.second),
-                    contentDescription = item.first,
-                    tint = if (selectedItem.value == index) Color.White else Color.Gray,
+                    painter = painterResource(id = icon),
+                    contentDescription = route,
+                    tint = if (isSelected) Color.White else Color.Gray,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = item.first,
+                    text = route.uppercase(),
                     fontSize = 12.sp,
-                    color = if (selectedItem.value == index) Color.White else Color.Gray
+                    color = if (isSelected) Color.White else Color.Gray
                 )
             }
 
@@ -77,5 +107,6 @@ fun CustomBottomNavigation(selectedItem: MutableState<Int>) {
 @Preview(showBackground = true)
 @Composable
 fun BottomNav() {
-    CustomBottomNavigation(mutableStateOf(2))
+    val navController = rememberNavController()
+    CustomBottomNavigation(navController)
 }

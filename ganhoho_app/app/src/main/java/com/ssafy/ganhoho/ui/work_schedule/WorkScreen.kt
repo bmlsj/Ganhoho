@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 @Composable
-fun WorkScreen(modifier: Modifier = Modifier) {
+fun WorkScreen(modifier : Modifier = Modifier) {
     
     Text(text = "근무 스케쥴 화면")
 }
