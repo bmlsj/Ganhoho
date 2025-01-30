@@ -15,4 +15,7 @@ public interface FriendService {
 
     // 친구 요청 승인/거절
     FriendRequestStatusResponse handleFriendRequest(Long memberId, Long friendId, FriendRequestStatusRequest request);
+
+    //친구 추가요청
+    FriendAddResponse addFriend(Long memberId, FriendAddRequest request);
 }

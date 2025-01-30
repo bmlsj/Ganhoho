@@ -143,4 +143,41 @@ public class FriendServiceImpl implements FriendService {
         }
     }
 
+    @Override
+    @Transactional
+    public FriendAddResponse addFriend(Long memberId, FriendAddRequest request) {
+        // 유저 확인
+        MemberDto member = authRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
+
+        // 추가할 회원 존재여부 확인
+        MemberDto friend = authRepository.findByLoginId(request.getFriendLoginId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
+
+        // 요청 <- 자기자신 check
+        if (member.getLoginId().equals(request.getFriendLoginId())) {
+            throw new CustomException(ErrorCode.BAD_REQUEST);
+        }
+        // 이미 친구
+        List<FriendDto> acceptedFriends = friendRepository.findAcceptedFriendsByMember(member);
+        if (acceptedFriends.stream().anyMatch(f -> f.getFriendLoginId().equals(request.getFriendLoginId()))) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED); // 원래는 CONFLICT
+        }
+
+        // 이미 친구요청 보냈는지 확인
+        List<FriendDto> pendingRequests = friendRepository.findRequestsByMember(member);
+        if (pendingRequests.stream().anyMatch(f -> f.getFriendLoginId().equals(request.getFriendLoginId()))) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED); // 원래는 CONFLICT
+        }
+        // 친구 요청 생성 & 저장
+        FriendDto friendRequest = FriendDto.builder()
+                .member(member)
+                .friendLoginId(request.getFriendLoginId())
+                .requestStatus(RequestStatus.PENDING)
+                .isFavorite(false)
+                .build();
+        friendRepository.save(friendRequest);
+
+        return FriendAddResponse.builder().build();
+    }
 }

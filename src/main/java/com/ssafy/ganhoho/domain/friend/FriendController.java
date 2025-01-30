@@ -100,4 +100,25 @@ public class FriendController {
                     .body("Invalid or missing authentication token.");
         }
     }
+
+    // 친구 추가 요청
+    @PostMapping("/request")
+    public ResponseEntity<?> addFriend(
+            @RequestBody FriendAddRequest request,
+            HttpServletRequest httpRequest) {
+        try {
+            String token = jwtUtil.getJwtFromRequest(httpRequest);
+            Long memberId = jwtUtil.getMemberId(token);
+
+            FriendAddResponse response = friendService.addFriend(memberId, request);
+            return ResponseEntity.ok(response);
+        } catch (CustomException e) {
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus())
+                    .body(e.getMessage());
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid or missing authentication token.");
+        }
+    }
 }
