@@ -9,6 +9,7 @@ import com.ssafy.ganhoho.global.auth.jwt.JWTUtil;
 import com.ssafy.ganhoho.global.constant.ErrorCode;
 import com.ssafy.ganhoho.global.error.CustomException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -40,7 +41,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
-        MemberDto memberDto = authRepository.findByLoginId(loginRequest.getLoginId()).orElseThrow(() -> new UsernameNotFoundException("아이디가 존재하지 않습니다"));
+        MemberDto memberDto = authRepository.findByLoginId(loginRequest.getLoginId()).orElseThrow(() -> new CustomException(ErrorCode.AUTH_FAILURE));
 
         boolean matchPassword = passwordEncoder.matches(loginRequest.getPassword(), memberDto.getPassword());
 
@@ -58,7 +59,7 @@ public class AuthServiceImpl implements AuthService {
                     .refreshToken(jwtToken.getRefreshToken())
                     .build();
         } else {
-            throw new UsernameNotFoundException("비밀번호가 틀렸습니다");
+            throw new CustomException(ErrorCode.AUTH_FAILURE);
         }
     }
 

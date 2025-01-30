@@ -1,4 +1,4 @@
-package com.ssafy.ganhoho.domain.auth.dto;
+package com.ssafy.ganhoho.domain.member.dto;
 
 import lombok.*;
 
@@ -6,12 +6,10 @@ import lombok.*;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class LoginResponse {
+public class MemberInfoResponse {
     private Long memberId;
     private String loginId;
     private String name;
     private String hospital;
     private String ward;
-    private String accessToken;
-    private String refreshToken;
 }
