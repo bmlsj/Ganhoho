@@ -1,0 +1,47 @@
+package com.ssafy.ganhoho.domain.friend;
+
+import com.ssafy.ganhoho.domain.friend.dto.FriendListResponse;
+import com.ssafy.ganhoho.global.auth.jwt.JWTUtil;
+import com.ssafy.ganhoho.global.error.CustomException;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@Slf4j
+@RestController
+@RequestMapping("/api/friends")
+@RequiredArgsConstructor
+public class FriendController {
+
+    private final FriendService friendService;
+    private final JWTUtil jwtUtil; // jwt 유틸리티 주입
+
+    // 친구 목록조회
+    @GetMapping("/list")
+    public ResponseEntity<?> getFriendsList(HttpServletRequest request) {
+        try {
+            // JWT 토큰에서 사용자 ID 추출
+            String token = jwtUtil.getJwtFromRequest(request);
+            Long memberId = jwtUtil.getMemberId(token);
+
+            List<FriendListResponse> friendList = friendService.getFriendsList(memberId);
+
+            return ResponseEntity.ok(friendList);
+        } catch (CustomException e) {
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus())
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            // JWT 관련 예외나 기타 예외 처리
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid or missing authentication token.");
+        }
+
+    }
+}

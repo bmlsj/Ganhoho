@@ -1,0 +1,10 @@
+package com.ssafy.ganhoho.domain.friend;
+
+import com.ssafy.ganhoho.domain.friend.dto.FriendListResponse;
+
+import java.util.List;
+
+public interface FriendService {
+    // 로그인 사용자 친구목록 조회
+    List<FriendListResponse> getFriendsList(Long memberId);
+}
