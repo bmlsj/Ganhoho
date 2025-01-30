@@ -2,10 +2,8 @@ package com.ssafy.ganhoho.domain.friend;
 
 
 import com.ssafy.ganhoho.domain.auth.AuthRepository;
-import com.ssafy.ganhoho.domain.friend.dto.FriendDeleteResponse;
-import com.ssafy.ganhoho.domain.friend.dto.FriendDto;
-import com.ssafy.ganhoho.domain.friend.dto.FriendListResponse;
-import com.ssafy.ganhoho.domain.friend.dto.FriendRequestListResponse;
+import com.ssafy.ganhoho.domain.friend.constant.RequestStatus;
+import com.ssafy.ganhoho.domain.friend.dto.*;
 import com.ssafy.ganhoho.domain.member.dto.MemberDto;
 import com.ssafy.ganhoho.global.constant.ErrorCode;
 import com.ssafy.ganhoho.global.error.CustomException;
@@ -13,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -103,6 +102,45 @@ public class FriendServiceImpl implements FriendService {
                     .build();
         })
         .collect(Collectors.toList());
+    }
+    @Override
+    @Transactional
+    public FriendRequestStatusResponse handleFriendRequest(Long memberId, Long friendId, FriendRequestStatusRequest request) {
+        // 유저 확인
+        MemberDto member = authRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
+
+        // 단일 요청 확인
+        FriendDto friendRequest = friendRepository.findById(friendId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
+
+        //요청 대상자인지
+        if (!friendRequest.getMember().getMemberId().equals(memberId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
+
+        //요청상태가 대기중인지
+        if (!friendRequest.getRequestStatus().equals(RequestStatus.PENDING)) {
+            throw new CustomException(ErrorCode.BAD_REQUEST);
+        }
+
+        if (request.getRequestStatus().equals(RequestStatus.ACCEPTED)) {
+            // 수락처리
+            friendRequest.setRequestStatus(RequestStatus.ACCEPTED);
+            FriendDto saveRequest = friendRepository.save(friendRequest);
+
+            return FriendRequestStatusResponse.builder()
+                    .friendId(saveRequest.getFriendId())
+                    .requestStatus(saveRequest.getRequestStatus())
+                    .build();
+        } else {
+            // 거절 처리 - 요청 삭제
+            friendRepository.delete(friendRequest);
+            return FriendRequestStatusResponse.builder()
+                    .friendId(friendId)
+                    .requestStatus(RequestStatus.PENDING) // 차피 삭제되니 대기중으로..?
+                    .build();
+        }
     }
 
 }

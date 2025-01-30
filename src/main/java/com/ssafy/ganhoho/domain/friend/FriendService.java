@@ -1,8 +1,6 @@
 package com.ssafy.ganhoho.domain.friend;
 
-import com.ssafy.ganhoho.domain.friend.dto.FriendDeleteResponse;
-import com.ssafy.ganhoho.domain.friend.dto.FriendListResponse;
-import com.ssafy.ganhoho.domain.friend.dto.FriendRequestListResponse;
+import com.ssafy.ganhoho.domain.friend.dto.*;
 
 import java.util.List;
 
@@ -14,4 +12,7 @@ public interface FriendService {
 
     //친구요청 목록 조회
     List<FriendRequestListResponse> getFriendRequestList(Long memberId);
+
+    // 친구 요청 승인/거절
+    FriendRequestStatusResponse handleFriendRequest(Long memberId, Long friendId, FriendRequestStatusRequest request);
 }

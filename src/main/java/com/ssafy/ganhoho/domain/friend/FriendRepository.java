@@ -18,7 +18,6 @@ public interface FriendRepository extends JpaRepository<FriendDto, Long> {
     List<FriendDto> findAcceptedFriendsByMember(@Param("member") MemberDto member);
 
     // 특정 회원의 대기 중인 친구 요청 목록 조회
-    // 특정 회원의 수락된 친구목록 조회, 즐겨찾기 오름차순
     @Query("SELECT f FROM FriendDto f " +
             "WHERE f.member = :member " +
             "AND f.requestStatus = com.ssafy.ganhoho.domain.friend.constant.RequestStatus.PENDING " +

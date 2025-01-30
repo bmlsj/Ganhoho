@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "friend")
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -37,4 +38,6 @@ public class FriendDto {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+
 }

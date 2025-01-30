@@ -1,8 +1,6 @@
 package com.ssafy.ganhoho.domain.friend;
 
-import com.ssafy.ganhoho.domain.friend.dto.FriendDeleteResponse;
-import com.ssafy.ganhoho.domain.friend.dto.FriendListResponse;
-import com.ssafy.ganhoho.domain.friend.dto.FriendRequestListResponse;
+import com.ssafy.ganhoho.domain.friend.dto.*;
 import com.ssafy.ganhoho.global.auth.jwt.JWTUtil;
 import com.ssafy.ganhoho.global.error.CustomException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -67,8 +65,8 @@ public class FriendController {
     @GetMapping("/requests/list")
     public ResponseEntity<?> getFriendRequestList(HttpServletRequest request) {
         try {
-            String toeken = jwtUtil.getJwtFromRequest(request);
-            Long memberId = jwtUtil.getMemberId(toeken);
+            String token = jwtUtil.getJwtFromRequest(request);
+            Long memberId = jwtUtil.getMemberId(token);
 
             //친구 요청 목록 조회
             List<FriendRequestListResponse> requestList = friendService.getFriendRequestList(memberId);
@@ -82,4 +80,24 @@ public class FriendController {
         }
     }
 
+    // 친구요청 승인/거절
+    @PostMapping("/{friendId}/response")
+    public ResponseEntity<?> handleFriendRequest(
+            @PathVariable("friendId") Long friendId,
+            @RequestBody FriendRequestStatusRequest request,
+            HttpServletRequest httpRequest) {
+        try {
+            String token = jwtUtil.getJwtFromRequest(httpRequest);
+            Long memberId = jwtUtil.getMemberId(token);
+
+            FriendRequestStatusResponse response = friendService.handleFriendRequest(memberId, friendId, request);
+            return ResponseEntity.ok(response);
+        } catch (CustomException e) {
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus())
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid or missing authentication token.");
+        }
+    }
 }
