@@ -1,6 +1,7 @@
 package com.ssafy.ganhoho.domain.friend.dto;
 
 
+import com.ssafy.ganhoho.domain.friend.constant.RequestStatus;
 import com.ssafy.ganhoho.domain.member.dto.MemberDto;
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,7 +28,7 @@ public class FriendDto {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "request_status")
-    private String requestStatus;
+    private RequestStatus requestStatus;
 
     @Column(name="is_favorite")
     private Boolean isFavorite;

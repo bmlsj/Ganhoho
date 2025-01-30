@@ -5,6 +5,7 @@ import com.ssafy.ganhoho.domain.auth.AuthRepository;
 import com.ssafy.ganhoho.domain.friend.dto.FriendDeleteResponse;
 import com.ssafy.ganhoho.domain.friend.dto.FriendDto;
 import com.ssafy.ganhoho.domain.friend.dto.FriendListResponse;
+import com.ssafy.ganhoho.domain.friend.dto.FriendRequestListResponse;
 import com.ssafy.ganhoho.domain.member.dto.MemberDto;
 import com.ssafy.ganhoho.global.constant.ErrorCode;
 import com.ssafy.ganhoho.global.error.CustomException;
@@ -72,6 +73,36 @@ public class FriendServiceImpl implements FriendService {
         return FriendDeleteResponse.builder()
                 .friendId(friendId)
                 .build();
+    }
+    @Override
+    public List<FriendRequestListResponse> getFriendRequestList(Long memberId) {
+        // 유저 확인
+        MemberDto member = authRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
+
+        //친구 요청 목록 조회(대기중인것만)
+        List<FriendDto> friendRequests = friendRepository.findRequestsByMember(member);
+
+        //요청 X
+        if (friendRequests.isEmpty()) {
+            throw new CustomException(ErrorCode.NOT_EXIST_MEMBER);
+        }
+
+        // 친구요청목록 -> FriendRequestListResponse 변환.
+        return friendRequests.stream().map(request -> {
+            MemberDto requestSender = authRepository.findByLoginId(request.getFriendLoginId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
+
+            return FriendRequestListResponse.builder()
+                    .friendRequestId(request.getFriendId())
+                    .friendLoginId(requestSender.getLoginId())
+                    .name(requestSender.getName())
+                    .hospital(requestSender.getHospital())
+                    .ward(requestSender.getWard())
+                    .requestStatus(request.getRequestStatus())
+                    .build();
+        })
+        .collect(Collectors.toList());
     }
 
 }

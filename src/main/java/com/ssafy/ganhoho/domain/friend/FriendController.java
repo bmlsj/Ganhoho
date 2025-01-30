@@ -2,6 +2,7 @@ package com.ssafy.ganhoho.domain.friend;
 
 import com.ssafy.ganhoho.domain.friend.dto.FriendDeleteResponse;
 import com.ssafy.ganhoho.domain.friend.dto.FriendListResponse;
+import com.ssafy.ganhoho.domain.friend.dto.FriendRequestListResponse;
 import com.ssafy.ganhoho.global.auth.jwt.JWTUtil;
 import com.ssafy.ganhoho.global.error.CustomException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -62,4 +63,23 @@ public class FriendController {
                     .body("Invalid or missing authentication token.");
         }
     }
+
+    @GetMapping("/requests/list")
+    public ResponseEntity<?> getFriendRequestList(HttpServletRequest request) {
+        try {
+            String toeken = jwtUtil.getJwtFromRequest(request);
+            Long memberId = jwtUtil.getMemberId(toeken);
+
+            //친구 요청 목록 조회
+            List<FriendRequestListResponse> requestList = friendService.getFriendRequestList(memberId);
+            return ResponseEntity.ok(requestList);
+        } catch (CustomException e) {
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus())
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid or missing authentication token.");
+        }
+    }
+
 }
