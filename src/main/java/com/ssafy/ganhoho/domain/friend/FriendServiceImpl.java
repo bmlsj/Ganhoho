@@ -2,6 +2,7 @@ package com.ssafy.ganhoho.domain.friend;
 
 
 import com.ssafy.ganhoho.domain.auth.AuthRepository;
+import com.ssafy.ganhoho.domain.friend.dto.FriendDeleteResponse;
 import com.ssafy.ganhoho.domain.friend.dto.FriendDto;
 import com.ssafy.ganhoho.domain.friend.dto.FriendListResponse;
 import com.ssafy.ganhoho.domain.member.dto.MemberDto;
@@ -50,6 +51,27 @@ public class FriendServiceImpl implements FriendService {
         })
         .collect(Collectors.toList()); // 최종 FriendListResponse 반환
 
+    }
+    @Override
+    @Transactional //readOnly = false
+    public FriendDeleteResponse deleteFriend(Long memberId, Long friendId) {
+        // 유저 확인
+        MemberDto member = authRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
+        // 친구 관계 확인
+        FriendDto friend = friendRepository.findById(friendId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
+        //확인한 유저 의 친구가 맞는지
+        if (!friend.getMember().getMemberId().equals(memberId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
+
+        // 친구 삭제
+        friendRepository.delete(friend);
+
+        return FriendDeleteResponse.builder()
+                .friendId(friendId)
+                .build();
     }
 
 }

@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.domain.friend;
 
+import com.ssafy.ganhoho.domain.friend.dto.FriendDeleteResponse;
 import com.ssafy.ganhoho.domain.friend.dto.FriendListResponse;
 import com.ssafy.ganhoho.global.auth.jwt.JWTUtil;
 import com.ssafy.ganhoho.global.error.CustomException;
@@ -8,9 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -43,5 +42,24 @@ public class FriendController {
                     .body("Invalid or missing authentication token.");
         }
 
+    }
+    @DeleteMapping("/{friendId}")
+    public ResponseEntity<?> deleteFriend(
+            @PathVariable("friendId") Long friendId,
+            HttpServletRequest request) {
+        try {
+            String token = jwtUtil.getJwtFromRequest(request);
+            Long memberId = jwtUtil.getMemberId(token);
+
+            // FriendDeleteResponse 호출
+            FriendDeleteResponse response = friendService.deleteFriend(memberId, friendId);
+            return ResponseEntity.ok(response);
+        } catch (CustomException e) {
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus())
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid or missing authentication token.");
+        }
     }
 }
