@@ -18,7 +18,7 @@ import static com.ssafy.ganhoho.global.auth.SecurityUtil.getCurrentMemberId;
 @RequiredArgsConstructor
 public class MemberController {
     private final MemberService memberService;
-
+    //하이
     @GetMapping("/mypage")
     public ResponseEntity getMemberInfo(){
         Long memberId = getCurrentMemberId();
