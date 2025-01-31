@@ -1,0 +1,18 @@
+package com.ssafy.ganhoho.domain.schedule.dto;
+
+import com.ssafy.ganhoho.domain.schedule.entity.WorkType;
+import lombok.*;
+
+import java.util.Date;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class WorkScheduleRequestDto {
+    private Long memberId;
+    private Long groupScheduleDetailId;
+    private WorkType workType;
+    private Date workDate;
+} 
