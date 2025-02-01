@@ -7,20 +7,44 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FriendRepository extends JpaRepository<FriendDto, Long> {
-    // 특정 회원의 수락된 친구목록 조회, 즐겨찾기 오름차순
+    // 보낸 대상 친구목록 조회, 즐겨찾기 오름차순
     @Query("SELECT f FROM FriendDto f " +
             "WHERE f.member = :member " +
-            "AND f.requestStatus = com.ssafy.ganhoho.domain.friend.constant.RequestStatus.수락함 " +
+            "AND f.requestStatus = com.ssafy.ganhoho.domain.friend.constant.RequestStatus.ACCEPTED " +
             "ORDER BY f.isFavorite DESC")
     // 메서드의 member 변수를 :member 바인딩. <- findAcceptedFriendsByMember 호출시..
     List<FriendDto> findAcceptedFriendsByMember(@Param("member") MemberDto member);
 
-    // 특정 회원의 대기 중인 친구 요청 목록 조회.
+    // (로직 추가) 받은 대상 친구 목록 조회
+    @Query("SELECT f FROM FriendDto f " +
+            "WHERE f.friendLoginId = :loginId " +
+            "AND f.requestStatus = com.ssafy.ganhoho.domain.friend.constant.RequestStatus.ACCEPTED "+
+            "ORDER BY f.isFavorite DESC")
+    List<FriendDto> friendAcceptedByLoginId(@Param("loginId") String loginId);
+
+    // 요청 보낸 대상 특정 회원의 대기 중인 친구 요청 목록 조회.
     @Query("SELECT f FROM FriendDto f " +
             "WHERE f.member = :member " +
-            "AND f.requestStatus = com.ssafy.ganhoho.domain.friend.constant.RequestStatus.대기_중 " +
+            "AND f.requestStatus = com.ssafy.ganhoho.domain.friend.constant.RequestStatus.PENDING " +
             "ORDER BY f.isFavorite DESC")
     List<FriendDto> findRequestsByMember(@Param("member") MemberDto member);
+
+    // 받은 대상 특정 회원의 대기중인 친구 요청 목록 조회
+    @Query("SELECT f FROM FriendDto f " +
+            "WHERE f.friendLoginId = :loginId " +
+            "AND f.requestStatus = com.ssafy.ganhoho.domain.friend.constant.RequestStatus.PENDING " +
+            "ORDER BY f.isFavorite DESC")
+    List<FriendDto> findRequestsByLoginId(@Param("loginId") String loginId);
+
+    // 특정 친구 관계 조회 (친구 삭제시 양방향 삭제)
+    @Query("SELECT f FROM FriendDto f " +
+            "WHERE f.member.loginId = :memberLoginId " +
+            "AND f.friendLoginId = :friendLoginId")
+    Optional<FriendDto> findByMemberLoginIdAndFriendLoginId(
+            @Param("memberLoginId") String memberLoginId,
+            @Param("friendLoginId") String friendLoginId
+    );
 }

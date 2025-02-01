@@ -2,9 +2,7 @@ package com.ssafy.ganhoho.domain.friend;
 
 import com.ssafy.ganhoho.domain.friend.dto.*;
 import com.ssafy.ganhoho.global.auth.SecurityUtil;
-import com.ssafy.ganhoho.global.auth.jwt.JWTUtil;
 import com.ssafy.ganhoho.global.error.CustomException;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

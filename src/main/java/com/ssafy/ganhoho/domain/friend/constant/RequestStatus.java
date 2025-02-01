@@ -1,8 +1,8 @@
 package com.ssafy.ganhoho.domain.friend.constant;
 
 public enum RequestStatus {
-    대기_중("대기 중"),
-    수락함("수락함");
+    PENDING("대기 중"),
+    ACCEPTED("수락함");
 
     private final String value;
 
