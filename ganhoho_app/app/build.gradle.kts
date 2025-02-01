@@ -70,8 +70,10 @@ dependencies {
 
 
     implementation("com.kizitonwose.calendar:compose:2.6.2")
-    implementation("androidx.navigation:navigation-compose:2.8.4")
-    implementation("androidx.compose.material:material:1.7.5")
-    implementation ("androidx.navigation:navigation-compose:2.8.5")
+    implementation("androidx.compose.material:material:1.7.5")     // material2 지원
+    implementation ("androidx.navigation:navigation-compose:2.8.5")  // 네비게이션 구현
+
+    implementation("androidx.compose.foundation:foundation:1.7.7") // LazyGrid 지원
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0") // 날짜 지원
 
 }
