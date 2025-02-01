@@ -1,6 +1,7 @@
 package com.ssafy.ganhoho.domain.friend;
 
 import com.ssafy.ganhoho.domain.friend.dto.*;
+import com.ssafy.ganhoho.global.auth.SecurityUtil;
 import com.ssafy.ganhoho.global.auth.jwt.JWTUtil;
 import com.ssafy.ganhoho.global.error.CustomException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,16 +20,13 @@ import java.util.List;
 public class FriendController {
 
     private final FriendService friendService;
-    private final JWTUtil jwtUtil; // jwt 유틸리티 주입
 
     // 친구 목록조회
     @GetMapping("/list")
-    public ResponseEntity<?> getFriendsList(HttpServletRequest request) {
+    public ResponseEntity<?> getFriendsList() {
         try {
             // JWT 토큰에서 사용자 ID 추출
-            String token = jwtUtil.getJwtFromRequest(request);
-            Long memberId = jwtUtil.getMemberId(token);
-
+            Long memberId = SecurityUtil.getCurrentMemberId();
             List<FriendListResponse> friendList = friendService.getFriendsList(memberId);
 
             return ResponseEntity.ok(friendList);
@@ -44,11 +42,9 @@ public class FriendController {
     }
     @DeleteMapping("/{friendId}")
     public ResponseEntity<?> deleteFriend(
-            @PathVariable("friendId") Long friendId,
-            HttpServletRequest request) {
+            @PathVariable("friendId") Long friendId) {
         try {
-            String token = jwtUtil.getJwtFromRequest(request);
-            Long memberId = jwtUtil.getMemberId(token);
+            Long memberId = SecurityUtil.getCurrentMemberId();
 
             // FriendDeleteResponse 호출
             FriendDeleteResponse response = friendService.deleteFriend(memberId, friendId);
@@ -63,10 +59,9 @@ public class FriendController {
     }
 
     @GetMapping("/requests/list")
-    public ResponseEntity<?> getFriendRequestList(HttpServletRequest request) {
+    public ResponseEntity<?> getFriendRequestList() {
         try {
-            String token = jwtUtil.getJwtFromRequest(request);
-            Long memberId = jwtUtil.getMemberId(token);
+            Long memberId = SecurityUtil.getCurrentMemberId();
 
             //친구 요청 목록 조회
             List<FriendRequestListResponse> requestList = friendService.getFriendRequestList(memberId);
@@ -84,11 +79,9 @@ public class FriendController {
     @PostMapping("/{friendId}/response")
     public ResponseEntity<?> handleFriendRequest(
             @PathVariable("friendId") Long friendId,
-            @RequestBody FriendRequestStatusRequest request,
-            HttpServletRequest httpRequest) {
+            @RequestBody FriendRequestStatusRequest request) {
         try {
-            String token = jwtUtil.getJwtFromRequest(httpRequest);
-            Long memberId = jwtUtil.getMemberId(token);
+            Long memberId = SecurityUtil.getCurrentMemberId();
 
             FriendRequestStatusResponse response = friendService.handleFriendRequest(memberId, friendId, request);
             return ResponseEntity.ok(response);
@@ -104,18 +97,16 @@ public class FriendController {
     // 친구 추가 요청
     @PostMapping("/request")
     public ResponseEntity<?> addFriend(
-            @RequestBody FriendAddRequest request,
-            HttpServletRequest httpRequest) {
+            @RequestBody FriendAddRequest request) {
+
         try {
-            String token = jwtUtil.getJwtFromRequest(httpRequest);
-            Long memberId = jwtUtil.getMemberId(token);
+            Long memberId = SecurityUtil.getCurrentMemberId();
 
             FriendAddResponse response = friendService.addFriend(memberId, request);
             return ResponseEntity.ok(response);
         } catch (CustomException e) {
             return ResponseEntity.status(e.getErrorCode().getHttpStatus())
                     .body(e.getMessage());
-
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Invalid or missing authentication token.");

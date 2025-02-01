@@ -8,6 +8,7 @@ import com.ssafy.ganhoho.domain.member.dto.MemberDto;
 import com.ssafy.ganhoho.global.constant.ErrorCode;
 import com.ssafy.ganhoho.global.error.CustomException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -23,17 +25,18 @@ public class FriendServiceImpl implements FriendService {
     private final FriendRepository friendRepository;
     private final AuthRepository authRepository;
 
+    // 친구 목록
     @Override
     public List<FriendListResponse> getFriendsList(Long memberId) {
         // 현재 유저 확인 (없으면 예외밣생(orElseThrow)
         MemberDto member = authRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_DATA));
         // 친구 목록 조회
         List<FriendDto> friends = friendRepository.findAcceptedFriendsByMember(member);
 
-        // 친구 없을경우 오류 발생
+        // 빈 목록일 경우 빈 리스트 반환
         if (friends.isEmpty()) {
-            throw new CustomException(ErrorCode.NOT_EXIST_MEMBER);
+            return List.of();
         }
         // map = 친구목록 -> FriendListResponse 변환
         // stream을 이용해 FriendDto 순회
@@ -52,6 +55,8 @@ public class FriendServiceImpl implements FriendService {
         .collect(Collectors.toList()); // 최종 FriendListResponse 반환
 
     }
+
+    // 친구 삭제
     @Override
     @Transactional //readOnly = false
     public FriendDeleteResponse deleteFriend(Long memberId, Long friendId) {
@@ -73,6 +78,7 @@ public class FriendServiceImpl implements FriendService {
                 .friendId(friendId)
                 .build();
     }
+    // 친구 요청 목록 확인
     @Override
     public List<FriendRequestListResponse> getFriendRequestList(Long memberId) {
         // 유저 확인
@@ -84,7 +90,7 @@ public class FriendServiceImpl implements FriendService {
 
         //요청 X
         if (friendRequests.isEmpty()) {
-            throw new CustomException(ErrorCode.NOT_EXIST_MEMBER);
+            return List.of();
         }
 
         // 친구요청목록 -> FriendRequestListResponse 변환.
@@ -103,6 +109,7 @@ public class FriendServiceImpl implements FriendService {
         })
         .collect(Collectors.toList());
     }
+    // 친구 요청 승인 및 거절
     @Override
     @Transactional
     public FriendRequestStatusResponse handleFriendRequest(Long memberId, Long friendId, FriendRequestStatusRequest request) {
@@ -120,13 +127,13 @@ public class FriendServiceImpl implements FriendService {
         }
 
         //요청상태가 대기중인지
-        if (!friendRequest.getRequestStatus().equals(RequestStatus.PENDING)) {
+        if (!friendRequest.getRequestStatus().equals(RequestStatus.대기_중)) {
             throw new CustomException(ErrorCode.BAD_REQUEST);
         }
 
-        if (request.getRequestStatus().equals(RequestStatus.ACCEPTED)) {
+        if (request.getRequestStatus().equals(RequestStatus.수락함)) {
             // 수락처리
-            friendRequest.setRequestStatus(RequestStatus.ACCEPTED);
+            friendRequest.setRequestStatus(RequestStatus.수락함);
             FriendDto saveRequest = friendRepository.save(friendRequest);
 
             return FriendRequestStatusResponse.builder()
@@ -138,11 +145,12 @@ public class FriendServiceImpl implements FriendService {
             friendRepository.delete(friendRequest);
             return FriendRequestStatusResponse.builder()
                     .friendId(friendId)
-                    .requestStatus(RequestStatus.PENDING) // 차피 삭제되니 대기중으로..?
+                    .requestStatus(RequestStatus.대기_중) // 차피 삭제되니 대기중으로..?
                     .build();
         }
     }
 
+    // 친구 추가
     @Override
     @Transactional
     public FriendAddResponse addFriend(Long memberId, FriendAddRequest request) {
@@ -173,9 +181,10 @@ public class FriendServiceImpl implements FriendService {
         FriendDto friendRequest = FriendDto.builder()
                 .member(member)
                 .friendLoginId(request.getFriendLoginId())
-                .requestStatus(RequestStatus.PENDING)
+                .requestStatus(RequestStatus.대기_중)
                 .isFavorite(false)
                 .build();
+
         friendRepository.save(friendRequest);
 
         return FriendAddResponse.builder().build();
