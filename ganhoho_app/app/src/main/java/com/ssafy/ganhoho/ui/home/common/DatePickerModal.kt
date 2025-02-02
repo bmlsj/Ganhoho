@@ -2,60 +2,47 @@ package com.ssafy.ganhoho.ui.home.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.kizitonwose.calendar.compose.*
+import com.kizitonwose.calendar.core.*
 import com.ssafy.ganhoho.ui.theme.PrimaryBlue
-import java.time.LocalDate
-import java.time.YearMonth
+import java.time.*
+import java.time.format.TextStyle
+import java.util.*
 
 @Preview(showBackground = true)
 @Composable
 fun ShowCustomDatePicker() {
-
     val showDialog = remember { mutableStateOf(true) }
+    val start = remember {
+        mutableStateOf("")
+    }
+    val end = remember {
+        mutableStateOf("")
+    }
     CustomDatePickerDialog(
         showDialog = showDialog,
-        onDateSelected = { date -> println("Selected date: $date") }
+        start,
+        end
     )
 }
-
 
 @Composable
 fun CustomDatePickerDialog(
     showDialog: MutableState<Boolean>,
-    onDateSelected: (LocalDate) -> Unit
+    startDate: MutableState<String>,
+    endDate: MutableState<String>,
 ) {
     if (showDialog.value) {
         Dialog(onDismissRequest = { showDialog.value = false }) {
@@ -64,110 +51,110 @@ fun CustomDatePickerDialog(
                     .background(Color.White, RoundedCornerShape(8.dp))
                     .padding(16.dp)
             ) {
-                CustomDatePicker(
-                    onDateSelected = { selectedDate ->
-                        onDateSelected(selectedDate)
-                        showDialog.value = false
-                    }
+                // 📌 날짜 선택
+                val tempStartDate = remember { mutableStateOf<LocalDate?>(null) }
+                val tempEndDate = remember { mutableStateOf<LocalDate?>(null) }
+
+                HorizontalCalendarPicker(
+                    startDate = tempStartDate,
+                    endDate = tempEndDate
                 )
 
-                Spacer(modifier = Modifier.padding(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                // 닫기 버튼
+                // 📌 저장 버튼
+                Spacer(modifier = Modifier.height(8.dp))
                 Button(
-                    onClick = { showDialog.value = false },
+                    onClick = {
+                        if (tempStartDate.value != null && tempEndDate.value != null) {
+                            startDate.value = tempStartDate.value.toString() // ✅ 선택한 값 반영
+                            endDate.value = tempEndDate.value.toString()
+                            showDialog.value = false // ✅ 다이얼로그 닫기
+                        }
+                        showDialog.value = false
+                    },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = PrimaryBlue
-                    )
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
                 ) {
-                    Text("닫기")
+                    Text("저장")
                 }
+
+                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }
 }
 
-/* 
-* 일정 추가에서 날짜 범위 선택할 때 사용할 데이터 피커
-*/
-// 날짜 범위 선택
 @Composable
-fun CustomDatePicker(
-    onDateSelected: (LocalDate) -> Unit
+fun HorizontalCalendarPicker(
+    startDate: MutableState<LocalDate?>,
+    endDate: MutableState<LocalDate?>
 ) {
-    var currentMonth = remember { mutableStateOf(YearMonth.now()) } // 현재 연도와 월
-    var selectedDate = remember { mutableStateOf<LocalDate?>(null) } // 선택된 날짜
+    val currentMonth = remember { YearMonth.now() }
+    val calendarState = rememberCalendarState(
+        startMonth = currentMonth.minusMonths(6),
+        endMonth = currentMonth.plusMonths(6),
+        firstVisibleMonth = currentMonth,
+        firstDayOfWeek = DayOfWeek.SUNDAY,
+        outDateStyle = OutDateStyle.EndOfRow
+    )
 
-    Column(
-        modifier = Modifier
-            .background(Color.White, RoundedCornerShape(8.dp))
-    ) {
-        // 상단 Month, Year
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            IconButton(onClick = { currentMonth.value = currentMonth.value.minusMonths(1) }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous Month")
-            }
+    Column {
+        HorizontalCalendar(
+            state = calendarState,
+            monthHeader = { month ->
+                Text(
+                    text = "${month.yearMonth.year}년 ${
+                        month.yearMonth.month.getDisplayName(
+                            TextStyle.FULL,
+                            Locale.KOREA
+                        )
+                    }",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(8.dp)
+                )
+            },
+            dayContent = { day ->
+                val date = day.date
+                date == startDate.value || date == endDate.value ||
+                        (startDate.value != null && endDate.value != null && date in startDate.value!!..endDate.value!!)
+                val backgroundColor = when {
+                    date == startDate.value -> PrimaryBlue // 시작 날짜 선택
+                    date == endDate.value -> PrimaryBlue  // 종료 날짜 선택
+                    startDate.value != null && endDate.value != null && date in startDate.value!!..endDate.value!! -> Color(
+                        0xffE9F6FA
+                    )
 
-            Text(
-                text = "${currentMonth.value.month.name} ${currentMonth.value.year}",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.align(Alignment.CenterVertically)
-            )
+                    else -> Color.Transparent // 선택되지 않은 날짜는 투명
+                }
 
-            IconButton(onClick = { currentMonth.value = currentMonth.value.plusMonths(1) }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next Month")
-            }
-        }
-
-        // 요일 헤더
-        Row(
-            horizontalArrangement = Arrangement.SpaceAround,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            listOf("일", "월", "화", "수", "목", "금", "토").forEach { day ->
-                Text(text = day, style = MaterialTheme.typography.bodySmall)
-            }
-        }
-
-        // 📌 날짜 표시
-        val daysInMonth: Int = currentMonth.value.lengthOfMonth() // 해당 월의 총 일수
-        val firstDayOfMonth: Int = currentMonth.value.atDay(1).dayOfWeek.value % 7 // 해당 월의 시작 요일
-
-        // 날짜 셀
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(7),
-            modifier = Modifier.padding(top = 8.dp)
-        ) {
-            val totalCells = firstDayOfMonth + daysInMonth
-            items(totalCells) { index ->
-                if (index < firstDayOfMonth) {
-                    // 빈 공간 (이전 달 공백)
-                    Box(modifier = Modifier.aspectRatio(1f))
-                } else {
-                    val day = index - firstDayOfMonth + 1
-                    val date = LocalDate.of(currentMonth.value.year, currentMonth.value.month, day)
-
+                if (day.position == DayPosition.MonthDate) {
                     Box(
-                        contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .aspectRatio(1f)
-                            .background(
-                                if (selectedDate.value == date) Color.Cyan else Color.Transparent,
-                                shape = CircleShape
-                            )
+                            .background(backgroundColor, shape = CircleShape)
                             .clickable {
-                                selectedDate.value = date
-                                onDateSelected(date)
-                            }
+                                when {
+                                    startDate.value == null -> startDate.value = date
+                                    endDate.value == null && date >= startDate.value -> endDate.value =
+                                        date
+
+                                    else -> {
+                                        startDate.value = date
+                                        endDate.value = null
+                                    }
+                                }
+                            },
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text(text = day.toString(), style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            text = date.dayOfMonth.toString(),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                     }
                 }
             }
-        }
+        )
     }
 }

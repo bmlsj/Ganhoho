@@ -24,13 +24,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -53,16 +49,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.ssafy.ganhoho.R
-import com.ssafy.ganhoho.ui.theme.FieldGray
+import com.ssafy.ganhoho.data.model.dto.MySchedule
 import com.ssafy.ganhoho.ui.theme.FieldLightGray
 import com.ssafy.ganhoho.ui.theme.PrimaryBlue
+import kotlinx.datetime.toLocalDate
+import kotlinx.datetime.toLocalDateTime
+import java.time.LocalDateTime
 
 
 @SuppressLint("UnrememberedMutableState")
@@ -70,18 +68,22 @@ import com.ssafy.ganhoho.ui.theme.PrimaryBlue
 @Composable
 fun ShowPreview() {
     val navController = rememberNavController()
-    AddDateBottomSheet(mutableStateOf(true), navController)
+    AddDateBottomSheet(mutableStateOf(true), navController, {})
 }
 
 @Composable
 fun AddDateBottomSheet(
     showBottomSheet: MutableState<Boolean>,
-    navController: NavController
+    navController: NavController,
+    onScheduleAdded: (MySchedule) -> Unit  // ✅ 콜백 추가
 ) {
 
-    val textField = remember { mutableStateOf("") }  // 일정 제목 입력
-    var showTimePicker by remember { mutableStateOf(true) } // ✅ Switch 상태 저장
+    val startDate = remember { mutableStateOf("0000-00-00") } // ✅ 날짜 기본값 설정
+    val endDate = remember { mutableStateOf("0000-00-00") }
+    val title = remember { mutableStateOf("") }  // 일정 제목 입력
     val selectedColor = remember { mutableStateOf(Color.White) }
+    var isTimeSet by remember { mutableStateOf(false) } // ✅ 시간 설정 Switch 상태 저장
+    val isPublic = remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -93,10 +95,10 @@ fun AddDateBottomSheet(
 
         // 일정 추가
         TextField(
-            value = textField.value,
-            onValueChange = { textField.value = it },
+            value = title.value,
+            onValueChange = { title.value = it },
             placeholder = {
-                if (textField.value.isEmpty()) {
+                if (title.value.isEmpty()) {
                     Text(
                         "일정을 입력해주세요.",
                         color = Color(0xFFC0C0C0),
@@ -129,11 +131,12 @@ fun AddDateBottomSheet(
             Spacer(modifier = Modifier.width(6.dp))
 
             // 공개 비공개 버튼
-            ToggleButton()
+            ToggleButton(isPublic)
         }
 
         Spacer(modifier = Modifier.height(10.dp))
-        DateRangePicker("2025-01-02", "2026-02-12", { "2025-01-30" }, { "2025-01-02" })
+        // ✅ 수정된 DateRangePicker 적용
+        DateRangePicker(startDate, endDate)
         Spacer(modifier = Modifier.height(20.dp))
 
         // 시간 설정 부분
@@ -151,9 +154,9 @@ fun AddDateBottomSheet(
             )
 
             Switch(
-                checked = showTimePicker,
+                checked = isTimeSet,
                 onCheckedChange = {
-                    showTimePicker = it
+                    isTimeSet = it
                 },
                 modifier = Modifier.scale(0.8f),
                 colors = SwitchDefaults.colors(
@@ -165,7 +168,7 @@ fun AddDateBottomSheet(
         }
 
         // 시간 설정
-        if (showTimePicker) {
+        if (isTimeSet) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
@@ -189,15 +192,36 @@ fun AddDateBottomSheet(
         Button(
             onClick = {
                 // TODO: 스케줄 추가 기능
+                try {
+                    val startDateTime = LocalDateTime.parse("${startDate.value}T00:00:00")
+                    val endDateTime = LocalDateTime.parse("${endDate.value}T23:59:59")
 
-                // ✅ HomeScreen에서 WorkScreen으로 이동하는 코드
-                navController.navigate("home") {
-                    launchSingleTop = true // 중복 방지
+                    val newSchedule = MySchedule(
+                        startDt = startDateTime,
+                        endDt = endDateTime,
+                        title = title.value,
+                        color = "#${Integer.toHexString(selectedColor.value.hashCode())}", // 색상을 HEX 코드로 변환
+                        isPublic = isPublic.value,
+                        isTimeSet = isTimeSet
+                    )
+
+                    // ✅ 일정 저장 로직 추가 (서버 전송 또는 상태 업데이트)
+                    println("등록된 일정: $newSchedule")
+                    onScheduleAdded(newSchedule)  // ✅ HomeScreen에 새로운 일정 추가
+                    showBottomSheet.value = false
+
+                    // ✅ HomeScreen에서 WorkScreen으로 이동하는 코드
+                    navController.navigate("home") {
+                        launchSingleTop = true // 중복 방지
+                    }
+
+                } catch (e: Exception) {
+                    println("🚨 날짜 변환 오류: ${e.message}")
                 }
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp)
+                .padding(horizontal = 10.dp)
                 .height(50.dp),
             colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
             shape = RoundedCornerShape(20.dp)
@@ -216,12 +240,12 @@ fun AddDateBottomSheet(
 
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
-fun ToggleButton() {
+fun ToggleButton(isPublic: MutableState<Boolean>) {
 
-    var isPublic by remember { mutableStateOf(true) }
+    // var isPublic by remember { mutableStateOf(true) }
 
     val toggleOffset by animateDpAsState(
-        targetValue = if (isPublic) 0.dp else 55.dp,
+        targetValue = if (isPublic.value) 0.dp else 55.dp,
         animationSpec = tween(durationMillis = 300), label = ""
     )
 
@@ -233,7 +257,7 @@ fun ToggleButton() {
             .clip(RoundedCornerShape(25.dp))
             .background(Color.White) // 배경색
             .border(BorderStroke(1.dp, color = FieldLightGray), shape = RoundedCornerShape(25.dp))
-            .clickable { isPublic = !isPublic },
+            .clickable { isPublic.value = !isPublic.value },
         contentAlignment = Alignment.CenterStart
     ) {
         // 원형 이동 버튼
@@ -258,14 +282,14 @@ fun ToggleButton() {
                 text = "공개",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (isPublic) Color.White else Color.Black
+                color = if (isPublic.value) Color.White else Color.Black
             )
 
             Text(
                 text = "비공개",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (!isPublic) Color.White else Color.Black
+                color = if (!isPublic.value) Color.White else Color.Black
             )
         }
     }
@@ -341,14 +365,11 @@ fun ColorDropdownMenu(
 // 날짜 범위 선택
 @Composable
 fun DateRangePicker(
-    startDate: String,
-    endDate: String,
-    onStartDateSelected: (String) -> Unit,
-    onEndDateSelected: (String) -> Unit
+    startDate: MutableState<String>,
+    endDate: MutableState<String>
 ) {
 
     val showDatePicker = remember { mutableStateOf(false) }
-    val isSelectingStartDate = remember { mutableStateOf(true) }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -356,7 +377,7 @@ fun DateRangePicker(
         modifier = Modifier.fillMaxWidth()
     ) {
         DateField(
-            label = startDate,
+            label = startDate.value,
             modifier = Modifier.weight(1f)
         )
 
@@ -369,7 +390,7 @@ fun DateRangePicker(
 
         Spacer(modifier = Modifier.width(10.dp))
         DateField(
-            label = endDate,
+            label = endDate.value,
             modifier = Modifier.weight(1f)
         )
 
@@ -382,16 +403,11 @@ fun DateRangePicker(
         }
     }
 
-    if (showDatePicker.value) {
+    if (showDatePicker.value) {  // 일정 추가에서 기간 선택할 다이얼로그 띄우기
         CustomDatePickerDialog(
             showDialog = showDatePicker,
-            onDateSelected = { selectedDate ->
-                if (isSelectingStartDate.value) {
-                    onStartDateSelected(selectedDate.toString())
-                } else {
-                    onEndDateSelected(selectedDate.toString())
-                }
-            }
+            startDate = startDate, // ✅ 전달
+            endDate = endDate      // ✅ 전달
         )
     }
 }

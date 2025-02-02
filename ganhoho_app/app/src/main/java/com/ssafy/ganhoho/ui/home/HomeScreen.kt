@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -51,6 +52,60 @@ fun HomeScreen(navController: NavController) {
     val startMonth = remember { currentMonth.minusMonths(1) }
     val endMonth = remember { currentMonth.plusMonths(1) }
     val daysOfWeek = DayOfWeek.entries
+
+    val events = remember {
+        mutableStateListOf<MySchedule>(
+            MySchedule(
+                startDt = LocalDateTime.parse("2025-02-03T00:00:00"),
+                endDt = LocalDateTime.parse("2025-02-04T23:59:59"),
+                title = "동기 회식 🎉",
+                color = "#D1EEF2",
+                isPublic = true,
+                isTimeSet = false
+            ),
+            MySchedule(
+                startDt = LocalDateTime.parse("2025-02-07T00:00:00"),
+                endDt = LocalDateTime.parse("2025-02-10T23:59:59"),
+                title = "북 스터디",
+                color = "#FFCAE6",
+                isPublic = false,
+                isTimeSet = true
+            ),
+            MySchedule(
+                startDt = LocalDateTime.parse("2025-02-15T00:00:00"),
+                endDt = LocalDateTime.parse("2025-02-15T23:59:59"),
+                title = "월세 🌼",
+                color = "#FFF59D",
+                isPublic = true,
+                isTimeSet = false
+            ),
+            MySchedule(
+                startDt = LocalDateTime.parse("2025-02-17T00:00:00"),
+                endDt = LocalDateTime.parse("2025-02-18T23:59:59"),
+                title = "북 스터디2 📚",
+                color = "#FFCAE6",
+                isPublic = true,
+                isTimeSet = false
+            ),
+            MySchedule(
+                startDt = LocalDateTime.parse("2025-02-17T00:00:00"),
+                endDt = LocalDateTime.parse("2025-02-20T23:59:59"),
+                title = "북 스터디2 📚",
+                color = "#FFCAE6",
+                isPublic = true,
+                isTimeSet = false
+            ),
+            MySchedule(
+                startDt = LocalDateTime.parse("2025-02-28T00:00:00"),
+                endDt = LocalDateTime.parse("2025-02-28T23:59:59"),
+                title = "제주도 여행 🍊",
+                color = "#FFD1DC",
+                isPublic = false,
+                isTimeSet = true
+            ),
+
+            )
+    }
 
     val calendarState = rememberCalendarState(
         startMonth = startMonth,
@@ -93,7 +148,10 @@ fun HomeScreen(navController: NavController) {
         HorizontalCalendar(
             state = calendarState,
             dayContent = { day ->
-                DayContent(day, currentMonth, navController)
+                DayContent(events, day, currentMonth, navController,
+                    onScheduleAdded = { newSchedule ->
+                        events.add(newSchedule)  // ✅ 새로운 일정 추가
+                    })
             },
             monthHeader = {
                 MonthHeader(daysOfWeek)
@@ -145,66 +203,13 @@ fun MonthHeader(daysOfWeek: List<DayOfWeek>) {
 
 @SuppressLint("RememberReturnType")
 @Composable
-fun DayContent(day: CalendarDay, currentMonth: YearMonth, navController: NavController) {
-
-    val events = listOf(
-        MySchedule(
-            startDt = LocalDateTime.parse("2025-02-03T00:00:00"),
-            endDt = LocalDateTime.parse("2025-02-04T23:59:59"),
-            title = "동기 회식 🎉",
-            color = "#D1EEF2",
-            isPublic = true,
-            isTimeSet = false
-        ),
-        MySchedule(
-            startDt = LocalDateTime.parse("2025-02-07T00:00:00"),
-            endDt = LocalDateTime.parse("2025-02-10T23:59:59"),
-            title = "북 스터디",
-            color = "#FFCAE6",
-            isPublic = false,
-            isTimeSet = true
-        ),
-        MySchedule(
-            startDt = LocalDateTime.parse("2025-02-15T00:00:00"),
-            endDt = LocalDateTime.parse("2025-02-15T23:59:59"),
-            title = "월세 🌼",
-            color = "#FFF59D",
-            isPublic = true,
-            isTimeSet = false
-        ),
-        MySchedule(
-            startDt = LocalDateTime.parse("2025-02-17T00:00:00"),
-            endDt = LocalDateTime.parse("2025-02-18T23:59:59"),
-            title = "북 스터디2 📚",
-            color = "#FFCAE6",
-            isPublic = true,
-            isTimeSet = false
-        ),
-        MySchedule(
-            startDt = LocalDateTime.parse("2025-02-17T00:00:00"),
-            endDt = LocalDateTime.parse("2025-02-20T23:59:59"),
-            title = "북 스터디2 📚",
-            color = "#FFCAE6",
-            isPublic = true,
-            isTimeSet = false
-        ),
-        MySchedule(
-            startDt = LocalDateTime.parse("2025-02-28T00:00:00"),
-            endDt = LocalDateTime.parse("2025-02-28T23:59:59"),
-            title = "제주도 여행 🍊",
-            color = "#FFD1DC",
-            isPublic = false,
-            isTimeSet = true
-        ),
-        MySchedule(
-            startDt = LocalDateTime.parse("2025-02-28T00:00:00"),
-            endDt = LocalDateTime.parse("2025-02-28T23:59:59"),
-            title = "제주도 여행 🍊",
-            color = "#FFD1DC",
-            isPublic = false,
-            isTimeSet = true
-        )
-    )
+fun DayContent(
+    events: List<MySchedule>,
+    day: CalendarDay,
+    currentMonth: YearMonth,
+    navController: NavController,
+    onScheduleAdded: (MySchedule) -> Unit  // ✅ 콜백 추가
+) {
 
     val date = day.date
     val isOutDate = date.month != currentMonth.month  // ✅ outDate 여부 확인
@@ -355,7 +360,8 @@ fun DayContent(day: CalendarDay, currentMonth: YearMonth, navController: NavCont
         showBottomSheet = showBottomSheet,
         selectedEvents = selectedEvents.value,
         date = date,
-        navController = navController
+        navController = navController,
+        onScheduleAdded = onScheduleAdded
     )
 }
 

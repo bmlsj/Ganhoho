@@ -42,7 +42,8 @@ fun DayBottomSheet(
     showBottomSheet: MutableState<Boolean>,
     selectedEvents: List<MySchedule>,
     date: LocalDate,
-    navController: NavController
+    navController: NavController,
+    onScheduleAdded: (MySchedule) -> Unit  // ✅ 콜백 추가
 ) {
 
     val showAddDateBottomSheet = remember { mutableStateOf(false) } // ✅ 일정 추가 모달 상태 추가
@@ -97,6 +98,10 @@ fun DayBottomSheet(
                         AddDateBottomSheet(
                             showBottomSheet = showBottomSheet,
                             navController = navController,
+                            onScheduleAdded = { newSchedule ->
+                                onScheduleAdded(newSchedule)  // ✅ HomeScreen의 이벤트 리스트 업데이트
+                                showBottomSheet.value = false
+                            }
                         )
                     }
 
@@ -131,6 +136,11 @@ fun DayBottomSheet(
                 AddDateBottomSheet(
                     showBottomSheet = showAddDateBottomSheet,
                     navController = navController,
+                    onScheduleAdded = { newSchedule ->
+                        onScheduleAdded(newSchedule)  // ✅ HomeScreen의 이벤트 리스트 업데이트
+                        showBottomSheet.value = false
+                        showAddDateBottomSheet.value = false
+                    }
                 )
             }
         }
