@@ -2,10 +2,7 @@ package com.ssafy.ganhoho.domain.group;
 
 import com.ssafy.ganhoho.domain.auth.AuthRepository;
 
-import com.ssafy.ganhoho.domain.group.dto.GroupCreatRequest;
-import com.ssafy.ganhoho.domain.group.dto.GroupCreateResponse;
-import com.ssafy.ganhoho.domain.group.dto.GroupDto;
-import com.ssafy.ganhoho.domain.group.dto.GroupParticipationDto;
+import com.ssafy.ganhoho.domain.group.dto.*;
 import com.ssafy.ganhoho.domain.member.dto.MemberDto;
 import com.ssafy.ganhoho.global.constant.ErrorCode;
 import com.ssafy.ganhoho.global.error.CustomException;
@@ -14,7 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -79,5 +78,19 @@ public class GroupServiceImpl implements GroupService {
         return UUID.randomUUID().toString().substring(0, 8);
     }
 
+    @Override
+    public List<GroupListResponse> getGroupList(Long memberId) {
+        // member Id 기준으로 그룹 목록 조회하여 List에 담는다.
+        List<GroupDto> groups = groupRepository.findGroupByMemberId(memberId);
+
+        return groups.stream()
+                .map(group -> GroupListResponse.builder()
+                        .groupId(group.getGroupId())
+                        .groupName(group.getGroupName())
+                        .groupIconType(group.getGroupIconType())
+                        .groupMemberCount(group.getGroupMemberCount())
+                        .build())
+                .collect(Collectors.toList());
+    }
 
 }
