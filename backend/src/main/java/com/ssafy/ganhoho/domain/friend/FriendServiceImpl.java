@@ -63,6 +63,7 @@ public class FriendServiceImpl implements FriendService {
                     .friendLoginId(friendMember.getLoginId())
                     .name(friendMember.getName())
                     .hospital(friendMember.getHospital())
+                    .ward(friendMember.getWard()) // ward 추가
                     .isFavorite(friend.getIsFavorite())
                     .build();
         })
@@ -233,5 +234,28 @@ public class FriendServiceImpl implements FriendService {
         friendRepository.save(friendRequest);
 
         return FriendAddResponse.builder().build();
+
+    }
+
+    // 친구 즐겨찾기 수정
+    @Override
+    @Transactional
+    public FriendFavoriteResponse updateFriendFavorite(Long memberId, Long friendId, FriendFavoriteRequest request) {
+        // 유저확인
+        MemberDto member = authRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
+        // 존재 여부 확인
+        MemberDto friendMember = authRepository.findById(request.getFriendMemberId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
+
+        FriendDto friend = friendRepository.findByMemberAndFriend(
+                member.getLoginId(),
+                friendMember.getLoginId()
+        ).orElseThrow(() -> new CustomException(ErrorCode.NO_MATCHING_FRIEND_REQUESTS));
+
+        friend.setIsFavorite(request.getIsFavorite());
+        friendRepository.save(friend);
+
+        return FriendFavoriteResponse.builder().build();
     }
 }
