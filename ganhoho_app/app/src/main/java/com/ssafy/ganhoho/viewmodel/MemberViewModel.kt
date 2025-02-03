@@ -12,11 +12,11 @@ class MemberViewModel : ViewModel() {
     private val memberRepository = MemberRepository()
 
     // 로그인
-    fun login(member: MemberDTO) {
-        viewModelScope.launch {
-
-        }
-    }
+//    fun login(member: MemberDTO) {
+//        viewModelScope.launch {
+//
+//        }
+//    }
 
     // 회원가입
     fun signUp(
