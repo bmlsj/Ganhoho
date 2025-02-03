@@ -3,7 +3,6 @@ package com.ssafy.ganhoho.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.ganhoho.data.model.dto.member.LoginRequest
-import com.ssafy.ganhoho.data.model.dto.member.MemberDTO
 import com.ssafy.ganhoho.data.model.dto.member.SignUpRequest
 import com.ssafy.ganhoho.repository.MemberRepository
 import kotlinx.coroutines.launch

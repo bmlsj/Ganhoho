@@ -2,7 +2,6 @@ package com.ssafy.ganhoho.repository
 
 import com.google.gson.Gson
 import com.ssafy.ganhoho.data.model.dto.member.LoginRequest
-import com.ssafy.ganhoho.data.model.dto.member.MemberDTO
 import com.ssafy.ganhoho.data.model.dto.member.SignUpRequest
 import com.ssafy.ganhoho.data.model.response.ErrorResponse
 import com.ssafy.ganhoho.data.model.response.LoginResponse
