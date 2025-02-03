@@ -2,6 +2,7 @@ package com.ssafy.ganhoho.domain.group;
 
 import com.ssafy.ganhoho.domain.group.dto.GroupCreatRequest;
 import com.ssafy.ganhoho.domain.group.dto.GroupCreateResponse;
+import com.ssafy.ganhoho.domain.group.dto.GroupInviteLinkResponse;
 import com.ssafy.ganhoho.domain.group.dto.GroupListResponse;
 import com.ssafy.ganhoho.global.auth.SecurityUtil;
 import com.ssafy.ganhoho.global.constant.ErrorCode;
@@ -61,4 +62,19 @@ public class GroupController {
         }
     }
 
+    @GetMapping("/link/{groupId}")
+    public ResponseEntity<?> getGroupInvite(@PathVariable Long groupId) {
+        try {
+            Long memberId = SecurityUtil.getCurrentMemberId();
+            GroupInviteLinkResponse response = groupService.getGroupInviteLink(memberId, groupId);
+            return ResponseEntity.ok(response);
+        } catch (CustomException e) {
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus())
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("UNAUTHORIZED");
+        }
+
+    }
 }

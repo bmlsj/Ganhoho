@@ -73,7 +73,7 @@ public class GroupServiceImpl implements GroupService {
                 .build();
 
     }
-    // 초대링크 생성
+    // 초대링크 생성 (임시방편.)
     private String generateInviteLink() {
         return UUID.randomUUID().toString().substring(0, 8);
     }
@@ -91,6 +91,31 @@ public class GroupServiceImpl implements GroupService {
                         .groupMemberCount(group.getGroupMemberCount())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public GroupInviteLinkResponse getGroupInviteLink(Long memberId, Long groupId) {
+        // 그룹 존재 여부 확인
+        GroupDto group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER)); // 추후 존재하지않는 그룹 오류로 추가하자..
+
+
+        boolean isMember = groupParticipationRepository.existsByMemberIdAndGroupId(memberId, groupId);
+        if (!isMember) {
+            throw new CustomException(ErrorCode.CONFLICT);
+        }
+
+
+        // 해당 그룹 초대링크가 없으면 생성
+        if (group.getGroupInviteLink() == null) {
+            group.setGroupInviteLink(generateInviteLink());
+            groupRepository.save(group);
+        }
+
+        return GroupInviteLinkResponse.builder()
+                .groupInviteLink(group.getGroupInviteLink())
+                .build();
+
     }
 
 }
