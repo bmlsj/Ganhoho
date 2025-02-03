@@ -23,6 +23,6 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         composable("pill") { PillScreen(modifier) }
         composable("home") { HomeScreen(modifier) }
         composable("group") { GroupScreen(modifier) }
-        composable("friend") { FriendScreen(modifier) }
+        composable("friend") { FriendScreen(navController) }
     }
 }
