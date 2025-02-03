@@ -41,7 +41,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.10"
     }
     packaging {
         resources {
@@ -67,11 +67,15 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
+  //  implementation("androidx.compose.ui:ui")
+  //  implementation("androidx.compose.ui:ui-text")
+  //  implementation("androidx.compose.ui:ui-tooling-preview")
+  //  debugImplementation("androidx.compose.ui:ui-tooling")
 
     implementation("com.kizitonwose.calendar:compose:2.6.2")
-    implementation("androidx.navigation:navigation-compose:2.8.4")
     implementation("androidx.compose.material:material:1.7.5")
     implementation ("androidx.navigation:navigation-compose:2.8.5")
+
+
 
 }
