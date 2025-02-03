@@ -11,5 +11,6 @@ public class FriendListResponse {
     private String friendLoginId;
     private String name;
     private String hospital;
+    private String ward;
     private Boolean isFavorite;
 }

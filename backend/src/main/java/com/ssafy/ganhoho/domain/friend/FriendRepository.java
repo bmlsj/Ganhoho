@@ -47,4 +47,13 @@ public interface FriendRepository extends JpaRepository<FriendDto, Long> {
             @Param("memberLoginId") String memberLoginId,
             @Param("friendLoginId") String friendLoginId
     );
+
+    // 양방향 친구 관계 조회
+    @Query("SELECT f FROM FriendDto f " +
+            "WHERE (f.member.loginId = :memberLoginId AND f.friendLoginId = :friendLoginId) " +
+            "OR (f.member.loginId = :friendLoginId AND f.friendLoginId = :memberLoginId)")
+    Optional<FriendDto> findByMemberAndFriend(
+            @Param("memberLoginId") String memberLoginId,
+            @Param("friendLoginId") String friendLoginId
+    );
 }

@@ -110,4 +110,25 @@ public class FriendController {
                     .body("Invalid or missing authentication token.");
         }
     }
+
+    @PatchMapping("/favorite")
+    public ResponseEntity<?> updateFriendFavorite(
+            @RequestBody FriendFavoriteRequest request) {
+        try {
+            Long memberId = SecurityUtil.getCurrentMemberId();
+            FriendFavoriteResponse response = friendService.updateFriendFavorite(
+              memberId,
+              request.getFriendMemberId(), // DTO 에서 friendId 가져오기
+              request
+            );
+            return ResponseEntity.ok(response);
+        } catch (CustomException e) {
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus())
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid or missing authentication token.");
+        }
+
+    }
 }

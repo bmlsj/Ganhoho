@@ -6,7 +6,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class FriendAddResponse {
+public class FriendFavoriteResponse {
     @Builder.Default
     private boolean success = true;
 }
