@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 
 @Entity
-@Table(name = "group")
+@Table(name = "`group`")
 @Getter
 @Setter
 @Builder

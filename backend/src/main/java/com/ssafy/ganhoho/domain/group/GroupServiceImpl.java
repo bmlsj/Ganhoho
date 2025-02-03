@@ -24,6 +24,7 @@ import java.util.UUID;
 public class GroupServiceImpl implements GroupService {
 
     private final GroupRepository groupRepository;
+    private final GroupParticipationRepository groupParticipationRepository;
     private final AuthRepository authRepository;
 
     @Override
@@ -41,6 +42,7 @@ public class GroupServiceImpl implements GroupService {
                 .groupInviteLink(generateInviteLink())
                 .build();
 
+        // 그룹 저장
         GroupDto savedGroup = groupRepository.save(group);
 
         // 생성자 그룹 참여자로 추가
@@ -48,6 +50,16 @@ public class GroupServiceImpl implements GroupService {
                 .memberId(member.getMemberId())
                 .groupId(savedGroup.getGroupId())
                 .build();
+        // 그룹 생성자 참여 정보 DB에 저장
+        try {
+            groupParticipationRepository.save(participation);
+            // 저장 성공시 회우너 ID 그룹 ID 로그에 기록
+            log.info("Group participation added: memberId={}, groupId={}",
+                    member.getMemberId(), savedGroup.getGroupId());
+        }catch (Exception e) {
+            log.error(("Failed to add group participation: " + e.getMessage()));
+            throw new CustomException(ErrorCode.SERVER_ERROR);
+        }
         // 생성시 로그
         log.info("Group created: groupId={}, groupName={}, creator={}",
                 savedGroup.getGroupId(), group.getGroupName(), member.getLoginId());
