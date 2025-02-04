@@ -1,6 +1,6 @@
 package com.ssafy.ganhoho.domain.auth;
 
-import com.ssafy.ganhoho.domain.member.dto.MemberDto;
+import com.ssafy.ganhoho.domain.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -11,13 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 @Repository
-public interface AuthRepository extends JpaRepository<MemberDto, Long> {
-    Optional<MemberDto> findByLoginId(String loginId);
+public interface AuthRepository extends JpaRepository<Member, Long> {
+    Optional<Member> findByLoginId(String loginId);
 
     Boolean existsByLoginId(String loginId);
 
     @Transactional
     @Modifying(clearAutomatically = true)
-    @Query("UPDATE MemberDto member SET member.appFcmToken = :appFcmToken WHERE member.memberId = :memberId")
+    @Query("UPDATE Member member SET member.appFcmToken = :appFcmToken WHERE member.memberId = :memberId")
     Optional<Integer> updateFcmToken(@Param("appFcmToken") String appFcmToken, @Param("memberId") Long memberId);
 }

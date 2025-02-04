@@ -1,7 +1,9 @@
-package com.ssafy.ganhoho.domain.member.dto;
+package com.ssafy.ganhoho.domain.member.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -11,7 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MemberDto {
+public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long memberId;
@@ -21,9 +23,15 @@ public class MemberDto {
     private String name;
     private String hospital;
     private String ward;
-    @Column(insertable = false)
+
+    @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(insertable = false)
     private LocalDateTime updatedAt;
+
     private String appFcmToken;
     private String watchFcmToken;
 }

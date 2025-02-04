@@ -1,4 +1,4 @@
-package com.ssafy.ganhoho.domain.auth;
+package com.ssafy.ganhoho.domain.auth.service;
 
 import com.ssafy.ganhoho.domain.auth.dto.LoginRequest;
 import com.ssafy.ganhoho.domain.auth.dto.LoginResponse;
@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface AuthService {
-    void signUp(SignUpRequest signUpRequest);
+    boolean signUp(SignUpRequest signUpRequest);
 
     boolean isIdDuplicate(String loginId);
 
