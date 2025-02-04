@@ -1,7 +1,7 @@
 package com.ssafy.ganhoho.domain.friend;
 
 import com.ssafy.ganhoho.domain.friend.dto.FriendDto;
-import com.ssafy.ganhoho.domain.member.dto.MemberDto;
+import com.ssafy.ganhoho.domain.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,7 +16,7 @@ public interface FriendRepository extends JpaRepository<FriendDto, Long> {
             "AND f.requestStatus = com.ssafy.ganhoho.domain.friend.constant.RequestStatus.ACCEPTED " +
             "ORDER BY f.isFavorite DESC")
     // 메서드의 member 변수를 :member 바인딩. <- findAcceptedFriendsByMember 호출시..
-    List<FriendDto> findAcceptedFriendsByMember(@Param("member") MemberDto member);
+    List<FriendDto> findAcceptedFriendsByMember(@Param("member") Member member);
 
     // (로직 추가) 받은 대상 친구 목록 조회
     @Query("SELECT f FROM FriendDto f " +
@@ -30,7 +30,7 @@ public interface FriendRepository extends JpaRepository<FriendDto, Long> {
             "WHERE f.member = :member " +
             "AND f.requestStatus = com.ssafy.ganhoho.domain.friend.constant.RequestStatus.PENDING " +
             "ORDER BY f.isFavorite DESC")
-    List<FriendDto> findRequestsByMember(@Param("member") MemberDto member);
+    List<FriendDto> findRequestsByMember(@Param("member") Member member);
 
     // 받은 대상 특정 회원의 대기중인 친구 요청 목록 조회
     @Query("SELECT f FROM FriendDto f " +
@@ -44,6 +44,15 @@ public interface FriendRepository extends JpaRepository<FriendDto, Long> {
             "WHERE f.member.loginId = :memberLoginId " +
             "AND f.friendLoginId = :friendLoginId")
     Optional<FriendDto> findByMemberLoginIdAndFriendLoginId(
+            @Param("memberLoginId") String memberLoginId,
+            @Param("friendLoginId") String friendLoginId
+    );
+
+    // 양방향 친구 관계 조회
+    @Query("SELECT f FROM FriendDto f " +
+            "WHERE (f.member.loginId = :memberLoginId AND f.friendLoginId = :friendLoginId) " +
+            "OR (f.member.loginId = :friendLoginId AND f.friendLoginId = :memberLoginId)")
+    Optional<FriendDto> findByMemberAndFriend(
             @Param("memberLoginId") String memberLoginId,
             @Param("friendLoginId") String friendLoginId
     );
