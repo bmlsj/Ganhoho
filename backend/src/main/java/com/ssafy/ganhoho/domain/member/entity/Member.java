@@ -25,11 +25,11 @@ public class Member {
     private String ward;
 
     @CreationTimestamp
-    @Column(updatable = false)
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(insertable = false)
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     private String appFcmToken;
