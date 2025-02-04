@@ -175,4 +175,50 @@ public class GroupServiceImpl implements GroupService {
         return GroupLeaveResponse.builder().build();
     }
 
+    @Override
+    @Transactional
+    public List<GroupAcceptResponse> acceptGroupInvitation(Long memberId, Long groupId) {
+        // 사용자가 실제로 있는지
+        MemberDto member = authRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
+
+        // 그룹 존재 여부 확인
+        GroupDto group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_GROUP));
+
+        // 이미 그룹원인지 확인
+        boolean isMember = groupParticipationRepository.existsByMemberIdAndGroupId(memberId, groupId);
+        if (isMember) {
+            throw new CustomException(ErrorCode.ACCES_DENIED);
+        }
+
+        // 참여 정보 저장...
+        GroupParticipationDto participation = GroupParticipationDto.builder()
+                .memberId(memberId)
+                .groupId(groupId)
+                .build();
+        groupParticipationRepository.save(participation);
+
+        // 멤버 수를 증가시킨다.
+        group.setGroupMemberCount(group.getGroupMemberCount() + 1);
+        groupRepository.save(group);
+
+        // 업데이트 이후 목록 반환
+        List<GroupParticipationDto> participations = groupParticipationRepository.findByGroupId(groupId);
+
+        return  participations.stream()
+                .map(p -> {
+                    MemberDto memberDto = authRepository.findById(p.getMemberId())
+                            .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
+                    return GroupAcceptResponse.builder()
+                            .loginId(memberDto.getLoginId())
+                            .name(memberDto.getName())
+                            .hospital(memberDto.getHospital())
+                            .ward(memberDto.getWard())
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+    }
+
 }

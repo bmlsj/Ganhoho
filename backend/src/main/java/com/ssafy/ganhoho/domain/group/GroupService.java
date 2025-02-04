@@ -19,4 +19,7 @@ public interface GroupService {
 
     // 그룹 탈퇴
     GroupLeaveResponse getGroupLeave(Long memberId, Long groupId);
+
+    // 그룹 초대 수락
+    List<GroupAcceptResponse> acceptGroupInvitation(Long memberId, Long groupId);
 }

@@ -114,4 +114,23 @@ public class GroupController {
         }
     }
 
+    @PostMapping("/{groupId}")
+    public ResponseEntity<?> acceptGroupInvitation(@PathVariable Long groupId) {
+        try {
+            Long memberId = SecurityUtil.getCurrentMemberId();
+            List<GroupAcceptResponse> responses = groupService.acceptGroupInvitation(memberId, groupId);
+            return ResponseEntity.ok(responses);
+        } catch (CustomException e) {
+            if (e.getErrorCode().equals(ErrorCode.ACCES_DENIED)) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("ACCESS_DENIED");
+            }
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus())
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("UNAUTHORIZED");
+        }
+    }
+
 }
