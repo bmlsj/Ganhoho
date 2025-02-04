@@ -7,7 +7,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
 import static com.ssafy.ganhoho.global.auth.SecurityUtil.getCurrentMemberId;
 
 @RestController
@@ -21,6 +25,11 @@ public class MemberController {
     public ResponseEntity<MemberInfoResponse> getMemberInfo(){
         Long memberId = getCurrentMemberId();
         return ResponseEntity.ok(memberService.getMemberInfo(memberId));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<MemberInfoResponse>> searchMember(@RequestParam String friendLoginId) {
+        return ResponseEntity.ok(memberService.searchMembers(friendLoginId));
     }
 
 }
