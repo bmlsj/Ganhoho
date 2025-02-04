@@ -1,9 +1,6 @@
 package com.ssafy.ganhoho.domain.group;
 
-import com.ssafy.ganhoho.domain.group.dto.GroupCreatRequest;
-import com.ssafy.ganhoho.domain.group.dto.GroupCreateResponse;
-import com.ssafy.ganhoho.domain.group.dto.GroupInviteLinkResponse;
-import com.ssafy.ganhoho.domain.group.dto.GroupListResponse;
+import com.ssafy.ganhoho.domain.group.dto.*;
 import com.ssafy.ganhoho.global.auth.SecurityUtil;
 import com.ssafy.ganhoho.global.constant.ErrorCode;
 import com.ssafy.ganhoho.global.error.CustomException;
@@ -77,4 +74,24 @@ public class GroupController {
         }
 
     }
+
+    @GetMapping("/members/{groupId}")
+    public ResponseEntity<?> getGroupMembers(@PathVariable Long groupId) {
+        try {
+            Long memberId = SecurityUtil.getCurrentMemberId();
+            List<GroupMemberResponse> responses = groupService.getGroupMembers(memberId, groupId);
+            return ResponseEntity.ok(responses);
+        } catch (CustomException e) {
+            if (e.getErrorCode().equals(ErrorCode.ACCES_DENIED)) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("ACCESS_DENIED");
+            }
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus())
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("UNAUTHORIZED");
+        }
+    }
+
 }

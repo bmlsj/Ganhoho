@@ -97,12 +97,12 @@ public class GroupServiceImpl implements GroupService {
     public GroupInviteLinkResponse getGroupInviteLink(Long memberId, Long groupId) {
         // 그룹 존재 여부 확인
         GroupDto group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER)); // 추후 존재하지않는 그룹 오류로 추가하자..
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_GROUP));
 
 
         boolean isMember = groupParticipationRepository.existsByMemberIdAndGroupId(memberId, groupId);
         if (!isMember) {
-            throw new CustomException(ErrorCode.CONFLICT);
+            throw new CustomException(ErrorCode.NOT_EXIST_GROUP);
         }
 
 
@@ -115,6 +115,37 @@ public class GroupServiceImpl implements GroupService {
         return GroupInviteLinkResponse.builder()
                 .groupInviteLink(group.getGroupInviteLink())
                 .build();
+
+    }
+
+    @Override
+    public List<GroupMemberResponse> getGroupMembers(Long memberId, Long groupId) {
+        // 그룹 존재 여부 확인
+        GroupDto group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_GROUP));
+
+        // 사용자가 해당 그룹 멤버인지
+        boolean isMember = groupParticipationRepository.existsByMemberIdAndGroupId(memberId, groupId);
+        if (!isMember) {
+            throw new CustomException(ErrorCode.ACCES_DENIED);
+        }
+
+        // 조회 후 멤버 정보를 매핑한다.
+        List<GroupParticipationDto> participations = groupParticipationRepository.findByGroupId(groupId);
+
+        //dto로 변환
+        return participations.stream()
+                .map(participation -> {
+                    MemberDto member = authRepository.findById(participation.getMemberId())
+                            .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
+                    return GroupMemberResponse.builder()
+                            .loginId(member.getLoginId())
+                            .name(member.getName())
+                            .hospital(member.getHospital())
+                            .ward(member.getWard())
+                            .build();
+                })
+                .collect(Collectors.toList());
 
     }
 

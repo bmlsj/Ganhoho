@@ -1,9 +1,6 @@
 package com.ssafy.ganhoho.domain.group;
 
-import com.ssafy.ganhoho.domain.group.dto.GroupCreatRequest;
-import com.ssafy.ganhoho.domain.group.dto.GroupCreateResponse;
-import com.ssafy.ganhoho.domain.group.dto.GroupInviteLinkResponse;
-import com.ssafy.ganhoho.domain.group.dto.GroupListResponse;
+import com.ssafy.ganhoho.domain.group.dto.*;
 
 import java.util.List;
 
@@ -16,4 +13,8 @@ public interface GroupService {
 
     // 그룹 초대 링킄 조회
     GroupInviteLinkResponse getGroupInviteLink(Long memberId, Long groupId);
+
+    // 그룹원 정보 전체 조회
+    List<GroupMemberResponse> getGroupMembers(Long memberId, Long groupId);
+
 }
