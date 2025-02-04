@@ -13,10 +13,12 @@ import androidx.compose.ui.unit.sp
 import com.ssafy.ganhoho.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 
-@Preview()
+
 @Composable
-fun GroupScreen(modifier: Modifier = Modifier) {
+fun GroupScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -54,7 +56,7 @@ fun GroupScreen(modifier: Modifier = Modifier) {
         Text(
             text = "나의 그룹",
             fontSize = 25.sp,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+            fontWeight = FontWeight.Bold
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -79,7 +81,8 @@ fun GroupScreen(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewGroupScreen() {
+    val navController = rememberNavController()
     MaterialTheme {
-        GroupScreen()
+        GroupScreen(navController)
     }
 }
