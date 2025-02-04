@@ -17,4 +17,6 @@ public interface GroupService {
     // 그룹원 정보 전체 조회
     List<GroupMemberResponse> getGroupMembers(Long memberId, Long groupId);
 
+    // 그룹 탈퇴
+    GroupLeaveResponse getGroupLeave(Long memberId, Long groupId);
 }

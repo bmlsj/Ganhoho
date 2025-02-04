@@ -6,6 +6,7 @@ import com.ssafy.ganhoho.global.constant.ErrorCode;
 import com.ssafy.ganhoho.global.error.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -81,6 +82,25 @@ public class GroupController {
             Long memberId = SecurityUtil.getCurrentMemberId();
             List<GroupMemberResponse> responses = groupService.getGroupMembers(memberId, groupId);
             return ResponseEntity.ok(responses);
+        } catch (CustomException e) {
+            if (e.getErrorCode().equals(ErrorCode.ACCES_DENIED)) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("ACCESS_DENIED");
+            }
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus())
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("UNAUTHORIZED");
+        }
+    }
+
+    @DeleteMapping("/{groupId}")
+    public ResponseEntity<?> leaveGroup(@PathVariable Long groupId) {
+        try {
+            Long memberId = SecurityUtil.getCurrentMemberId();
+            GroupLeaveResponse response = groupService.getGroupLeave(memberId, groupId);
+            return ResponseEntity.ok(response);
         } catch (CustomException e) {
             if (e.getErrorCode().equals(ErrorCode.ACCES_DENIED)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)

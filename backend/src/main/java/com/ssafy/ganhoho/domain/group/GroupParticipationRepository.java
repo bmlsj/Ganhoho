@@ -12,4 +12,7 @@ public interface GroupParticipationRepository extends JpaRepository<GroupPartici
 
     //그룹 id 찾기
     List<GroupParticipationDto> findByGroupId(Long groupId);
+
+    // 그룹 탈퇴
+    int deleteByMemberIdAndGroupId(@Param("memberId") Long memberId, @Param("groupId") Long groupId);
 }

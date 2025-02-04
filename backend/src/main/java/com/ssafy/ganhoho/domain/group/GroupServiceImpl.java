@@ -149,4 +149,30 @@ public class GroupServiceImpl implements GroupService {
 
     }
 
+    @Override
+    @Transactional
+    public GroupLeaveResponse getGroupLeave(Long memberId, Long groupId) {
+        // 그룹 존재 여부 확인
+        GroupDto group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_GROUP));
+
+        // 사용자가 해당 그룹 멤버인지
+        boolean isMember = groupParticipationRepository.existsByMemberIdAndGroupId(memberId, groupId);
+        if (!isMember) {
+            throw new CustomException(ErrorCode.ACCES_DENIED);
+        }
+
+        // 그룹 참여 정보 삭제
+        groupParticipationRepository.deleteByMemberIdAndGroupId(memberId, groupId);
+
+        // 그룹 멤버 수 감소
+        group.setGroupMemberCount(group.getGroupMemberCount() - 1);
+        groupRepository.save(group);
+
+        // 로그 생성
+        log.info("User left group: memberId={}, groupId={}", memberId, groupId);
+
+        return GroupLeaveResponse.builder().build();
+    }
+
 }
