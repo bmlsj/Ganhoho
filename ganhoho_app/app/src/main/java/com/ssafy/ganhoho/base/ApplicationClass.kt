@@ -7,6 +7,7 @@ import com.ssafy.ganhoho.util.SharedPreferencesUtil
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.util.concurrent.TimeUnit
 
 class ApplicationClass : Application() {
@@ -14,7 +15,7 @@ class ApplicationClass : Application() {
     companion object {
         lateinit var retrofit: Retrofit
         lateinit var sharedPreferencesUtil: SharedPreferencesUtil
-        const val SERVER_URL = ""
+        const val SERVER_URL = "http://i12d209.p.ssafy.io:8787/"
     }
 
     override fun onCreate() {
@@ -31,12 +32,14 @@ class ApplicationClass : Application() {
 
         val gson: Gson = GsonBuilder()
             .setLenient()
+            .disableHtmlEscaping()
             .create()
 
         // retrofit 인스턴스
         retrofit = Retrofit.Builder()
             .baseUrl(SERVER_URL)
             .client(client)
+            .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
 

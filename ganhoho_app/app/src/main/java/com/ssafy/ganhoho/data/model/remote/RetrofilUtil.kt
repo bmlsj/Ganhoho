@@ -1,8 +1,8 @@
-package com.ssafy.ganhoho.data.model.service
+package com.ssafy.ganhoho.data.model.remote
 
 import com.ssafy.ganhoho.base.ApplicationClass
 
-class RetrofilUtil {
+class RetrofitUtil {
 
     companion object {
 

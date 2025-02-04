@@ -49,16 +49,22 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.ssafy.ganhoho.R
 import com.ssafy.ganhoho.ui.theme.FieldGray
 import com.ssafy.ganhoho.ui.theme.FieldLightGray
 import com.ssafy.ganhoho.ui.theme.PrimaryBlue
+import com.ssafy.ganhoho.viewmodel.MemberViewModel
 
 @Composable
 fun JoinScreen(navController: NavController) {
 
+    // 뷰 모델
+    val viewModel: MemberViewModel = viewModel()
+
+    // 변수
     var id by remember { mutableStateOf("") }
     var idCheck by remember { mutableStateOf(false) }
     var password by remember { mutableStateOf("") }
@@ -77,7 +83,12 @@ fun JoinScreen(navController: NavController) {
         verticalArrangement = Arrangement.Top
     ) {
         Spacer(modifier = Modifier.height(28.dp))
-
+        Button(
+            onClick = { viewModel.signUpTest() },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("회원가입 테스트 실행")
+        }
         // 로고 영역
         Text(
             text = "GANHOHO",

@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.ganhoho.data.model.dto.member.LoginRequest
@@ -9,14 +10,34 @@ import kotlinx.coroutines.launch
 
 class MemberViewModel : ViewModel() {
 
-    private val memberRepository = MemberRepository()
-
+    private val memberRepository by lazy { MemberRepository() }
     // 로그인
 //    fun login(member: MemberDTO) {
 //        viewModelScope.launch {
 //
 //        }
 //    }
+
+    fun signUpTest() {
+        val signUpRequest = SignUpRequest(
+            loginId = "testuser123",
+            password = "password123!",
+            name = "John Doe",
+            hospital = "General Hospital",
+            ward = "Emergency Ward",
+            fcmToken = "test-fcm-token",
+            deviceType = 1
+        )
+
+        viewModelScope.launch {
+            val response = memberRepository.signUp(signUpRequest)
+            if (response.isSuccess) {
+                Log.d("SignUpTest", "signup success: ${response.getOrNull()}")
+            } else {
+                Log.e("SignUpTest", "signup fail : ${response.exceptionOrNull()?.message}")
+            }
+        }
+    }
 
     // 회원가입
     fun signUp(
