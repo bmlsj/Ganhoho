@@ -4,7 +4,7 @@ package com.ssafy.ganhoho.domain.friend;
 import com.ssafy.ganhoho.domain.auth.AuthRepository;
 import com.ssafy.ganhoho.domain.friend.constant.RequestStatus;
 import com.ssafy.ganhoho.domain.friend.dto.*;
-import com.ssafy.ganhoho.domain.member.dto.MemberDto;
+import com.ssafy.ganhoho.domain.member.entity.Member;
 import com.ssafy.ganhoho.global.constant.ErrorCode;
 import com.ssafy.ganhoho.global.error.CustomException;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +30,7 @@ public class FriendServiceImpl implements FriendService {
     @Override
     public List<FriendListResponse> getFriendsList(Long memberId) {
         // 현재 유저 확인 (없으면 예외밣생(orElseThrow)
-        MemberDto member = authRepository.findById(memberId)
+        Member member = authRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
         // 친구 목록 조회 (양방향 가능하게)
         List<FriendDto> sentFriends = friendRepository.findAcceptedFriendsByMember(member);
@@ -54,7 +53,7 @@ public class FriendServiceImpl implements FriendService {
                     ? friend.getFriendLoginId()
                     : friend.getMember().getLoginId();
 
-            MemberDto friendMember = authRepository.findByLoginId(targetLoginId)
+            Member friendMember = authRepository.findByLoginId(targetLoginId)
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
 
 
@@ -75,7 +74,7 @@ public class FriendServiceImpl implements FriendService {
     @Transactional //readOnly = false
     public FriendDeleteResponse deleteFriend(Long memberId, Long friendId) {
         // 유저 확인
-        MemberDto member = authRepository.findById(memberId)
+        Member member = authRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
         // 친구 관계 확인
         FriendDto friend = friendRepository.findById(friendId)
@@ -108,7 +107,7 @@ public class FriendServiceImpl implements FriendService {
     @Override
     public List<FriendRequestListResponse> getFriendRequestList(Long memberId) {
         // 유저 확인
-        MemberDto member = authRepository.findById(memberId)
+        Member member = authRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
 
         //친구 요청 목록 조회(양방향)
@@ -133,7 +132,7 @@ public class FriendServiceImpl implements FriendService {
                     ? request.getFriendLoginId()
                     : request.getMember().getLoginId();
 
-            MemberDto otherMember = authRepository.findByLoginId(targetLoginId)
+            Member otherMember = authRepository.findByLoginId(targetLoginId)
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
 
             return FriendRequestListResponse.builder()
@@ -152,7 +151,7 @@ public class FriendServiceImpl implements FriendService {
     @Transactional
     public FriendRequestStatusResponse handleFriendRequest(Long memberId, Long friendId, FriendRequestStatusRequest request) {
         // 유저 확인
-        MemberDto member = authRepository.findById(memberId)
+        Member member = authRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
 
         // 단일 요청 확인
@@ -193,11 +192,11 @@ public class FriendServiceImpl implements FriendService {
     @Transactional
     public FriendAddResponse addFriend(Long memberId, FriendAddRequest request) {
         // 유저 확인
-        MemberDto member = authRepository.findById(memberId)
+        Member member = authRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
 
         // 추가할 회원 존재여부 확인
-        MemberDto friend = authRepository.findByLoginId(request.getFriendLoginId())
+        Member friend = authRepository.findByLoginId(request.getFriendLoginId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
 
         // 요청 <- 자기자신 check

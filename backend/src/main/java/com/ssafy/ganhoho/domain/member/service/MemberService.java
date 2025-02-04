@@ -1,4 +1,4 @@
-package com.ssafy.ganhoho.domain.member;
+package com.ssafy.ganhoho.domain.member.service;
 
 import com.ssafy.ganhoho.domain.member.dto.MemberInfoResponse;
 import org.springframework.stereotype.Service;

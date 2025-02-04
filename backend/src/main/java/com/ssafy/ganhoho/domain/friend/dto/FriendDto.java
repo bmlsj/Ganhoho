@@ -2,7 +2,7 @@ package com.ssafy.ganhoho.domain.friend.dto;
 
 
 import com.ssafy.ganhoho.domain.friend.constant.RequestStatus;
-import com.ssafy.ganhoho.domain.member.dto.MemberDto;
+import com.ssafy.ganhoho.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,7 +23,7 @@ public class FriendDto {
 
     @ManyToOne(fetch = FetchType.LAZY) // 지연로딩
     @JoinColumn(name = "member_id")
-    private MemberDto member; // 친구관계 소유회원(자기자신)
+    private Member member; // 친구관계 소유회원(자기자신)
 
     private String friendLoginId; //친구 로그인ID
 
