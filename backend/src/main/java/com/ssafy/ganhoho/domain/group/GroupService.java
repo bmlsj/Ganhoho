@@ -22,4 +22,7 @@ public interface GroupService {
 
     // 그룹 초대 수락
     List<GroupAcceptResponse> acceptGroupInvitation(Long memberId, Long groupId);
+
+    // 그룹원 월별 스케줄 조회
+    List<GroupScheduleResponse> getGroupSchedules(Long memberId, Long groupId, String yearMonth);
 }

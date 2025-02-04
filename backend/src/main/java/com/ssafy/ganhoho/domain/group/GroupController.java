@@ -133,4 +133,25 @@ public class GroupController {
         }
     }
 
+    @GetMapping("/schedules/{groupId}")
+    public ResponseEntity<?> getGroupSchedules(
+            @PathVariable Long groupId,
+            @RequestParam String yearMonth) {
+        try {
+            Long memberId = SecurityUtil.getCurrentMemberId();
+            List<GroupScheduleResponse> response = groupService.getGroupSchedules(memberId, groupId, yearMonth);
+            return ResponseEntity.ok(response);
+        } catch (CustomException e) {
+            if (e.getErrorCode().equals(ErrorCode.ACCES_DENIED)) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("ACCESS_DENIED");
+            }
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus())
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("UNAUTHORIZED");
+        }
+    }
+
 }

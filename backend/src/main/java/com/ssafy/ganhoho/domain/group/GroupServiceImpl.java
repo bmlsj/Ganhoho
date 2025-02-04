@@ -4,6 +4,7 @@ import com.ssafy.ganhoho.domain.auth.AuthRepository;
 
 import com.ssafy.ganhoho.domain.group.dto.*;
 import com.ssafy.ganhoho.domain.member.dto.MemberDto;
+import com.ssafy.ganhoho.domain.schedule.entity.WorkSchedule;
 import com.ssafy.ganhoho.global.constant.ErrorCode;
 import com.ssafy.ganhoho.global.error.CustomException;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class GroupServiceImpl implements GroupService {
     private final GroupRepository groupRepository;
     private final GroupParticipationRepository groupParticipationRepository;
     private final AuthRepository authRepository;
+    private final GroupScheduleRepository groupScheduleRepository;
 
     @Override
     @Transactional
@@ -220,5 +222,54 @@ public class GroupServiceImpl implements GroupService {
                 .collect(Collectors.toList());
 
     }
+
+    @Override
+    public List<GroupScheduleResponse> getGroupSchedules(Long memberId, Long groupId, String yearMonth) {
+        // 사용자가 실제로 있는지
+        MemberDto member = authRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
+
+        // 그룹 존재 여부 확인
+        GroupDto group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_GROUP));
+
+        // 이미 그룹원인지 확인
+        boolean isMember = groupParticipationRepository.existsByMemberIdAndGroupId(memberId, groupId);
+        if (!isMember) {
+            throw new CustomException(ErrorCode.ACCES_DENIED);
+        }
+
+        // 해당 그룹 월 스케줄 조회
+        List<WorkSchedule> workSchedules = groupScheduleRepository.findWorkScheduleByGroupIdAndYearMonth(groupId, yearMonth);
+
+        // 그룹 멤버 목록 조회
+        List<GroupParticipationDto> participations = groupParticipationRepository.findByGroupId(groupId);
+
+        // 멤버별 스케줄 정보 매핑
+        return participations.stream()
+                .map(participation -> {
+                    MemberDto memberDto = authRepository.findById(participation.getMemberId())
+                            .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
+                    // 그룹 멤버 스케줄 정보만 필터링하고, ScheduleInfo 형태로 변환
+                    List<GroupScheduleResponse.ScheduleInfo> schedules = workSchedules.stream()
+                            .filter(ws -> ws.getMemberId().equals(participation.getMemberId()))
+                            .map(ws -> GroupScheduleResponse.ScheduleInfo.builder()
+                                    .workDate(ws.getWorkDate())
+                                    .workType(ws.getWorkType())
+                                    .build())
+                            .collect(Collectors.toList());
+
+                    return GroupScheduleResponse.builder()
+                            .memberId(memberDto.getMemberId())
+                            .name(memberDto.getName())
+                            .loginId(memberDto.getLoginId())
+                            .hospital(memberDto.getHospital())
+                            .schedules(schedules)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+    }
+
 
 }
