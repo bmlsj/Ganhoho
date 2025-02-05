@@ -28,8 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ssafy.ganhoho.data.model.dto.FriendDto
-import com.ssafy.ganhoho.data.model.response.friend.FriendListResponse
+import com.ssafy.ganhoho.data.model.dto.friend.FriendDto
 
 @Composable
 fun FriendRequestList(
@@ -77,18 +76,38 @@ fun FriendRequestList(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(
-                        text = friend.name,
-                        modifier = Modifier
-                            .background(
-                                Color(0xfff0f0f0),
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
-                        color = Color.Black,
-                        fontSize = 12.sp,
-                        textAlign = TextAlign.Center
-                    )
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = friend.hospital,
+                            modifier = Modifier
+                                .background(
+                                    Color(0xfff0f0f0),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            color = Color.Black,
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center
+                        )
+
+                        Text(
+                            text = friend.ward,
+                            modifier = Modifier
+                                .background(
+                                    Color(0xfff0f0f0),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            color = Color.Black,
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+
 
                     Box(
                         contentAlignment = Alignment.Center,
@@ -128,7 +147,7 @@ fun FriendRequestList(
 fun FreiendRequestPreview() {
     FriendRequestList(
         FriendDto(
-            "서정후", "@jeonghu1010",
+            "@jeonghu1010", "서정후",
             "싸피병원", "일반병동", true
         )
     )

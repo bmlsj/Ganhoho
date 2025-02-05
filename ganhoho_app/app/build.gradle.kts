@@ -1,7 +1,16 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
+}
+
+// 1. 추가
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
 }
 
 android {
@@ -15,14 +24,19 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        // 2. 추가
+        buildConfigField("String", "SERVER_URL", "\"${localProperties.getProperty("SERVER_URL", "")}\"")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
     }
 
+
     buildTypes {
         release {
+
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -38,6 +52,8 @@ android {
         jvmTarget = "1.8"
     }
     buildFeatures {
+        // 3. 추가
+        buildConfig = true
         compose = true
     }
     composeOptions {
@@ -67,10 +83,6 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-  //  implementation("androidx.compose.ui:ui")
-  //  implementation("androidx.compose.ui:ui-text")
-  //  implementation("androidx.compose.ui:ui-tooling-preview")
-  //  debugImplementation("androidx.compose.ui:ui-tooling")
 
     implementation("com.kizitonwose.calendar:compose:2.6.2")
     implementation("androidx.compose.material:material:1.7.5")
@@ -82,7 +94,6 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
     // Compose ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
-
 
 
 }

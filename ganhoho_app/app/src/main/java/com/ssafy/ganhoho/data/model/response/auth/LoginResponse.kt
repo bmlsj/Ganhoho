@@ -1,4 +1,4 @@
-package com.ssafy.ganhoho.data.model.response
+package com.ssafy.ganhoho.data.model.response.auth
 
 data class LoginResponse(
     val memberId: Long,

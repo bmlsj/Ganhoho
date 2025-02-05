@@ -30,8 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ssafy.ganhoho.data.model.dto.FriendDto
-import com.ssafy.ganhoho.data.model.response.friend.FriendListResponse
+import com.ssafy.ganhoho.data.model.dto.friend.FriendDto
 
 
 @Composable
@@ -49,6 +48,10 @@ fun FriendList(
             .shadow(8.dp, shape = RoundedCornerShape(15.dp))
             .background(Color.White, shape = RoundedCornerShape(15.dp))
             .padding(16.dp)
+            .clickable {
+                // 아이디로 근무 기록 조회 기능
+
+            }
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -57,7 +60,6 @@ fun FriendList(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-
                 // 1. 이름과 아이디
                 Row(
                     verticalAlignment = Alignment.CenterVertically

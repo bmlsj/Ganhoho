@@ -1,4 +1,4 @@
-package com.ssafy.ganhoho.data.model.dto
+package com.ssafy.ganhoho.data.model.dto.friend
 
 data class FriendDto(
     val friendLoginId: String,

@@ -1,7 +1,7 @@
 package com.ssafy.ganhoho.data.model.response.friend
 
-import com.ssafy.ganhoho.data.model.dto.FriendRequestDto
+import com.ssafy.ganhoho.data.model.dto.friend.FriendInviteDto
 
-data class FriendRequestResponse(
-    val friendRequestList: List<FriendRequestDto>
+data class FriendInviteResponse(
+    val friendRequestList: List<FriendInviteDto>
 )

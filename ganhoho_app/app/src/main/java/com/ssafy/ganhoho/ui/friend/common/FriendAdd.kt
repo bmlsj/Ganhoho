@@ -1,6 +1,7 @@
-package com.example.calendar.ui.friend.common
+package com.ssafy.ganhoho.ui.friend.common
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,8 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ssafy.ganhoho.data.model.dto.FriendDto
-import com.ssafy.ganhoho.data.model.response.friend.FriendListResponse
+import com.ssafy.ganhoho.data.model.dto.friend.FriendDto
 
 @Composable
 fun FriendAdd(
@@ -74,7 +74,7 @@ fun FriendAdd(
                 ) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
-                            text = friend.name,
+                            text = friend.hospital,
                             modifier = Modifier
                                 .background(
                                     Color(0xfff0f0f0),
@@ -107,14 +107,17 @@ fun FriendAdd(
                                 Color(0xff79C7E3),
                                 shape = RoundedCornerShape(15.dp)
                             )
-                            .padding(horizontal = 18.dp, vertical = 4.dp),
+                            .padding(horizontal = 18.dp, vertical = 4.dp)
+                            .clickable {
+                                // TODO: 추가 버튼 누를 시,
+                                // 친구 리스트에 친구 추가(POST)하면, true/false 반환
+                            },
                         color = Color.White,
                         fontSize = 12.sp,
                         textAlign = TextAlign.Center
                     )
                 }
             }
-
         }
     }
 
@@ -125,7 +128,7 @@ fun FriendAdd(
 fun FriendAddPreview() {
     FriendAdd(
         FriendDto(
-            "서정후", "@jeonghu1010",
+            "@jeonghu1010", "서정후",
             "싸피병원", "일반병동", true
         )
     )

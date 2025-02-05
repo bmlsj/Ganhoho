@@ -1,6 +1,6 @@
-package com.ssafy.ganhoho.data.model.dto
+package com.ssafy.ganhoho.data.model.dto.friend
 
-data class FriendRequestDto(
+data class FriendInviteDto(
     val friendRequestId: Long,
     val friendLoginId: String,
     val name: String,
