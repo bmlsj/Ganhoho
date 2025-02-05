@@ -31,4 +31,9 @@ public class MemberServiceImpl implements MemberService{
         List<Member> members = memberRepository.findMemberByLoginIdContainingIgnoreCase(loginId);
         return MemberMapper.INSTANCE.membersToMemberInfoResponses(members.stream().filter(member -> member.getMemberId().equals(memberId) == false).collect(Collectors.toList()));
     }
+
+    @Override
+    public void withdrawal(Long memberId) {
+        memberRepository.deleteMemberByMemberId(memberId).orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
+    }
 }
