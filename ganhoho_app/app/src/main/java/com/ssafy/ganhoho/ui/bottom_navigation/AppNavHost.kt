@@ -2,7 +2,6 @@ package com.ssafy.ganhoho.ui.bottom_navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -23,6 +22,6 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         composable("pill") { PillScreen(navController) }
         composable("home") { HomeScreen(modifier) }
         composable("group") { GroupScreen(navController) }
-        composable("friend") { FriendScreen(modifier) }
+        composable("friend") { FriendScreen(navController) }
     }
 }

@@ -1,18 +1,15 @@
-package com.ssafy.ganhoho.data.model.remote
+package com.ssafy.ganhoho.data.remote
 
 import com.ssafy.ganhoho.data.model.dto.member.LoginRequest
 import com.ssafy.ganhoho.data.model.dto.member.SignUpRequest
-import com.ssafy.ganhoho.data.model.response.LoginResponse
-import com.ssafy.ganhoho.data.model.response.SignUpResponse
+import com.ssafy.ganhoho.data.model.response.auth.LoginResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.Header
-import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.Query
 
-interface MemberService {
+interface AuthService {
 
     // 회원 가입
     // @Headers("Content-Type: application/json")
