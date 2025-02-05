@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.domain.member;
 
+import com.ssafy.ganhoho.domain.member.dto.MemberInfoResponse;
 import com.ssafy.ganhoho.domain.member.entity.Member;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,5 +22,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Modifying(clearAutomatically = true)
     @Query("DELETE FROM Member member WHERE member.memberId = :memberId")
     Optional<Integer> deleteMemberByMemberId(@Param("memberId") Long memberId);
+
 
 }

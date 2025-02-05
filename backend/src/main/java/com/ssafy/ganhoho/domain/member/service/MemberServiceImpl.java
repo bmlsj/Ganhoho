@@ -2,6 +2,7 @@ package com.ssafy.ganhoho.domain.member.service;
 
 import com.ssafy.ganhoho.domain.member.MemberMapper;
 import com.ssafy.ganhoho.domain.member.MemberRepository;
+import com.ssafy.ganhoho.domain.member.dto.HospitalWardRequestBody;
 import com.ssafy.ganhoho.domain.member.entity.Member;
 import com.ssafy.ganhoho.domain.member.dto.MemberInfoResponse;
 import com.ssafy.ganhoho.global.constant.ErrorCode;
@@ -35,5 +36,15 @@ public class MemberServiceImpl implements MemberService{
     @Override
     public void withdrawal(Long memberId) {
         memberRepository.deleteMemberByMemberId(memberId).orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
+    }
+
+    @Override
+    public MemberInfoResponse updateHospitalWard(Long memberId, String hospital, String ward) {
+        Member member = memberRepository.findByMemberId(memberId).orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
+        if(hospital != null) member.setHospital(hospital);
+        if(ward != null) member.setWard(ward);
+
+        memberRepository.save(member);
+        return MemberMapper.INSTANCE.memberInfoToMemberInfoResponse(member);
     }
 }

@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.domain.member.service;
 
+import com.ssafy.ganhoho.domain.member.dto.HospitalWardRequestBody;
 import com.ssafy.ganhoho.domain.member.dto.MemberInfoResponse;
 import org.springframework.stereotype.Service;
 
@@ -12,4 +13,6 @@ public interface MemberService {
     List<MemberInfoResponse> searchMembers(String loginId);
 
     void withdrawal(Long memberId);
+
+    MemberInfoResponse updateHospitalWard(Long memberId, String hospital, String ward);
 }

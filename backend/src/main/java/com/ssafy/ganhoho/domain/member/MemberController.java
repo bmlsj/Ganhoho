@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.domain.member;
 
+import com.ssafy.ganhoho.domain.member.dto.HospitalWardRequestBody;
 import com.ssafy.ganhoho.domain.member.dto.MemberInfoResponse;
 import com.ssafy.ganhoho.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ import static com.ssafy.ganhoho.global.auth.SecurityUtil.getCurrentMemberId;
 @RequiredArgsConstructor
 public class MemberController {
     private final MemberService memberService;
-    //하이
+
     @GetMapping("/mypage")
     public ResponseEntity<MemberInfoResponse> getMemberInfo(){
         Long memberId = getCurrentMemberId();
@@ -35,5 +36,12 @@ public class MemberController {
         Long memberId = getCurrentMemberId();
         memberService.withdrawal(memberId);
         return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @PutMapping("/mypage/hospital-ward")
+    public ResponseEntity<MemberInfoResponse> updateHospitalWard(@RequestBody HospitalWardRequestBody hospitalWardRequestBody) {
+        Long memberId = getCurrentMemberId();
+        MemberInfoResponse memberInfoResponse = memberService.updateHospitalWard(memberId, hospitalWardRequestBody.getHospital(), hospitalWardRequestBody.getWard());
+        return ResponseEntity.ok(memberInfoResponse);
     }
 }
