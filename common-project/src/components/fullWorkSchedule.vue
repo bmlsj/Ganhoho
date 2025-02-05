@@ -97,19 +97,13 @@ const nextTutorialStep = async () => {
 
   const openGallery = () => {
     galleryInput.value.click() // 파일 선택 대화 상자 열기
-  
-    // 이벤트 리스너가 중복 등록되지 않도록 기존 리스너 제거
-    // galleryInput.value.removeEventListener('change', handleFileSelection)
-    
-    // 새로운 이벤트 리스너 등록
-    // galleryInput.value.addEventListener('change', handleFileSelection)
   }
 
 // 파일 선택 처리 함수
 const handleFileSelection = async (event) => {
   const files = event.target.files
   if (files.length > 0) {
-    await sendImageToAPI(files[0]) // ✅ 첫 번째 선택한 파일을 API로 전송
+    await store.sendImageToAPI(files[0]) // ✅ 첫 번째 선택한 파일을 API로 전송
   }
 }
 
