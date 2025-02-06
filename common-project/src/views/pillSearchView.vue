@@ -2,7 +2,7 @@
   <div class="container">
     <!-- 검색 헤더 -->
     <div class="search-header">
-      <img src="mask-group0.svg" alt="검색 배경" class="mask-group" />
+      <img :src="maskGroup" alt="검색 배경" class="mask-group" />
       <input 
         v-model="searchQuery" 
         type="text" 
@@ -11,13 +11,13 @@
         @keyup.enter="search"
       />
       <button @click="openCamera" class="search-button">
-        <img src="frame0.svg" alt="검색 아이콘" class="search-icon" />
+        <img :src="frameIcon" alt="검색 아이콘" class="search-icon" />
       </button>
     </div>
     
     <!-- 약 정보 이 부분을 컴포넌트로 빼서 라우터 for 돌려서 보면 편하지 않을까? assets에 png 넣어두고--> 
     <div class="medicine-info">
-      <img class="medicine-image" src="image-26920.png" alt="약 이미지" />
+      <img class="medicine-image" :src="medicineImage" alt="약 이미지" />
       <div class="medicine-details">
         <div class="medicine-name">타이레놀</div>
         <div class="medicine-content">아세트아미노펜 500mg</div>
@@ -29,6 +29,9 @@
 
 <script setup>
 import { ref } from "vue";
+import maskGroup from '@/assets/mask-group0.svg'
+import frameIcon from '@/assets/frame0.svg'
+import medicineImage from '@/assets/image-26920.png'
 
 const searchQuery = ref("");
 

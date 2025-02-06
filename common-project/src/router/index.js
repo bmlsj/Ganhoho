@@ -1,34 +1,25 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import FullWorkScheduleView from '@/views/fullWorkScheduleView.vue'
-
-const routes = [
-  {
-    path: '/',
-    name: 'FullWorkScheduleView',
-    component: FullWorkScheduleView
-  }
-]
+import PillSearchView from '@/views/pillSearchView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes: [
+    {
+      path: '/', //기본 경로에서 `/fullworkscheduleview`로 리디렉션
+      redirect: { name: 'FullWorkScheduleView' }
+    },
+    {
+      path: '/fullworkscheduleview',
+      name: 'FullWorkScheduleView',
+      component: FullWorkScheduleView
+    },
+    {
+      path: '/pillsearch',
+      name: 'PillSearchView',
+      component: PillSearchView
+    },
+  ]
 })
 
 export default router
-// import { createRouter, createWebHistory } from 'vue-router'
-// import FullWorkScheduleView from '@/views/fullWorkScheduleView.vue'
-
-
-// const router = createRouter({
-//   history: createWebHistory(),
-//   routes: [
-//     {
-//       path: '/fullworkscheduleview',
-//       name: 'FullWorkScheduleView',
-//       component: FullWorkScheduleView
-//     },
-    
-//   ]
-// })
-
-// export default router

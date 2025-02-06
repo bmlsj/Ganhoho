@@ -1,6 +1,5 @@
 <template>
-  <RouterLink :to="{name:'FullWorkScheduleView'}"></RouterLink>
-  <RouterView />
+  <router-view /> 
 </template>
 
 <script setup>
