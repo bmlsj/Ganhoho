@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "GANHOHO"
 include(":app")
- 
+include(":ganhoho_watch")
