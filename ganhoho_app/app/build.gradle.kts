@@ -1,10 +1,12 @@
 import java.util.Properties
 
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.jetbrains.kotlin.android)
-    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.android.application) // Android 애플리케이션 플러그인
+    alias(libs.plugins.jetbrains.kotlin.android) // Kotlin Android 플러그인
+    alias(libs.plugins.compose.compiler) // Jetpack Compose 컴파일러 플러그인
+    id("com.google.gms.google-services")
 }
+
 
 // 1. 추가
 val localProperties = Properties()
@@ -25,7 +27,11 @@ android {
         versionName = "1.0"
 
         // 2. 추가
-        buildConfigField("String", "SERVER_URL", "\"${localProperties.getProperty("SERVER_URL", "")}\"")
+        buildConfigField(
+            "String",
+            "SERVER_URL",
+            "\"${localProperties.getProperty("SERVER_URL", "")}\""
+        )
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -77,6 +83,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.gms.play.services.wearable)
+    implementation(libs.androidx.appcompat)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -95,6 +102,10 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
     // Compose ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    // fcm
+    implementation(platform("com.google.firebase:firebase-bom:33.8.0")) // 최신 버전 유지
+    implementation("com.google.firebase:firebase-messaging")
+    implementation("com.google.firebase:firebase-analytics")
 
 
 }
