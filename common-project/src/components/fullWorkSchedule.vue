@@ -5,10 +5,10 @@
         <div class="year-month">
           {{ store.currentYear || defaultYear }}년 {{ store.currentMonth || defaultMonth }}월
         </div>
-        <div :class="{'overlay': tutorialStep === 1 && isFirstVisit}"></div>
+        <div :class="{'overlay': tutorialStep === 1 && isFirstVisit}"></div> <!--블러처리리-->
 
-        <p v-if="tutorialStep === 1 && isFirstVisit" class="text-right target">
-          버튼을 눌러 스케줄을<br>추가하세요.
+        <p v-if="tutorialStep === 1 && isFirstVisit" class="add-schedule-text target">
+          버튼을 눌러 스케줄을<br> 추가하세요.
         </p>
 
         <button ref="addButton" 
@@ -70,7 +70,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick,onUnmounted } from 'vue'
+import { ref, onMounted, nextTick,onUnmounted,watchEffect } from 'vue'
 import { useApiStore } from '@/stores/apiRequest'
 
 
@@ -122,15 +122,31 @@ const resetTutorial = () => {
 }
 
 onMounted(async () => {
-  await store.fetchData() // 데이터 로드
-  await nextTick() // DOM 업데이트
+  console.log("📢 캘린더 업데이트 실행!");
+
+  // ✅ 처음 로드 시 GET 요청을 실행하지 않음
+  if (store.isDataLoaded) {
+    console.log("📢 기존 데이터 유지됨 → GET 요청 생략")
+  } else {
+    console.log("📢 POST 요청이 먼저 실행되어야 합니다. (GET 요청 대기 중)")
+  }
+
+  await nextTick(); // DOM 업데이트 후 캘린더 생성
+  store.generateCalendar()
+  console.log("📢 불러온 일정 데이터:", store.people)
+
   isFirstVisit.value = localStorage.getItem('visitedFullWorkSchedule') !== 'true'
   console.log("onMounted 후 isFirstVisit:", isFirstVisit.value)
 
   if (tutorialStep.value === 1 && isFirstVisit.value) {
     document.addEventListener('click', nextTutorialStep)
   }
-})
+});
+
+// ✅ Pinia store가 변경될 때마다 `isDataLoaded` 체크
+watchEffect(() => {
+  console.log("📢 데이터 상태 변경 감지:", store.isDataLoaded);
+});
 onUnmounted(() => {
   document.removeEventListener('click', nextTutorialStep)
 })
@@ -234,6 +250,25 @@ onUnmounted(() => {
   line-height: 1;
 }
 
+/* Nig 일정 스타일일*/
+.schedule-box.nig {
+  background-color: #DDD4cD;
+}
+/* Day 일정 스타일 */
+.schedule-box.day {
+  background-color: #fff8bf;
+}
+
+/* Eve 일정 스타일 */
+.schedule-box.eve {
+  background-color: #e4c7f1;
+}
+
+/* Off 일정 스타일 */
+.schedule-box.off {
+  background-color: #fcd6c8;
+}
+
 .add-button {
   background-color: #dceaf7;
   font-family: 'PlusJakartaSans-SemiBold', sans-serif;
@@ -272,25 +307,22 @@ onUnmounted(() => {
     transform: translateY(5px); /* 여기서 어느정도 둥둥 거릴지 조정 가능 */
   }
 }
-.text-right {
-  text-align: right;
-  background: white;
-  color: #007bff;
-  font-size: 10px;
+.add-schedule-text {
+  font-size: 12px;
   font-weight: bold;
-  padding: 5px;
+  color: #007bff;
+  background: white;
+  padding: 6px 10px;
   border-radius: 8px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-  margin-left: 60px;
-  position: relative; /* 말풍선 꼬리 위치 조정을 위해 필요 */
-  display: inline-block; /* 내용 크기에 맞게 조절 */
+  white-space: nowrap; /* ✅ 한 줄 유지 */
 }
 
-.text-right::after {
+.add-schedule-text::after {
   content: "";
   position: absolute;
   top: 50%;
-  right: -10px; /* 오른쪽 꼬리 위치 */
+  right: -15px; /* 오른쪽 꼬리 위치 */
   transform: translateY(-50%);
   border-width: 8px;
   border-style: solid;

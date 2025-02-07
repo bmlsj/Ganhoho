@@ -1,9 +1,9 @@
 <template>
-  <div>
+  <KeepAlive>
     <FullWorkSchedule />
-  </div>
+  </KeepAlive>
 </template>
 
 <script setup>
-import FullWorkSchedule from '@/components/fullWorkSchedule.vue'
+import FullWorkSchedule from '@/components/FullWorkSchedule.vue'
 </script>

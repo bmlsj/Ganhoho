@@ -1,150 +1,176 @@
 <template>
-    <div class="i-phone-16-5">
-      <div class="div">타이레놀</div>
-      <img class="image-2693" src="image-26930.png" />
-      <div class="rectangle-1342"></div>
-      <div class="group-6998">
-        <div class="rectangle-1343"></div>
-        <div class="rectangle-1344"></div>
-      </div>
-      <div class="frame-142">
-        <div class="div2">기본</div>
-        <div class="div3">식별</div>
-        <div class="div3">효능</div>
-        <div class="div3">주의사항</div>
-      </div>
-      <div class="frame-143">
-        <div class="group-7000">
-          <div class="div4">성분</div>
-          <div class="acetaminophen">Acetaminophen 해열진통제 주요 성분</div>
-        </div>
-        <div class="group-7001">
-          <div class="div5">제형</div>
-          <div class="div6">정제 / 캡슐</div>
-        </div>
-        <div class="group-70002">
-          <div class="div7">복용법 및 용량</div>
-          <div class="_30-1-500-mg-1-4-2000-mg">
-            <ul>
-              <li>복용 시간: 식후 30 이내 권장</li>
-              <li>일반 성인용량: 1회 500mg, 1일 최대 4회 (2000mg 이상 복용 금지)</li>
-              <li>어린이 용량: 연령별 체중에 따라 다름 (소아용 참고)</li>
-            </ul>
-          </div>
-        </div>
-        <div class="group-7002">
-          <div class="div8">보관 방법</div>
-          <div class="_15-25-6">
-            <ul>
-              <li>온도 조건: 실온(15-25℃)</li>
-              <li>기한: 개봉 후 6개월 이내 사용</li>
-            </ul>
-          </div>
-        </div>
+  <div class="container">
+    <!-- 타이틀 -->
+    <div class="title">{{ medicineDetail.medicineName || "타이레놀" }}</div>
+
+    <!-- 이미지 -->
+    <div class="image-container">
+      <img :src="medicineDetail.imageUrl || defaultImage" alt="알약 이미지" class="medicine-image" />
+    </div>
+
+    <!-- 네비게이션 바 -->
+    <div class="tab-container">
+      <div class="tab-indicator" :style="{ transform: `translateX(${selectedTabIndex * 100}%)` }"></div>
+      <div class="tab-buttons">
+        <button @click="navigateTo('default', 0)" :class="{ 'active-tab': selectedTab === 'default' }">기본</button>
+        <button @click="navigateTo('identification', 1)" :class="{ 'active-tab': selectedTab === 'identification' }">식별</button>
+        <button @click="navigateTo('efficacy', 2)" :class="{ 'active-tab': selectedTab === 'efficacy' }">효능</button>
+        <button @click="navigateTo('precautions', 3)" :class="{ 'active-tab': selectedTab === 'precautions' }">주의사항</button>
       </div>
     </div>
-  </template>
-  
-  <script>
-  export default {
-    name: "IPhone165",
-  };
-  </script>
-  
-  <style scoped>
-  .i-phone-16-5 {
-    background: #ffffff;
-    height: 852px;
-    position: relative;
-    overflow: hidden;
+
+    <!-- 라우터 뷰 -->
+    <div class="router-view">
+      <RouterView />
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { useApiStore } from "@/stores/apiRequest"
+import { ref, onMounted } from "vue"
+import { useRoute, useRouter } from "vue-router"
+import defaultImage from "@/assets/image-26920.png" // 기본 이미지
+
+const apiStore = useApiStore()
+const route = useRoute()
+const router = useRouter()
+
+const selectedTab = ref("default")
+const selectedTabIndex = ref(0) // ✅ 클릭된 버튼의 인덱스를 저장
+
+onMounted(() => {
+  apiStore.fetchMedicineDetail(route.params.id)
+  selectedTab.value = route.path.split("/").pop() // 현재 경로에서 마지막 부분 추출하여 탭 선택
+
+  // 초기 탭 위치 설정 (URL을 보고 자동 감지)
+  switch (selectedTab.value) {
+    case "identification":
+      selectedTabIndex.value = 1;
+      break;
+    case "efficacy":
+      selectedTabIndex.value = 2;
+      break;
+    case "precautions":
+      selectedTabIndex.value = 3;
+      break;
+    default:
+      selectedTabIndex.value = 0;
   }
-  .div {
-    color: #000000;
-    font-family: "Inter-ExtraBold", sans-serif;
-    font-size: 30px;
-    font-weight: 800;
-    position: absolute;
-    left: 45px;
-    top: 73px;
-  }
-  .image-2693 {
-    border-radius: 20px;
-    width: 307.32px;
-    height: 207.03px;
-    position: absolute;
-    left: 42px;
-    top: 143.66px;
-    object-fit: cover;
-  }
-  .rectangle-1342 {
-    background: #ffffff;
-    border-radius: 20px;
-    width: 307px;
-    height: 54.55px;
-    position: absolute;
-    left: 42px;
-    top: 373.01px;
-    box-shadow: 0px 4px 40px rgba(0, 0, 0, 0.1);
-  }
-  .rectangle-1343 {
-    background: rgba(121, 199, 227, 0.82);
-    border-radius: 20px;
-    width: 70px;
-    height: 42.15px;
-    position: absolute;
-    left: 47px;
-    top: 379.21px;
-  }
-  .rectangle-1344 {
-    background: #79c7e3;
-    border-radius: 20px;
-    width: 66.22px;
-    height: 37.04px;
-    position: absolute;
-    left: 48.89px;
-    top: 381.77px;
-    filter: blur(2px);
-  }
-  .frame-142 {
-    display: flex;
-    flex-direction: row;
-    gap: 41px;
-    position: absolute;
-    left: 69px;
-    top: 389.13px;
-  }
-  .div2,
-  .div3 {
-    font-size: 14px;
-    font-weight: 600;
-  }
-  .frame-143 {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 297px;
-    position: absolute;
-    left: 45px;
-    top: 468.47px;
-  }
-  .group-7000,
-  .group-7001,
-  .group-70002,
-  .group-7002 {
-    flex-shrink: 0;
-  }
-  .div4,
-  .div5,
-  .div7,
-  .div8 {
-    font-size: 14px;
-    font-weight: 600;
-  }
-  .acetaminophen,
-  .div6,
-  ._30-1-500-mg-1-4-2000-mg,
-  ._15-25-6 {
-    font-size: 12px;
-  }
-  </style>
-  
+});
+
+// ✅ 버튼 클릭 시 라우팅 및 스타일 변경
+const navigateTo = (path, index) => {
+  selectedTab.value = path
+  selectedTabIndex.value = index
+  router.push(`/pill-detail/${route.params.id}/${path}`)
+};
+
+const medicineDetail = apiStore.medicineDetail
+</script>
+
+<style scoped>
+/* ✅ 반응형 크기 조정을 위한 CSS 변수 */
+:root {
+  --tab-width: 100px; /* 탭의 기본 너비 */
+}
+
+.container {
+  font-family: Arial, sans-serif;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.title {
+  margin-left:14px;
+  text-align: left;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.image-container {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.medicine-image {
+  width: 100%;
+  max-width: 300px;
+  border-radius: 10px;
+}
+
+/* ✅ 네비게이션 바 */
+.tab-container {
+  width: 100%;
+  max-width: 400px;
+  height: 40px;
+  position: relative;
+  margin: 0 auto 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ✅ 클릭된 버튼 아래 파란색 강조 바 */
+.tab-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: var(--tab-width);
+  height: 4px;
+  background: #007bff;
+  transition: transform 0.3s ease-in-out;
+}
+
+/* ✅ 탭 버튼 스타일 */
+.tab-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  width: 100%;
+  max-width: 400px;
+}
+
+button {
+  background: none;
+  width:92%;
+  border: none;
+  font-size: clamp(12px, 2vw, 16px);
+  font-weight: 600;
+  padding: 8px;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+  border-radius: 20px; /* ✅ 선택 버튼에 둥근 모서리 적용 */
+}
+
+/* ✅ 클릭된 버튼 스타일 */
+.active-tab {
+  background: #79C7E3; /* ✅ 배경을 파란색으로 변경 */
+  color: #ffffff; /* ✅ 글자를 흰색으로 변경 */
+  font-weight: bold;
+}
+
+
+/* ✅ 클릭되지 않은 버튼 스타일 */
+button:not(.active-tab) {
+  background: none;
+  color: #151515;
+}
+
+/* ✅ RouterView 크기를 tab-container와 동일하게 설정 */
+.router-view {
+  width: 100%;
+  max-width: 400px; /* ✅ tab-container와 동일한 너비 */
+
+  margin: 0 auto;
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  padding: 5px;
+}
+</style>
+
