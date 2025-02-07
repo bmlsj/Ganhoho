@@ -21,7 +21,6 @@ public class AuthController {
     public ResponseEntity<Boolean> signUp(@RequestBody SignUpRequest signUpRequest) {
         Boolean isSuccess = authService.signUp(signUpRequest);
         return ResponseEntity.ok(isSuccess);
-
     }
 
     @GetMapping("/duplicate-check")

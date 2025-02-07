@@ -93,6 +93,15 @@ CREATE TABLE `schedule_detail` (
                                    FOREIGN KEY (`schedule_id`) REFERENCES `personal_schedule`(`schedule_id`)
 );
 
+CREATE TABLE `device_group` (
+                                          `device_group_id` BIGINT NOT NULL AUTO_INCREMENT,
+                                          `notification_key` VARCHAR(255) NOT NULL,
+                                          `notification_key_name` VARCHAR(255) NOT NULL,
+                                          PRIMARY KEY (`device_group_id`),
+                                          UNIQUE INDEX `notification_key_UNIQUE` (`notification_key` ASC) VISIBLE,
+                                          UNIQUE INDEX `notification_key_name_UNIQUE` (`notification_key_name` ASC) VISIBLE,
+                                          UNIQUE INDEX `device_group_id_UNIQUE` (`device_group_id` ASC) VISIBLE);
+
 -- 인덱스 추가
 CREATE INDEX idx_member_login_id ON member(login_id);
 CREATE INDEX idx_group_name ON `group`(group_name);
