@@ -59,6 +59,7 @@ public class FriendServiceImpl implements FriendService {
 
             return FriendListResponse.builder()
                     .friendId(friend.getFriendId())
+                    .memberId(friendMember.getMemberId())
                     .friendLoginId(friendMember.getLoginId())
                     .name(friendMember.getName())
                     .hospital(friendMember.getHospital())
@@ -241,10 +242,10 @@ public class FriendServiceImpl implements FriendService {
     @Transactional
     public FriendFavoriteResponse updateFriendFavorite(Long memberId, Long friendId, FriendFavoriteRequest request) {
         // 유저확인
-        MemberDto member = authRepository.findById(memberId)
+        Member member = authRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
         // 존재 여부 확인
-        MemberDto friendMember = authRepository.findById(request.getFriendMemberId())
+        Member friendMember = authRepository.findById(request.getFriendMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
 
         FriendDto friend = friendRepository.findByMemberAndFriend(
