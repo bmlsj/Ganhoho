@@ -1,4 +1,4 @@
-package com.ssafy.ganhoho.domain.friend.dto;
+package com.ssafy.ganhoho.domain.group.dto;
 
 import lombok.*;
 
@@ -6,12 +6,10 @@ import lombok.*;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class FriendListResponse {
-    private Long friendId;
-    private Long memberId;
-    private String friendLoginId;
+// 그룹 초대 수락
+public class GroupAcceptResponse {
+    private String loginId;
     private String name;
     private String hospital;
     private String ward;
-    private Boolean isFavorite;
 }

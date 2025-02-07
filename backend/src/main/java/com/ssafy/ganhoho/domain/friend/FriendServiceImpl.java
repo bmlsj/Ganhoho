@@ -59,6 +59,7 @@ public class FriendServiceImpl implements FriendService {
 
             return FriendListResponse.builder()
                     .friendId(friend.getFriendId())
+                    .memberId(friendMember.getMemberId())
                     .friendLoginId(friendMember.getLoginId())
                     .name(friendMember.getName())
                     .hospital(friendMember.getHospital())
