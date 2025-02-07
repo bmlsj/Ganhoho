@@ -24,17 +24,6 @@
       />
     </div>
 
-    <!-- 자동완성 목록 -->
-    <div v-if="searchQuery" class="autocomplete-box">
-      <div 
-        v-for="(suggestion, index) in autocompleteResults" 
-        :key="index" 
-        class="autocomplete-item" 
-        @click="selectSuggestion(suggestion)"
-      >
-        {{ suggestion.name }}
-      </div>
-    </div>
 
     <!-- 약 정보 목록 -->
     <div v-if="filteredMedicineList.length > 0">
@@ -57,32 +46,26 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { useApiStore } from "@/stores/apiRequest";
-import PillInformation from "@/components/PillInformation.vue";
-import maskGroup from '@/assets/mask-group0.svg';
-import frameIcon from '@/assets/frame0.svg';
+import { ref, computed, onMounted } from "vue"
+import { useRouter } from "vue-router"
+import { useApiStore } from "@/stores/apiRequest"
+import PillInformation from "@/components/PillInformation.vue"
+import maskGroup from '@/assets/mask-group0.svg'
+import frameIcon from '@/assets/frame0.svg'
 
-const apiStore = useApiStore();
-const router = useRouter();
-const searchQuery = ref("");
-const fileInput = ref(null);
-const filteredMedicineList = ref([]);
+const apiStore = useApiStore()
+const router = useRouter()
+const searchQuery = ref("")
+const fileInput = ref(null)
+const filteredMedicineList = ref([])
 
 // API에서 의약품 목록 가져오기
 onMounted(async () => {
   await apiStore.fetchMedicineList("");
-  filteredMedicineList.value = apiStore.medicineList;
-});
+  filteredMedicineList.value = apiStore.medicineList
+})
 
-// ✅ 자동완성 목록 (최대 3개 추천)
-const autocompleteResults = computed(() => {
-  if (!searchQuery.value) return [];
-  return apiStore.medicineList.filter(pill => 
-    pill.name.includes(searchQuery.value)
-  ).slice(0, 3);
-});
+
 
 // ✅ 검색 시 목록 필터링
 const filterMedicineList = () => {
@@ -95,17 +78,16 @@ const filterMedicineList = () => {
   }
 };
 
-// ✅ 자동완성 항목 선택
-const selectSuggestion = (pill) => {
-  searchQuery.value = pill.name;
-  filterMedicineList();
-};
 
 // ✅ 약 상세 페이지 이동
 const goToDetailPage = (medicineId) => {
-  router.push({ name: 'PillDetailView', params: { id: medicineId } });
+  console.log("📢 이동할 약 ID:", medicineId); // ✅ 콘솔에서 확인
+  if (!medicineId) {
+    console.error("🚨 오류! 전달된 medicineId 값이 없음!");
+    return;
+  }
+  router.push(`/pill-detail/${medicineId}`);
 };
-
 // ✅ 카메라 버튼 클릭 시 숨겨진 input 실행
 const triggerCamera = () => {
   fileInput.value.click();
@@ -138,14 +120,24 @@ const openCamera = async (event) => {
   align-items: center;
   background: #ffffff;
   border-radius: 20px;
-  width: min(90%, 800px);
+  width: min(92%, 800px);
   height: 50px;
   box-shadow: inset 0px 4px 4px rgba(0, 0, 0, 0.05);
   padding: 0 10px;
   margin: 0 auto 3vh;
-  position: relative;
+  position: sticky; /* ✅ 스크롤 시 고정 */
+  top: 15px; /* ✅ 상단에 고정 */
+  z-index: 100; /* ✅ 다른 요소 위에 표시 */
 }
-
+.search-header::before {
+  content: "";
+  position: absolute; 
+  top: -15px; /* ✅ 기존의 틈을 메우기 */
+  left: 0;
+  width: 100%;
+  height: 17px; /* ✅ 틈만큼 높이 설정 */
+  background: #ffffff; /* ✅ 헤더 배경색과 동일하게 */
+}
 .mask-group {
   position: absolute;
   left: 2%;
@@ -182,30 +174,7 @@ const openCamera = async (event) => {
   display: none;
 }
 
-/* ✅ 자동완성 목록 스타일 */
-.autocomplete-box {
-  background: #fff;
-  border: 1px solid #ccc;
-  position: absolute;
-  top: 100%;
-  left: 5%;
-  width: 90%;
-  max-width: 800px;
-  z-index: 10;
-  border-radius: 5px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-}
 
-.autocomplete-item {
-  padding: 10px;
-  cursor: pointer;
-  font-size: 14px;
-  color: #333;
-}
-
-.autocomplete-item:hover {
-  background: #f5f5f5;
-}
 
 /* ✅ 검색 결과 없음 */
 .no-results {

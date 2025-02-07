@@ -25,6 +25,7 @@ const router = createRouter({
       path: '/pill-detail/:id', // ✅ ID를 동적으로 전달
       name: 'PillDetailView',
       component: PillDetailView,
+      props: true,
       children: [
         {
           path: 'default',

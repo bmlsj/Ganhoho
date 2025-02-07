@@ -39,10 +39,12 @@ const router = useRouter()
 const selectedTab = ref("default")
 const selectedTabIndex = ref(0) // ✅ 클릭된 버튼의 인덱스를 저장
 
+console.log("📢 받은 약 ID:", route.params.id);
+
 onMounted(() => {
   apiStore.fetchMedicineDetail(route.params.id)
   selectedTab.value = route.path.split("/").pop() // 현재 경로에서 마지막 부분 추출하여 탭 선택
-
+  
   // 초기 탭 위치 설정 (URL을 보고 자동 감지)
   switch (selectedTab.value) {
     case "identification":

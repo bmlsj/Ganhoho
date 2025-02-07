@@ -1,7 +1,7 @@
 <template>
-  <KeepAlive>
+  <div>
     <FullWorkSchedule />
-  </KeepAlive>
+  </div>
 </template>
 
 <script setup>

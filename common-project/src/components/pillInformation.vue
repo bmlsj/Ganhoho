@@ -51,10 +51,15 @@ defineProps({
   font-size: clamp(1rem, 2vw + 0.5rem, 1.5rem);
   color: #000;
 }
-.medicine-content,
+
 .medicine-expiry {
   font-size: clamp(0.75rem, 1.5vw + 0.5rem, 1rem);
   line-height: 1.4;
   color: #666;
+}
+.medicine-content{
+  font-size: clamp(0.75rem, 1.5vw + 0.5rem, 1rem);
+  line-height: 1.4;
+  color: #000;
 }
 </style>

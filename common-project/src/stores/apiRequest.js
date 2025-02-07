@@ -120,21 +120,22 @@ export const useApiStore = defineStore('api', () => {
 
   const fetchMedicineList = async (keyword) => { //약 검색 받아오기기
     try {
-      //const response = await axios.get(`${API_URL}/api/medicines/search`, {
-        const response = await axios.get(`http://localhost:5000/medicines`, {
-        // headers: {
-        //   Authorization: `Bearer ${token.value}`,
-        // },
-        params: { keyword },
+      const response = await axios.get(`${API_URL}/api/medicines/search`, {
+        //const response = await axios.get(`http://localhost:5000/medicines`, {
+      headers: {
+        Authorization: `Bearer ${token.value}`,
+      },
+      params: { keyword },
       });
 
-      if (response.status === 200 && response.data.status === 'SUCCESS') {
-        medicineList.value = response.data.data.map((item) => ({
-          id: item.ITEM_SEQ,
-          name: item.item_name,
-          content: item.PRDUCT_TYPE.split(']')[1] || item.PRDUCT_TYPE, // 분류 코드 제거
-          expiry: '제조정보 없음', // API 응답에 유효기간 필드가 없음
-          imageSrc: require('@/assets/placeholder-medicine.png'), // 기본 이미지
+      if (response.status === 200) {
+        console.log("📢 API 응답 데이터:", response.data);
+        medicineList.value = response.data.map((item) => ({
+          id: item.medicineId,
+          name: item.medicineName,
+          content: item.basicInfo.ingredient, // 분류 코드 제거
+          expiry: item.basicInfo.storage.duration, // API 응답에 유효기간 필드가 없음
+          imageSrc: item.imageUrl, // 기본 이미지
         }));
         return true;
       }
@@ -148,14 +149,18 @@ export const useApiStore = defineStore('api', () => {
   // ✅ 의약품 상세 정보 API 호출 추가
   const fetchMedicineDetail = async (medicineId) => { //약 상세정보 받아오기.
     try {
+      console.log("📢 요청할 약 ID:", medicineId); // ✅ 콘솔에서 확인
+      const formattedId = String(medicineId); // 혹시 숫자가 아니라 문자열이면 변환
+      console.log("📢 변환된 약 ID:", formattedId);
       const response = await axios.get(`${API_URL}/api/medicines/${medicineId}`, {
-        headers: {
-          Authorization: `Bearer ${token.value}`,
-        },
+        // const response = await axios.get(`http://localhost:5000/medicines?medicineId=${medicineId}`, {
+      headers: {
+        Authorization: `Bearer ${token.value}`,
+      },
       });
 
       if (response.status === 200) {
-        medicineDetail.value = response.data;
+        medicineDetail.value = response.data[0];
         console.log('의약품 상세 정보:', medicineDetail.value);
         return true;
       } else {
@@ -182,5 +187,5 @@ export const useApiStore = defineStore('api', () => {
     fetchMedicineList,
     fetchMedicineDetail,
     token,
-  };
-},{ persist: true });// ✅ Pinia Persist 추가 (새로고침해도 데이터 유지)
+  }
+},{ strict: false });// ✅ Pinia Persist 추가 (새로고침해도 데이터 유지)

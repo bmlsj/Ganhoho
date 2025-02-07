@@ -73,7 +73,6 @@
 import { ref, onMounted, nextTick,onUnmounted,watchEffect } from 'vue'
 import { useApiStore } from '@/stores/apiRequest'
 
-
 const store = useApiStore()
 
 const defaultYear = new Date().getFullYear() // 한국 기준 현재 연도
@@ -95,7 +94,7 @@ const nextTutorialStep = async () => {
   }
 }
 
-  const openGallery = () => {
+const openGallery = () => {
     galleryInput.value.click() // 파일 선택 대화 상자 열기
   }
 
