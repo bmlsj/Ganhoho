@@ -26,6 +26,7 @@ android {
 
         // 2. 추가
         buildConfigField("String", "SERVER_URL", "\"${localProperties.getProperty("SERVER_URL", "")}\"")
+        buildConfigField("String", "TOKEN", "\"${localProperties.getProperty("TOKEN", "")}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

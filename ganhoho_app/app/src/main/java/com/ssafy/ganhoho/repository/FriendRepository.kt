@@ -4,8 +4,7 @@ import android.util.Log
 import com.ssafy.ganhoho.data.model.dto.friend.FriendAddRequest
 import com.ssafy.ganhoho.data.model.dto.friend.FriendDto
 import com.ssafy.ganhoho.data.model.dto.friend.FriendFavoriteRequest
-import com.ssafy.ganhoho.data.model.dto.friend.FriendInviteRequest
-import com.ssafy.ganhoho.data.model.response.friend.FriendInviteResponse
+import com.ssafy.ganhoho.data.model.dto.friend.FriendInviteDto
 import com.ssafy.ganhoho.data.model.response.friend.FriendResponseResponse
 import com.ssafy.ganhoho.data.model.response.handleResponse
 import com.ssafy.ganhoho.data.remote.RetrofitUtil
@@ -34,7 +33,7 @@ class FriendRepository {
     }
 
     // 친구 요청 목록 조회
-    suspend fun getFriendInvite(token: String): Result<FriendInviteResponse> {
+    suspend fun getFriendInvite(token: String): Result<List<FriendInviteDto>> {
         return try {
             val response = RetrofitUtil.friendService.getFriendInvite("Bearer $token")
             Log.d("test", "토큰: $token")
@@ -47,7 +46,7 @@ class FriendRepository {
     }
 
     // 친구 요청 승인 및 거절
-    suspend fun respondToFriendInvite(token: String, friendId: Long, request: FriendInviteRequest)
+    suspend fun respondToFriendInvite(token: String, friendId: Long, request: String)
             : Result<FriendResponseResponse> {
         return try {
             val response =
@@ -59,12 +58,12 @@ class FriendRepository {
     }
 
     // 친구 추가
-    suspend fun addFriend(
+    suspend fun addFriendList(
         token: String,
         friendLoginId: FriendAddRequest
     ): Result<Boolean> {
         return try {
-            val response = RetrofitUtil.friendService.addFriend("Bearer $token", friendLoginId)
+            val response = RetrofitUtil.friendService.addFriendList("Bearer $token", friendLoginId)
             handleResponse(response)
         } catch (e: Exception) {
             Result.failure(e)

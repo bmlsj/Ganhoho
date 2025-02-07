@@ -14,11 +14,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -26,12 +24,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,23 +38,32 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.ssafy.ganhoho.BuildConfig
 import com.ssafy.ganhoho.ui.friend.common.FriendAdd
-import com.ssafy.ganhoho.data.model.dto.friend.FriendDto
 import com.ssafy.ganhoho.ui.friend.common.FriendList
 import com.ssafy.ganhoho.ui.friend.common.FriendRequestList
 import com.ssafy.ganhoho.viewmodel.FriendViewModel
+import com.ssafy.ganhoho.viewmodel.MemberViewModel
 
 @Composable
 fun FriendScreen(navController: NavController) {
 
     val scrollState = rememberScrollState()
     val currentScreen = remember { mutableStateOf("list") }
+    val searchText = remember { mutableStateOf("") }
 
-    val viewModel: FriendViewModel = viewModel()
+    val token = BuildConfig.TOKEN
+    val friendViewModel: FriendViewModel = viewModel()
+    val memberViewModel: MemberViewModel = viewModel()
 
     // 화면 처음 로드 시 친구 목록 불러오기
     LaunchedEffect(Unit) {
-       // viewModel.getFriendList(token)
+        friendViewModel.getFriendList(token)  // 친구 목록 조회
+        friendViewModel.getFriendInvite(token)  // 친구 요청 목록 조회
+        memberViewModel.searchFriend(token, searchText.value)  // 검색한 텍스트로 검색
+
+        // 친구 추가: 회원 검색(아이디로) 리스트에서
+        friendViewModel.addFriendList(token, searchText.value)
     }
 
     Column(
@@ -68,85 +75,19 @@ fun FriendScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(50.dp))
 
-        // 상단 "친구요청", "친구 추가" 버튼
+        // 상단 "친구 목록", "친구 요청", "친구 추가" 버튼
         Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.Bottom,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            // 1. 친구 요청 버튼
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .shadow(elevation = 8.dp, shape = RoundedCornerShape(15.dp))
-                    .background(Color.White, shape = RoundedCornerShape(15.dp))
-                    .padding(16.dp)
-                    .clickable {
-                        // 친구 요청 화면으로 변경
-                        currentScreen.value = "request"
-                    },
-                contentAlignment = Alignment.CenterStart
-            ) {
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = "친구 요청",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
+            MenuItem("list", "친구목록", currentScreen)
+            MenuItem("request", "친구요청", currentScreen)
+            MenuItem("add", "친구추가", currentScreen)
 
-                    Box(
-                        modifier = Modifier
-                            .background(Color(0xFFFFEAEA), shape = CircleShape)
-                            .padding(horizontal = 8.dp)
-                    ) {
-                        Text(
-                            text = "+3",
-                            fontSize = 12.sp,
-                            color = Color(0xFFFF3B3B),
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-            }
-
-            // 2. 친구 추가 버튼
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .shadow(elevation = 8.dp, shape = RoundedCornerShape(15.dp))
-                    .background(Color.White, shape = RoundedCornerShape(15.dp))
-                    .padding(16.dp)
-                    .clickable {
-                        currentScreen.value = "add"
-                    },
-                contentAlignment = Alignment.CenterStart
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = "친구 추가",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Default.KeyboardArrowRight,
-                        contentDescription = "친구 추가 이동",
-                        tint = Color.Black
-                    )
-                }
-            }
         }
 
         Spacer(modifier = Modifier.height(25.dp))
@@ -156,14 +97,12 @@ fun FriendScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xfff4fbff))
-                .weight(1f)
+                .weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            val searchText = remember {
-                mutableStateOf("")
-            }
 
             Box(
                 modifier = Modifier
@@ -205,63 +144,84 @@ fun FriendScreen(navController: NavController) {
                 )
             }
 
-            // 친구 리스트
-            val friends = arrayOf(
-                FriendDto(
-                    "@jeonghu1010", "서정후",
-                    "싸피병원", "일반병동", true
-                ),
-                FriendDto(
-                    "@jeonghu1010", "한아영",
-                    "싸피병원", "응급병동", true
-                ),
-                FriendDto(
-                    "@jeonghu1010", "이승지",
-                    "싸피병원", "중환자실", true
-                ),
-                FriendDto(
-                    "@jeonghu1010", "서정후",
-                    "싸피병원", "일반병동", false
-                ),
-                FriendDto(
-                    "@hongbeop", "황홍법",
-                    "싸피병원", "일반병동", false
-                ),
-                FriendDto(
-                    "@gimhwan00", "김 환",
-                    "싸피병원", "응급병동", false
-                ),
-                FriendDto(
-                    "@minseok", "강민석",
-                    "싸피병원", "일반병동", false
-                ),
-            )
 
-            //val friendListState = viewModel.friendList.collectAsState().value
-            //val friendss = friendListState?.getOrNull() ?: emptyList()
+            // 친구 목록 조회
+            val friendListState = friendViewModel.friendList.collectAsState().value
+            val friendList = friendListState?.getOrNull() ?: emptyList()
 
-            // 친구 리스트 위젯
-            // 친구 목록, 친구 요청 목록, 친구 추가 화면 전환
+            // 친구 요청 조회
+            val friendInviteState = friendViewModel.friendInviteList.collectAsState().value
+            val friendInvite = friendInviteState?.getOrNull() ?: emptyList()
+
+
             when (currentScreen.value) {
-                "list" -> {  // 친구 목록 보이기
-                    for (friend in friends) {
-                        FriendList(friend = friend)
+                "list" -> {
+                    if (friendList.isNotEmpty()) {
+                        friendList.forEach { friend ->
+                            FriendList(friend = friend)
+                        }
+                    } else {
+                        Spacer(modifier = Modifier.height(50.dp))
+                        Text(
+                            text = "등록된 친구가 없습니다.",
+                            fontSize = 16.sp,
+                            color = Color.Gray
+                        )
                     }
-                } // 기본 친구 목록
+                }
+
                 "request" -> {
-                    for (friend in friends) {
-                        FriendRequestList(friend = friend)
+                    if (friendInvite.isNotEmpty()) {
+                        friendInvite.forEach { friend ->
+                            FriendRequestList(friend = friend)
+                        }
+                    } else {
+                        Spacer(modifier = Modifier.height(50.dp))
+                        Text(text = "친구 요청이 없습니다.", fontSize = 16.sp, color = Color.Gray)
                     }
-                } // 친구 요청 목록
+                }
+
                 "add" -> {
-                    for (friend in friends) {
-                        FriendAdd(friend = friend)
+                    if (friendList.isNotEmpty()) {
+                        friendList.forEach { friend ->
+                            FriendAdd(friend = friend)
+                        }
+                    } else {
+                        Spacer(modifier = Modifier.height(50.dp))
+                        Text(text = "추가할 친구가 없습니다.", fontSize = 16.sp, color = Color.Gray)
                     }
                 }
             }
         }
     }
 }
+
+// 메뉴 아이템
+@Composable
+fun MenuItem(screen: String, title: String, currentScreen: MutableState<String>) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable { currentScreen.value = screen }
+    ) {
+        Text(
+            text = title,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = if (currentScreen.value == screen) Color.Black else Color.Gray
+        )
+
+        Spacer(modifier = Modifier.height(3.dp))
+        if (currentScreen.value == screen) {
+            Box(
+                modifier = Modifier
+                    .width(75.dp)
+                    .height(3.dp)
+                    .background(Color(0xff35A6CC))
+            )
+        }
+    }
+}
+
 
 @Preview
 @Composable

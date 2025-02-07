@@ -83,31 +83,35 @@ fun FriendList(
 
                 // 병원과 병동정보
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = friend.hospital,
-                        modifier = Modifier
-                            .background(
-                                Color(0xfff0f0f0),
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
-                        color = Color.Black,
-                        fontSize = 12.sp,
-                        textAlign = TextAlign.Center
-                    )
+                    friend.hospital?.let {
+                        Text(
+                            text = it,
+                            modifier = Modifier
+                                .background(
+                                    Color(0xfff0f0f0),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            color = Color.Black,
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
 
-                    Text(
-                        text = friend.ward,
-                        modifier = Modifier
-                            .background(
-                                Color(0xfff0f0f0),
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
-                        color = Color.Black,
-                        fontSize = 12.sp,
-                        textAlign = TextAlign.Center
-                    )
+                    friend.ward?.let {
+                        Text(
+                            text = it,
+                            modifier = Modifier
+                                .background(
+                                    Color(0xfff0f0f0),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            color = Color.Black,
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
 

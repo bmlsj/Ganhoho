@@ -3,8 +3,7 @@ package com.ssafy.ganhoho.data.remote
 import com.ssafy.ganhoho.data.model.dto.friend.FriendAddRequest
 import com.ssafy.ganhoho.data.model.dto.friend.FriendDto
 import com.ssafy.ganhoho.data.model.dto.friend.FriendFavoriteRequest
-import com.ssafy.ganhoho.data.model.dto.friend.FriendInviteRequest
-import com.ssafy.ganhoho.data.model.response.friend.FriendInviteResponse
+import com.ssafy.ganhoho.data.model.dto.friend.FriendInviteDto
 import com.ssafy.ganhoho.data.model.response.friend.FriendResponseResponse
 import retrofit2.Response
 import retrofit2.http.Body
@@ -31,19 +30,19 @@ interface FriendService {
     @GET("api/friends/requests/list")
     suspend fun getFriendInvite(
         @Header("Authorization") token: String
-    ): Response<FriendInviteResponse>
+    ): Response<List<FriendInviteDto>>
 
     // 친구 요청 승인 및 거절
     @POST("api/friends/{friendId}/response")
     suspend fun respondToFriendInvite(
         @Header("Authorization") token: String,
         @Path("friendId") friendId: Long,
-        @Body request: FriendInviteRequest
+        @Body requestStatus: String
     ): Response<FriendResponseResponse>
 
     // 친구 추가
     @POST("api/friends/request")
-    suspend fun addFriend(
+    suspend fun addFriendList(
         @Header("Authorization") token: String,
         @Body friendLoginId: FriendAddRequest
     ): Response<Boolean>
