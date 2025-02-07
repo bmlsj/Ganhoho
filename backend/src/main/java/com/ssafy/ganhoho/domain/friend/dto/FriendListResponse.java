@@ -8,6 +8,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FriendListResponse {
     private Long friendId;
+    private Long memberId;
     private String friendLoginId;
     private String name;
     private String hospital;

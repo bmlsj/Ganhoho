@@ -3,7 +3,7 @@ package com.ssafy.ganhoho.domain.group;
 import com.ssafy.ganhoho.domain.auth.AuthRepository;
 
 import com.ssafy.ganhoho.domain.group.dto.*;
-import com.ssafy.ganhoho.domain.member.dto.MemberDto;
+import com.ssafy.ganhoho.domain.member.entity.Member;
 import com.ssafy.ganhoho.domain.schedule.entity.WorkSchedule;
 import com.ssafy.ganhoho.global.constant.ErrorCode;
 import com.ssafy.ganhoho.global.error.CustomException;
@@ -32,7 +32,7 @@ public class GroupServiceImpl implements GroupService {
     @Transactional
     public GroupCreateResponse createGroup(Long memberId, GroupCreatRequest request) {
         // 해당 유저 확인
-        MemberDto member = authRepository.findById((memberId))
+        Member member = authRepository.findById((memberId))
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
 
         // 그룹 생성
@@ -138,7 +138,7 @@ public class GroupServiceImpl implements GroupService {
         //dto로 변환
         return participations.stream()
                 .map(participation -> {
-                    MemberDto member = authRepository.findById(participation.getMemberId())
+                    Member member = authRepository.findById(participation.getMemberId())
                             .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
                     return GroupMemberResponse.builder()
                             .loginId(member.getLoginId())
@@ -181,7 +181,7 @@ public class GroupServiceImpl implements GroupService {
     @Transactional
     public List<GroupAcceptResponse> acceptGroupInvitation(Long memberId, Long groupId) {
         // 사용자가 실제로 있는지
-        MemberDto member = authRepository.findById(memberId)
+        Member member = authRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
 
         // 그룹 존재 여부 확인
@@ -210,7 +210,7 @@ public class GroupServiceImpl implements GroupService {
 
         return  participations.stream()
                 .map(p -> {
-                    MemberDto memberDto = authRepository.findById(p.getMemberId())
+                    Member memberDto = authRepository.findById(p.getMemberId())
                             .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
                     return GroupAcceptResponse.builder()
                             .loginId(memberDto.getLoginId())
@@ -226,7 +226,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public List<GroupScheduleResponse> getGroupSchedules(Long memberId, Long groupId, String yearMonth) {
         // 사용자가 실제로 있는지
-        MemberDto member = authRepository.findById(memberId)
+        Member member = authRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
 
         // 그룹 존재 여부 확인
@@ -248,7 +248,7 @@ public class GroupServiceImpl implements GroupService {
         // 멤버별 스케줄 정보 매핑
         return participations.stream()
                 .map(participation -> {
-                    MemberDto memberDto = authRepository.findById(participation.getMemberId())
+                    Member memberDto = authRepository.findById(participation.getMemberId())
                             .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
                     // 그룹 멤버 스케줄 정보만 필터링하고, ScheduleInfo 형태로 변환
                     List<GroupScheduleResponse.ScheduleInfo> schedules = workSchedules.stream()
