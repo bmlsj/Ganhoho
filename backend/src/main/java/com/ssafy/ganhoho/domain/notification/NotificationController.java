@@ -1,15 +1,14 @@
 package com.ssafy.ganhoho.domain.notification;
 
-import com.ssafy.ganhoho.domain.notification.dto.NotificationSendRequestBody;
+import com.ssafy.ganhoho.domain.notification.dto.NotificationDto;
 import com.ssafy.ganhoho.domain.notification.dto.NotificationSubscribeRequestBody;
 import com.ssafy.ganhoho.domain.notification.service.NotificationService;
-import com.ssafy.ganhoho.domain.notification.service.NotificationServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static com.ssafy.ganhoho.global.auth.SecurityUtil.getCurrentMemberId;
 
@@ -29,7 +28,13 @@ public class NotificationController {
     }
 
     @PostMapping("/button-pattens")
-    public void sendNotification(@RequestBody NotificationSendRequestBody notificationSendRequestBody) {
-        notificationService.saveNotification(notificationSendRequestBody);
+    public void sendNotification(@RequestBody NotificationDto notificationDto) {
+        notificationService.saveNotification(notificationDto);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<NotificationDto>> getNotifications() {
+        Long memberId = getCurrentMemberId();
+        return ResponseEntity.ok(notificationService.getNotifications(memberId));
     }
 }

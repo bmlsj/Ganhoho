@@ -10,6 +10,6 @@ import java.util.List;
 @Repository
 public interface NotificationRepository extends MongoRepository<Notification, String> {
 
-    @Query(value = "{'memberId': '?0'}")
+    @Query(value = "{'memberId': ?0}")
     List<Notification> findAllByMemberId(Long memberId);
 }

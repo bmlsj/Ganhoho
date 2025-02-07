@@ -5,7 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.ssafy.ganhoho.domain.member.MemberRepository;
 import com.ssafy.ganhoho.domain.member.entity.Member;
-import com.ssafy.ganhoho.domain.notification.dto.NotificationSendRequestBody;
+import com.ssafy.ganhoho.domain.notification.NotificationMapper;
+import com.ssafy.ganhoho.domain.notification.dto.NotificationDto;
 import com.ssafy.ganhoho.domain.notification.entity.Notification;
 import com.ssafy.ganhoho.domain.notification.repository.DeviceGroupRepository;
 import com.ssafy.ganhoho.domain.notification.entity.DeviceGroup;
@@ -69,12 +70,17 @@ public class NotificationServiceImpl implements NotificationService{
     }
 
     @Override
-    public List<Notification> getAllNotifications(Long memberId) {
-        return List.of();
+    public List<NotificationDto> getNotifications(Long memberId) {
+        log.info("memberId : {}",memberId);
+        List<Notification> notifications = notificationRepository.findAllByMemberId(memberId);
+        log.info("notification list : {}",notifications);
+        List<NotificationDto> notificationDtos = NotificationMapper.INSTANCE.notificationListToNotificationDtoList(notifications);
+        log.info("notificationDtos : {}",notificationDtos);
+        return NotificationMapper.INSTANCE.notificationListToNotificationDtoList(notifications);
     }
 
     @Override
-    public void saveNotification(NotificationSendRequestBody notificationSendRequestBody) {
+    public void saveNotification(NotificationDto notificationSendRequestBody) {
         // 우선 몽고디비 연결 위해 저장하는 것만 하는 함수 생성, 이후 메세지를 보낸 후 저장하는 것으로 로직 변경 예정
         Long memberId = getCurrentMemberId();
         Notification notification = Notification.builder()

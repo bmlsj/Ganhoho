@@ -6,7 +6,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class NotificationSendRequestBody {
+public class NotificationDto {
     private String message;
     private String title;
     private int type;
