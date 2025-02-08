@@ -11,6 +11,8 @@ class AuthInterceptor(private val sharedPreferencesUtil: SharedPreferencesUtil) 
         val request = if (token.isNotEmpty()) {
             chain.request().newBuilder()
                 .addHeader("Authorization", "Bearer $token")
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Accept", "application/json")
                 .build()
         } else {
             chain.request()

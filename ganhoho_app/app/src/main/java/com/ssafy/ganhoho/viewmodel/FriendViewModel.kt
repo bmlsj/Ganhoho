@@ -3,12 +3,14 @@ package com.ssafy.ganhoho.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
 import com.ssafy.ganhoho.data.model.dto.friend.FriendAddRequest
+import com.ssafy.ganhoho.data.model.dto.friend.FriendApproveRequest
 import com.ssafy.ganhoho.data.model.dto.friend.FriendDto
 import com.ssafy.ganhoho.data.model.dto.friend.FriendFavoriteRequest
-import com.ssafy.ganhoho.data.model.dto.friend.FriendInviteRequest
-import com.ssafy.ganhoho.data.model.response.friend.FriendInviteResponse
-import com.ssafy.ganhoho.data.model.response.friend.FriendResponseResponse
+import com.ssafy.ganhoho.data.model.dto.friend.FriendInviteDto
+import com.ssafy.ganhoho.data.model.response.friend.FriendAddResponse
+import com.ssafy.ganhoho.data.model.response.friend.FriendApproveResponse
 import com.ssafy.ganhoho.repository.FriendRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,7 +22,11 @@ class FriendViewModel() : ViewModel() {
     private val friendRepository = FriendRepository()
 
     // 친구 목록 조회 결과
-    private val _friendList = MutableStateFlow<Result<List<FriendDto>>?>(null)
+    private val _friendList = MutableStateFlow<Result<List<FriendDto>>?>(
+        Result.success(
+            emptyList()
+        )
+    )
     val friendList: StateFlow<Result<List<FriendDto>>?> = _friendList
 
     // 친구 삭제 결과
@@ -28,16 +34,20 @@ class FriendViewModel() : ViewModel() {
     val deleteResult: StateFlow<Result<Long>?> = _deleteResult
 
     // 친구 요청 목록 조회 결과
-    private val _friendInviteList = MutableStateFlow<Result<FriendInviteResponse>?>(null)
-    val friendInviteList: StateFlow<Result<FriendInviteResponse>?> = _friendInviteList
+    private val _friendInviteList = MutableStateFlow<Result<List<FriendInviteDto>>?>(
+        Result.success(
+            emptyList()
+        )
+    )
+    val friendInviteList: StateFlow<Result<List<FriendInviteDto>>?> = _friendInviteList
 
     // 친구 요청 승인/거절 결과
-    private val _friendResponse = MutableStateFlow<Result<FriendResponseResponse>?>(null)
-    val friendResponse: StateFlow<Result<FriendResponseResponse>?> = _friendResponse
+    private val _friendResponse = MutableStateFlow<Result<FriendApproveResponse>?>(null)
+    val friendResponse: StateFlow<Result<FriendApproveResponse>?> = _friendResponse
 
     // 친구 추가 결과
-    private val _addFriendResult = MutableStateFlow<Result<Boolean>?>(null)
-    val addFriendResult: StateFlow<Result<Boolean>?> = _addFriendResult
+    private val _addFriendResult = MutableStateFlow<Result<FriendAddResponse>?>(null)
+    val addFriendResult: StateFlow<Result<FriendAddResponse>?> = _addFriendResult
 
     // 친구 즐겨찾기 수정 결과
     private val _updateFavoriteResult = MutableStateFlow<Result<Boolean>?>(null)
@@ -47,7 +57,7 @@ class FriendViewModel() : ViewModel() {
     fun getFriendList(token: String) {
         viewModelScope.launch {
             val result = friendRepository.getFriendList(token)
-            Log.d("test", "success $result")
+            Log.d("friend", "success $result")
             _friendList.value = result
         }
     }
@@ -69,26 +79,36 @@ class FriendViewModel() : ViewModel() {
     }
 
     // 친구 요청 승인 및 거절
-    fun respondToFriendInvite(token: String, friendId: Long, request: FriendInviteRequest) {
+    fun respondToFriendInvite(token: String, friendId: Long, request: FriendApproveRequest) {
         viewModelScope.launch {
+           // val request = FriendApproveRequest(requestStatus = "ACCEPTED")
             val result = friendRepository.respondToFriendInvite(token, friendId, request)
-            _friendResponse.value = result
+
+            result.onSuccess { response ->
+                Log.d("FriendViewModel", "친구 요청 승인 성공: $response")
+                _friendResponse.value = Result.success(response)
+            }.onFailure { error ->
+                Log.e("FriendViewModel", "친구 요청 실패: ${error.message}")
+                _friendResponse.value = Result.failure(error)
+            }
         }
     }
 
     // 친구 추가
-    fun addFriend(token: String, friendLoginId: String) {
+    fun addFriendList(token: String, friendLoginId: String) {
         viewModelScope.launch {
+
             val request = FriendAddRequest(friendLoginId)
-            val result = friendRepository.addFriend(token, request)
-            _addFriendResult.value = result
+            val result = friendRepository.addFriendList(token, request)
+            Log.d("friendViewModel", "$friendLoginId $result")
+            _addFriendResult.value = result // 실패 시 false 반환
         }
     }
 
     // 친구 즐겨찾기 수정
-    fun updateFriendFavorite(token: String, friendId: Long, isFavorite: Boolean) {
+    fun updateFriendFavorite(token: String, friendMemberId: Long, isFavorite: Boolean) {
         viewModelScope.launch {
-            val request = FriendFavoriteRequest(friendId, isFavorite)
+            val request = FriendFavoriteRequest(friendMemberId, isFavorite)
             val result = friendRepository.updateFriendFavorite(token, request)
             _updateFavoriteResult.value = result
         }

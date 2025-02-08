@@ -26,6 +26,7 @@ android {
 
         // 2. 추가
         buildConfigField("String", "SERVER_URL", "\"${localProperties.getProperty("SERVER_URL", "")}\"")
+        buildConfigField("String", "TOKEN", "\"${localProperties.getProperty("TOKEN", "")}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -93,8 +94,13 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
+
     // Compose ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+
+    // ok
+    implementation("com.squareup.okhttp3:okhttp")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
 
 
 }
