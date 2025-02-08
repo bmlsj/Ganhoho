@@ -47,7 +47,7 @@ class AuthViewModel : ViewModel() {
             _loginResult.value = result
 
             result.onSuccess { response ->
-                Log.d("AuthViewModel", "Login Success: $response")
+                Log.d("AuthViewModel", "Login Success: ${response.accessToken}")
 
                 // ✅ JWT & Refresh Token 저장
                 SecureDataStore.saveAccessToken(context, response.accessToken)
@@ -57,11 +57,23 @@ class AuthViewModel : ViewModel() {
                 _accessToken.value = response.accessToken
                 _refreshToken.value = response.refreshToken
 
+                // ✅ 저장 후 바로 불러와서 확인
+                val savedAccessToken = SecureDataStore.getAccessToken(context).first()
+                val savedRefreshToken = SecureDataStore.getRefreshToken(context).first()
+
+                Log.d("AuthViewModel", "Saved Access Token: $savedAccessToken")
+                Log.d("AuthViewModel", "Saved Refresh Token: $savedRefreshToken")
+
+                // ✅ 저장된 토큰이 제대로 반영되었는지 확인
+                loadTokens(context)
+
             }.onFailure { error ->
                 Log.e("AuthViewModel", "Login Failed: ${error.message}")
             }
         }
     }
+
+
 
     /**
      * 🔹 회원가입 요청

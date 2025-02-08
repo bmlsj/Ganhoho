@@ -1,13 +1,31 @@
 package com.ssafy.ganhoho.base
 
 import android.content.Context
+import android.util.Log
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
 
 class AuthInterceptor(private val context: Context) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
-        val token = TokenManager.getAccessToken()
+
+        // 로그인 요청 시, token을 헤더에 추가x
+        val originalRequest = chain.request()
+
+        // ✅ 로그인 API 요청인 경우 `Authorization` 헤더를 추가하지 않음
+        if (originalRequest.url.encodedPath.contains("api/auth/login")) {
+            return chain.proceed(originalRequest)
+        }
+
+        // ✅ 로그인 요청이 아닌 경우, 토큰을 가져와서 헤더에 추가
+        val token = runBlocking { SecureDataStore.getAccessToken(context).first() }
+
+        if (!token.isNullOrEmpty()) {
+            Log.d("AuthInterceptor", "Loaded Access Token: $token")
+        } else {
+            Log.d("AuthInterceptor", "Access Token is NULL!!")
+        }
 
         val request = chain.request().newBuilder()
             .addHeader("Authorization", "Bearer $token")

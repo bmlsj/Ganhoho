@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.ui.auth
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,12 +25,15 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -37,20 +41,43 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.ssafy.ganhoho.R
+import com.ssafy.ganhoho.data.model.dto.member.LoginRequest
 import com.ssafy.ganhoho.ui.theme.BackgroundBlue40
 import com.ssafy.ganhoho.ui.theme.FieldGray
 import com.ssafy.ganhoho.ui.theme.FieldLightGray
 import com.ssafy.ganhoho.ui.theme.PrimaryBlue
+import com.ssafy.ganhoho.viewmodel.AuthViewModel
+import kotlin.math.log
 
 @Composable
 fun LoginScreen(navController: NavController) {
 
+    // 입력 필드 상태
     val id = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
     val passwordVisible = remember { mutableStateOf(false) }
+
+    val authViewModel: AuthViewModel = viewModel()
+    val context = LocalContext.current
+
+    // 로그인 결과 상태 감지
+    val loginResult = authViewModel.loginResult.collectAsState().value
+
+    LaunchedEffect(loginResult) {
+        loginResult?.onSuccess {
+            // ✅ 로그인 성공 시 메인 화면으로 이동
+            Toast.makeText(context, "로그인 성공!", Toast.LENGTH_SHORT).show()
+            navController.navigate("main") {
+                popUpTo("login") { inclusive = true }
+            }
+        }?.onFailure { error ->
+            Toast.makeText(context, "로그인 실패: ${error.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -63,7 +90,7 @@ fun LoginScreen(navController: NavController) {
 
         // 로고 영역
         Text(
-            text = "GANHOHO",
+            text = "간호호",
             fontSize = 50.sp,
             fontWeight = FontWeight.Bold,
             color = PrimaryBlue,
@@ -96,7 +123,7 @@ fun LoginScreen(navController: NavController) {
 
                 // Login 텍스트
                 Text(
-                    text = "Login",
+                    text = "로그인",
                     fontSize = 35.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black,
@@ -157,7 +184,7 @@ fun LoginScreen(navController: NavController) {
                     trailingIcon = {
                         Row {
                             Icon(
-                                painter = if (!passwordVisible.value) painterResource(id = R.drawable.visibility) else painterResource(
+                                painter = if (passwordVisible.value) painterResource(id = R.drawable.visibility) else painterResource(
                                     id = R.drawable.visibilty_off
                                 ),
                                 contentDescription = "Toggle Password Visibility",
@@ -190,9 +217,9 @@ fun LoginScreen(navController: NavController) {
                 Button(
                     onClick = {
                         // ✅ 로그인 완료 후 MainScreen으로 이동
-                        navController.navigate("main") {
-                            popUpTo("login") { inclusive = true } // 뒤로 가기 시 로그인 화면 제거
-                        }
+                        val loginResult = LoginRequest(id.value, password.value)
+                        authViewModel.login(loginResult, context)
+
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -201,7 +228,7 @@ fun LoginScreen(navController: NavController) {
                     shape = RoundedCornerShape(20.dp)
                 ) {
                     Text(
-                        text = "Sign In",
+                        text = "로그인",
                         color = Color.White,
                         fontSize = 18.sp
                     )
@@ -214,10 +241,10 @@ fun LoginScreen(navController: NavController) {
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "Don't have an account?", color = Color.Gray, fontSize = 14.sp)
+                    Text(text = "계정이 없으신가요?", color = Color.Gray, fontSize = 14.sp)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Sign Up",
+                        text = "회원가입",
                         color = Color.Red,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
