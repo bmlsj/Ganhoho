@@ -53,6 +53,12 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getServletPath();
-        return path.startsWith("/api/auth/");
+        log.info("Current path: {}", path); // 로깅 추가 이후 제거
+
+        return path.startsWith("/api/auth/") ||
+                path.startsWith("/swagger-ui/") ||
+                path.startsWith("/v3/api-docs") ||
+                path.startsWith("/swagger-resources/") ||
+                path.startsWith("/webjars/");
     }
 }

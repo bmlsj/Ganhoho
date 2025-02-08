@@ -4,6 +4,7 @@ package com.ssafy.ganhoho.domain.friend;
 import com.ssafy.ganhoho.domain.auth.AuthRepository;
 import com.ssafy.ganhoho.domain.friend.constant.RequestStatus;
 import com.ssafy.ganhoho.domain.friend.dto.*;
+import com.ssafy.ganhoho.domain.friend.entity.Friend;
 import com.ssafy.ganhoho.domain.member.entity.Member;
 import com.ssafy.ganhoho.global.constant.ErrorCode;
 import com.ssafy.ganhoho.global.error.CustomException;
@@ -33,11 +34,11 @@ public class FriendServiceImpl implements FriendService {
         Member member = authRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
         // 친구 목록 조회 (양방향 가능하게)
-        List<FriendDto> sentFriends = friendRepository.findAcceptedFriendsByMember(member);
-        List<FriendDto> receivedFriends = friendRepository.friendAcceptedByLoginId(member.getLoginId());
+        List<Friend> sentFriends = friendRepository.findAcceptedFriendsByMember(member);
+        List<Friend> receivedFriends = friendRepository.friendAcceptedByLoginId(member.getLoginId());
 
         // 양쪽 병합
-        List<FriendDto> allFriends = new ArrayList<>();
+        List<Friend> allFriends = new ArrayList<>();
         allFriends.addAll(sentFriends);
         allFriends.addAll(receivedFriends);
 
@@ -79,7 +80,7 @@ public class FriendServiceImpl implements FriendService {
         Member member = authRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
         // 친구 관계 확인
-        FriendDto friend = friendRepository.findById(friendId)
+        Friend friend = friendRepository.findById(friendId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
 
         //확인한 유저 의 친구가 맞는지 (양방향 권한 확인)
@@ -96,7 +97,7 @@ public class FriendServiceImpl implements FriendService {
                 ? friend.getFriendLoginId()
                 : friend.getMember().getLoginId();
 
-        Optional<FriendDto> otherSideFriend = friendRepository.findByMemberLoginIdAndFriendLoginId(
+        Optional<Friend> otherSideFriend = friendRepository.findByMemberLoginIdAndFriendLoginId(
                 otherLoginId, member.getLoginId());
 
         otherSideFriend.ifPresent(friendRepository::delete);
@@ -113,10 +114,10 @@ public class FriendServiceImpl implements FriendService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
 
         //친구 요청 목록 조회(양방향)
-        List<FriendDto> receivedRequests = friendRepository.findRequestsByLoginId(member.getLoginId());
-        List<FriendDto> sentRequests = friendRepository.findRequestsByMember(member);
+        List<Friend> receivedRequests = friendRepository.findRequestsByLoginId(member.getLoginId());
+        List<Friend> sentRequests = friendRepository.findRequestsByMember(member);
 
-        List<FriendDto> allRequests = new ArrayList<>();
+        List<Friend> allRequests = new ArrayList<>();
         allRequests.addAll(receivedRequests);
         allRequests.addAll(sentRequests);
 
@@ -157,7 +158,7 @@ public class FriendServiceImpl implements FriendService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
 
         // 단일 요청 확인
-        FriendDto friendRequest = friendRepository.findById(friendId)
+        Friend friendRequest = friendRepository.findById(friendId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NO_MATCHING_FRIEND_REQUESTS));
 
         // 요청 받은 사람인지 확인
@@ -173,7 +174,7 @@ public class FriendServiceImpl implements FriendService {
         if (request.getRequestStatus().equals(RequestStatus.ACCEPTED)) {
             // 수락처리
             friendRequest.setRequestStatus(RequestStatus.ACCEPTED);
-            FriendDto saveRequest = friendRepository.save(friendRequest);
+            Friend saveRequest = friendRepository.save(friendRequest);
 
             return FriendRequestStatusResponse.builder()
                     .friendId(saveRequest.getFriendId())
@@ -206,8 +207,8 @@ public class FriendServiceImpl implements FriendService {
             throw new CustomException(ErrorCode.BAD_REQUEST);
         }
         // 이미 친구(양방향 확인)
-        List<FriendDto> sentAcceptedFriends = friendRepository.findAcceptedFriendsByMember(member);
-        List<FriendDto> receivedAcceptedFriends = friendRepository.friendAcceptedByLoginId(member.getLoginId());
+        List<Friend> sentAcceptedFriends = friendRepository.findAcceptedFriendsByMember(member);
+        List<Friend> receivedAcceptedFriends = friendRepository.friendAcceptedByLoginId(member.getLoginId());
 
 
         if (sentAcceptedFriends.stream().anyMatch(f -> f.getFriendLoginId().equals(request.getFriendLoginId())) ||
@@ -216,15 +217,15 @@ public class FriendServiceImpl implements FriendService {
         }
 
         // 이미 친구요청 보냈는지 확인 (양방향 확인)
-        List<FriendDto> sentRequests = friendRepository.findRequestsByMember(member);
-        List<FriendDto> receivedRequests = friendRepository.findRequestsByLoginId(member.getLoginId());
+        List<Friend> sentRequests = friendRepository.findRequestsByMember(member);
+        List<Friend> receivedRequests = friendRepository.findRequestsByLoginId(member.getLoginId());
 
         if (sentRequests.stream().anyMatch(f -> f.getFriendLoginId().equals(request.getFriendLoginId())) ||
             receivedRequests.stream().anyMatch(f -> f.getMember().getLoginId().equals(request.getFriendLoginId()))) {
             throw new CustomException(ErrorCode.FRIEND_REQUEST_EXISTS);
         }
         // 친구 요청 생성 & 저장
-        FriendDto friendRequest = FriendDto.builder()
+        Friend friendRequest = Friend.builder()
                 .member(member)
                 .friendLoginId(request.getFriendLoginId())
                 .requestStatus(RequestStatus.PENDING)
@@ -248,7 +249,7 @@ public class FriendServiceImpl implements FriendService {
         Member friendMember = authRepository.findById(request.getFriendMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
 
-        FriendDto friend = friendRepository.findByMemberAndFriend(
+        Friend friend = friendRepository.findByMemberAndFriend(
                 member.getLoginId(),
                 friendMember.getLoginId()
         ).orElseThrow(() -> new CustomException(ErrorCode.NO_MATCHING_FRIEND_REQUESTS));
