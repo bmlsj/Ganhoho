@@ -42,7 +42,7 @@ fun FriendAdd(
     friendList: List<FriendDto>
 ) {
 
-    val token = BuildConfig.TOKEN
+    val token = ""
     val friendViewModel: FriendViewModel = viewModel()
 
     // ✅ 현재 검색된 회원이 이미 친구인지 확인

@@ -1,26 +1,26 @@
 package com.ssafy.ganhoho.ui
 
-import android.content.Context
-import android.util.Log
-import com.google.android.gms.wearable.PutDataMapRequest
-import com.google.android.gms.wearable.Wearable
+//import android.content.Context
+//import android.util.Log
+//import com.google.android.gms.wearable.PutDataMapRequest
+//import com.google.android.gms.wearable.Wearable
 
-fun sendDataToWatch(context: Context, key: String, value: String) {
-    val dataClient = Wearable.getDataClient(context)
-
-    val putDataReq = PutDataMapRequest.create("/data_path").apply {
-        dataMap.putString(key, value)
-        dataMap.putLong("timestamp", System.currentTimeMillis()) // 최신 데이터 유지
-    }.asPutDataRequest()
-
-    dataClient.putDataItem(putDataReq)
-        .addOnSuccessListener {
-            Log.d("WearData", "데이터 전송 성공: $key = $value")
-        }
-        .addOnFailureListener { e ->
-            Log.e("WearData", "데이터 전송 실패", e)
-        }
-}
+//fun sendDataToWatch(context: Context, key: String, value: String) {
+//    val dataClient = Wearable.getDataClient(context)
+//
+//    val putDataReq = PutDataMapRequest.create("/data_path").apply {
+//        dataMap.putString(key, value)
+//        dataMap.putLong("timestamp", System.currentTimeMillis()) // 최신 데이터 유지
+//    }.asPutDataRequest()
+//
+//    dataClient.putDataItem(putDataReq)
+//        .addOnSuccessListener {
+//            Log.d("WearData", "데이터 전송 성공: $key = $value")
+//        }
+//        .addOnFailureListener { e ->
+//            Log.e("WearData", "데이터 전송 실패", e)
+//        }
+//}
 
 
 /*

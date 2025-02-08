@@ -42,7 +42,7 @@ fun FriendRequestList(
 ) {
 
     val viewModel: FriendViewModel = viewModel()
-    val token = BuildConfig.TOKEN
+    val token = ""
 
     Box(
         modifier = Modifier

@@ -17,12 +17,16 @@ android {
     namespace = "com.ssafy.ganhoho"
     compileSdk = 35
 
+
     defaultConfig {
         applicationId = "com.ssafy.ganhoho"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField("String", "SERVER_URL", "\"${localProperties.getProperty("SERVER_URL", "")}\"")
+
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

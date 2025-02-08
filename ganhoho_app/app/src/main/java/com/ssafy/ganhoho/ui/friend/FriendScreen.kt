@@ -52,7 +52,7 @@ fun FriendScreen(navController: NavController) {
     val currentScreen = remember { mutableStateOf("list") }
     val searchText = remember { mutableStateOf("") }
 
-    val token = BuildConfig.TOKEN
+    val token = ""
     val friendViewModel: FriendViewModel = viewModel()
     val memberViewModel: MemberViewModel = viewModel()
 
