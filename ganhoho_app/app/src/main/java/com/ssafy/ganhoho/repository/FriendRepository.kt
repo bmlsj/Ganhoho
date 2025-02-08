@@ -2,12 +2,15 @@ package com.ssafy.ganhoho.repository
 
 import android.util.Log
 import com.ssafy.ganhoho.data.model.dto.friend.FriendAddRequest
+import com.ssafy.ganhoho.data.model.dto.friend.FriendApproveRequest
 import com.ssafy.ganhoho.data.model.dto.friend.FriendDto
 import com.ssafy.ganhoho.data.model.dto.friend.FriendFavoriteRequest
 import com.ssafy.ganhoho.data.model.dto.friend.FriendInviteDto
-import com.ssafy.ganhoho.data.model.response.friend.FriendResponseResponse
+import com.ssafy.ganhoho.data.model.response.friend.FriendAddResponse
+import com.ssafy.ganhoho.data.model.response.friend.FriendApproveResponse
 import com.ssafy.ganhoho.data.model.response.handleResponse
 import com.ssafy.ganhoho.data.remote.RetrofitUtil
+import retrofit2.Response
 
 class FriendRepository {
 
@@ -36,22 +39,21 @@ class FriendRepository {
     suspend fun getFriendInvite(token: String): Result<List<FriendInviteDto>> {
         return try {
             val response = RetrofitUtil.friendService.getFriendInvite("Bearer $token")
-            Log.d("test", "토큰: $token")
-            Log.d("test", "응답 코드: ${response.code()}")  // 응답 코드 확인
             handleResponse(response)
         } catch (e: Exception) {
-            Log.e("test", "네트워크 에러 발생: ${e.message}")
             Result.failure(e)
         }
     }
 
     // 친구 요청 승인 및 거절
-    suspend fun respondToFriendInvite(token: String, friendId: Long, request: String)
-            : Result<FriendResponseResponse> {
+    suspend fun respondToFriendInvite(token: String, friendId: Long, request: FriendApproveRequest)
+            : Result<FriendApproveResponse> {
         return try {
             val response =
                 RetrofitUtil.friendService.respondToFriendInvite("Bearer $token", friendId, request)
+
             handleResponse(response)
+
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -61,7 +63,7 @@ class FriendRepository {
     suspend fun addFriendList(
         token: String,
         friendLoginId: FriendAddRequest
-    ): Result<Boolean> {
+    ): Result<FriendAddResponse> {
         return try {
             val response = RetrofitUtil.friendService.addFriendList("Bearer $token", friendLoginId)
             handleResponse(response)
@@ -77,6 +79,15 @@ class FriendRepository {
     ): Result<Boolean> {
         return try {
             val response = RetrofitUtil.friendService.updateFriendFavorite("Bearer $token", request)
+//            if (response.isSuccessful) {
+//                response.body()?.let {
+//                    Result.success(it)  // ✅ 성공 시 정상적으로 데이터 반환
+//                } ?: Result.failure(Exception("Response body is null"))
+//            } else {
+//                val errorBody = response.errorBody()?.string()
+//                Log.e("FriendRepository", "Error Body: $errorBody") // 에러 로그 추가
+//                Result.failure(Exception("Request failed: $errorBody")) // ❌ 실패 시 메시지 반환
+//            }
             handleResponse(response)
         } catch (e: Exception) {
             Result.failure(e)

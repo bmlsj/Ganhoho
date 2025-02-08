@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.ganhoho.data.model.dto.member.MemberDto
@@ -22,9 +23,10 @@ class MemberViewModel() : ViewModel() {
     val memberList: StateFlow<Result<List<MemberDto>>> = _memberList
 
     // 회원 검색 조회
-    fun searchFriend(token: String, friendLoginId: String) {
+    fun searchFriend(token: String, memberLoginId: String) {
         viewModelScope.launch {
-            val result = memberRepository.searchFriend(token, friendLoginId)
+            val result = memberRepository.searchFriend(token, memberLoginId)
+            Log.d("searchFriend", "$result, $memberLoginId")
             _memberList.value = result
         }
     }

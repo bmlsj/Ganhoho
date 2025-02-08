@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.ui.friend
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -7,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -56,14 +56,42 @@ fun FriendScreen(navController: NavController) {
     val friendViewModel: FriendViewModel = viewModel()
     val memberViewModel: MemberViewModel = viewModel()
 
+    // 친구 목록 조회
+    val friendListState = friendViewModel.friendList.collectAsState().value
+    val friendList = friendListState?.getOrNull() ?: emptyList()
+
+    // 친구 요청 조회
+    val friendInviteState = friendViewModel.friendInviteList.collectAsState().value
+    val friendInvite = friendInviteState?.getOrNull() ?: emptyList()
+
+    // 검색된 친구 목록 필터링
+    val filteredFriendList = remember(friendList, searchText.value) {
+        friendList.filter { friend ->
+            searchText.value.isEmpty() ||
+                    friend.friendLoginId.contains(searchText.value, ignoreCase = true) ||
+                    friend.name.contains(searchText.value, ignoreCase = true)
+        }
+    }
+
+    // 검색된 회원 전체 목록
+    val memberListState = memberViewModel.memberList.collectAsState().value
+    val memberList = memberListState.getOrNull() ?: emptyList()
+
     // 화면 처음 로드 시 친구 목록 불러오기
     LaunchedEffect(Unit) {
         friendViewModel.getFriendList(token)  // 친구 목록 조회
         friendViewModel.getFriendInvite(token)  // 친구 요청 목록 조회
-        memberViewModel.searchFriend(token, searchText.value)  // 검색한 텍스트로 검색
+    }
 
-        // 친구 추가: 회원 검색(아이디로) 리스트에서
-        friendViewModel.addFriendList(token, searchText.value)
+    LaunchedEffect(searchText.value) {
+        println("검색어: ${searchText.value}")
+        println("memberList: $memberList")
+
+        memberViewModel.searchFriend(token, searchText.value)  // 검색한 텍스트로 회원 전체 목록 검색
+    }
+
+    LaunchedEffect(memberList) {
+        Log.d("memberList", "$memberList")
     }
 
     Column(
@@ -86,7 +114,7 @@ fun FriendScreen(navController: NavController) {
 
             MenuItem("list", "친구목록", currentScreen)
             MenuItem("request", "친구요청", currentScreen)
-            MenuItem("add", "친구추가", currentScreen)
+            MenuItem("search", "친구검색", currentScreen)
 
         }
 
@@ -103,62 +131,59 @@ fun FriendScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-
-                // 친구 검색
-                OutlinedTextField(
-                    value = searchText.value,
-                    onValueChange = { searchText.value = it },
-                    placeholder = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+            if (currentScreen.value != "request") {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    // 친구 검색
+                    OutlinedTextField(
+                        value = searchText.value,
+                        onValueChange = { searchText.value = it },
+                        leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Search,
                                 contentDescription = "searchFriend",
                                 tint = Color.Gray
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
+                        },
+                        placeholder = {
                             Text(
-                                text = "이름으로 친구를 검색해보세요.",
+                                text = "아이디로 친구를 검색해보세요.",
                                 color = Color.Gray,
                                 fontSize = 16.sp
                             )
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    shape = RoundedCornerShape(30.dp), // 둥근 모서리
-                    colors = TextFieldDefaults.colors(
-                        unfocusedContainerColor = Color(0xfffdfdfd),
-                        focusedContainerColor = Color(0xfffdfdfd),
-                        unfocusedIndicatorColor = Color.LightGray,
-                        focusedIndicatorColor = Color.LightGray,
-                        focusedTextColor = Color.Black
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        shape = RoundedCornerShape(30.dp), // 둥근 모서리
+                        colors = TextFieldDefaults.colors(
+                            unfocusedContainerColor = Color(0xfffdfdfd),
+                            focusedContainerColor = Color(0xfffdfdfd),
+                            unfocusedIndicatorColor = Color.LightGray,
+                            focusedIndicatorColor = Color.LightGray,
+                            focusedTextColor = Color.Black
+                        )
                     )
-                )
+                }
             }
 
-
-            // 친구 목록 조회
-            val friendListState = friendViewModel.friendList.collectAsState().value
-            val friendList = friendListState?.getOrNull() ?: emptyList()
-
-            // 친구 요청 조회
-            val friendInviteState = friendViewModel.friendInviteList.collectAsState().value
-            val friendInvite = friendInviteState?.getOrNull() ?: emptyList()
-
-
+            // menu 별로 데이터 보여주기
             when (currentScreen.value) {
-                "list" -> {
-                    if (friendList.isNotEmpty()) {
-                        friendList.forEach { friend ->
-                            FriendList(friend = friend)
+                "list" -> {  // 전체 친구 목록
+                    if (filteredFriendList.isNotEmpty()) {
+                        filteredFriendList.forEach { friend ->
+                            FriendList(
+                                friend = friend,
+                                onFavoriteClick = { friendMemberId, isFavorite ->
+                                    friendViewModel.updateFriendFavorite(
+                                        token,
+                                        friendMemberId,
+                                        isFavorite
+                                    )
+                                }
+                            )
                         }
                     } else {
                         Spacer(modifier = Modifier.height(50.dp))
@@ -170,7 +195,7 @@ fun FriendScreen(navController: NavController) {
                     }
                 }
 
-                "request" -> {
+                "request" -> {  // 친구 요청 리스트
                     if (friendInvite.isNotEmpty()) {
                         friendInvite.forEach { friend ->
                             FriendRequestList(friend = friend)
@@ -181,10 +206,10 @@ fun FriendScreen(navController: NavController) {
                     }
                 }
 
-                "add" -> {
-                    if (friendList.isNotEmpty()) {
-                        friendList.forEach { friend ->
-                            FriendAdd(friend = friend)
+                "search" -> {  // 친구 추가를 위해 전체 회원 목록 검색
+                    if (searchText.value.isNotEmpty() && memberList.isNotEmpty()) {
+                        memberList.forEach { member ->
+                            FriendAdd(member = member, friendList = friendList)
                         }
                     } else {
                         Spacer(modifier = Modifier.height(50.dp))

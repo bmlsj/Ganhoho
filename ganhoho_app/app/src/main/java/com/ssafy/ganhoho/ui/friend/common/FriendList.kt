@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -30,16 +31,22 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ssafy.ganhoho.BuildConfig
 import com.ssafy.ganhoho.data.model.dto.friend.FriendDto
+import com.ssafy.ganhoho.viewmodel.FriendViewModel
 
 
 @Composable
 fun FriendList(
-    friend: FriendDto
+    friend: FriendDto,
+    onFavoriteClick: (Long, Boolean) -> Unit // 클릭 이벤트 콜백 추가
 ) {
 
     // 즐겨찾기 상태를 기억하고 변경 시, UI 업데이트
     val isFavorite = remember { mutableStateOf(friend.isFavorite) }
+
+    // viewModel
 
     Box(
         modifier = Modifier
@@ -49,7 +56,7 @@ fun FriendList(
             .background(Color.White, shape = RoundedCornerShape(15.dp))
             .padding(16.dp)
             .clickable {
-                // 아이디로 근무 기록 조회 기능
+                // TODO: 아이디로 친구 근무 기록 조회 기능
 
             }
     ) {
@@ -73,7 +80,7 @@ fun FriendList(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = friend.friendLoginId,
+                        text = "목록 @${friend.friendLoginId}",
                         color = Color.Gray,
                         fontSize = 14.sp
                     )
@@ -119,11 +126,12 @@ fun FriendList(
             Box(
                 modifier = Modifier
                     .size(20.dp)
-                    .shadow(4.dp, shape = CircleShape)
+                    .shadow(2.dp, shape = CircleShape, spotColor = Color.LightGray)
                     .clickable {
                         // TODO: isFavorite 변화 수정 로직
-
-                        isFavorite.value = !isFavorite.value
+                        val newFavoriteState = !isFavorite.value
+                        isFavorite.value = newFavoriteState
+                        onFavoriteClick(friend.memberId, newFavoriteState) // ViewModel 업데이트 요청
                     }
                     .background(Color.White, shape = CircleShape),
                 contentAlignment = Alignment.Center,
@@ -148,8 +156,10 @@ fun FriendList(
 fun FreiendPreview() {
     FriendList(
         FriendDto(
-            "@jeonghu1010", "서정후",
+            -1, -1, "@jeonghu1010", "서정후",
             "싸피병원", "일반병동", true
-        )
+        ), onFavoriteClick = { friendId, isFavorite ->
+            println("🔥 즐겨찾기 상태 변경: ID = $friendId, 새로운 상태 = $isFavorite")
+        }
     )
 }

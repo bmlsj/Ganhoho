@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ssafy.ganhoho.BuildConfig
+import com.ssafy.ganhoho.data.model.dto.friend.FriendApproveRequest
 import com.ssafy.ganhoho.data.model.dto.friend.FriendInviteDto
 import com.ssafy.ganhoho.viewmodel.FriendViewModel
 
@@ -136,7 +137,7 @@ fun FriendRequestList(
                                 viewModel.respondToFriendInvite(
                                     token,
                                     friend.friendRequestId,
-                                    "ACCEPTED"
+                                    FriendApproveRequest("ACCEPTED")
                                 )
                             }
                     ) {

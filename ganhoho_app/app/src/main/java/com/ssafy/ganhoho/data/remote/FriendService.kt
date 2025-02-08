@@ -1,17 +1,19 @@
 package com.ssafy.ganhoho.data.remote
 
 import com.ssafy.ganhoho.data.model.dto.friend.FriendAddRequest
+import com.ssafy.ganhoho.data.model.dto.friend.FriendApproveRequest
+import com.ssafy.ganhoho.data.model.response.friend.FriendApproveResponse
 import com.ssafy.ganhoho.data.model.dto.friend.FriendDto
 import com.ssafy.ganhoho.data.model.dto.friend.FriendFavoriteRequest
 import com.ssafy.ganhoho.data.model.dto.friend.FriendInviteDto
-import com.ssafy.ganhoho.data.model.response.friend.FriendResponseResponse
+import com.ssafy.ganhoho.data.model.response.friend.FriendAddResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.PATCH
 import retrofit2.http.POST
-import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface FriendService {
@@ -37,18 +39,19 @@ interface FriendService {
     suspend fun respondToFriendInvite(
         @Header("Authorization") token: String,
         @Path("friendId") friendId: Long,
-        @Body requestStatus: String
-    ): Response<FriendResponseResponse>
+        @Body requestStatus: FriendApproveRequest
+    ): Response<FriendApproveResponse>
 
     // 친구 추가
     @POST("api/friends/request")
     suspend fun addFriendList(
         @Header("Authorization") token: String,
         @Body friendLoginId: FriendAddRequest
-    ): Response<Boolean>
+    ): Response<FriendAddResponse>
+
 
     // 친구 즐겨찾기 수정
-    @PUT("api/friends/favorite")
+    @PATCH("api/friends/favorite")
     suspend fun updateFriendFavorite(
         @Header("Authorization") token: String, @Body request: FriendFavoriteRequest  // 즐겨찾기 수정 데이터
     ): Response<Boolean>
