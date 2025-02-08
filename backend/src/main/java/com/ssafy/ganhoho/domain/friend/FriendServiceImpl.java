@@ -113,29 +113,18 @@ public class FriendServiceImpl implements FriendService {
         Member member = authRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
 
-        //친구 요청 목록 조회(양방향)
+        //친구 요청 목록 조회(단방향 - 받은요청만)
         List<Friend> receivedRequests = friendRepository.findRequestsByLoginId(member.getLoginId());
-        List<Friend> sentRequests = friendRepository.findRequestsByMember(member);
-
-        List<Friend> allRequests = new ArrayList<>();
-        allRequests.addAll(receivedRequests);
-        allRequests.addAll(sentRequests);
-
 
         //요청 X
-        if (allRequests.isEmpty()) {
+        if (receivedRequests.isEmpty()) {
             return List.of();
         }
 
         // 친구요청목록 -> FriendRequestListResponse 변환.
-        return allRequests.stream().map(request -> {
+        return receivedRequests.stream().map(request -> {
 
-            // 관계에 따른 멤버 가져오기
-            String targetLoginId = request.getMember().getLoginId().equals(member.getLoginId())
-                    ? request.getFriendLoginId()
-                    : request.getMember().getLoginId();
-
-            Member otherMember = authRepository.findByLoginId(targetLoginId)
+            Member otherMember = authRepository.findByLoginId(request.getMember().getLoginId())
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
 
             return FriendRequestListResponse.builder()
