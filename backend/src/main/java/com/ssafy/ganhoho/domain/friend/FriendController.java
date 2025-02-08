@@ -3,6 +3,14 @@ package com.ssafy.ganhoho.domain.friend;
 import com.ssafy.ganhoho.domain.friend.dto.*;
 import com.ssafy.ganhoho.global.auth.SecurityUtil;
 import com.ssafy.ganhoho.global.error.CustomException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -12,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Slf4j
+@Tag(name = "Friend", description = "친구 API")
+@SecurityRequirement(name = "bearer-jwt")
 @RestController
 @RequestMapping("/api/friends")
 @RequiredArgsConstructor
@@ -19,7 +29,14 @@ public class FriendController {
 
     private final FriendService friendService;
 
-    // 친구 목록조회
+    @Operation(summary = "친구 목록 조회", description = "인증된 사용자의 전체 친구 목록 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "친구 목록 조회 성공 혹은 빈 리스트 반환(없을시)",
+                content = @Content(schema = @Schema(implementation = FriendListResponse.class))),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 요청입니다."),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 회원입니다."),
+            @ApiResponse(responseCode = "500", description = "서버 내부 오류가 발생했습니다. 다시 시도해 주세요.")
+    })
     @GetMapping("/list")
     public ResponseEntity<?> getFriendsList() {
         try {
@@ -38,8 +55,18 @@ public class FriendController {
         }
 
     }
+
+    @Operation(summary = "친구 삭제", description = "친구 관계를 삭제합니다(양방향 삭제)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "친구 삭제 성공",
+                content = @Content(schema = @Schema(implementation = FriendDeleteResponse.class))),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 요청입니다. (JWT 토큰 누락 또는 유효하지 않을 시)"),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 회원입니다. (회원 ID가 존재하지 않을 시"),
+            @ApiResponse(responseCode = "500", description = "서버 내부 오류가 발생했습니다. 다시 시도해 주세요. (서버 오류 발생시)")
+    })
     @DeleteMapping("/{friendId}")
     public ResponseEntity<?> deleteFriend(
+            @Parameter(description = "삭제할 친구 관계의 ID")
             @PathVariable("friendId") Long friendId) {
         try {
             Long memberId = SecurityUtil.getCurrentMemberId();
@@ -56,6 +83,7 @@ public class FriendController {
         }
     }
 
+    @Operation(summary = "친구 요청 목록 조회", description = "인증된 사용자의 전체 친구 요청 목록 조회")
     @GetMapping("/requests/list")
     public ResponseEntity<?> getFriendRequestList() {
         try {

@@ -1,4 +1,4 @@
-package com.ssafy.ganhoho.domain.friend.dto;
+package com.ssafy.ganhoho.domain.friend.entity;
 
 
 import com.ssafy.ganhoho.domain.friend.constant.RequestStatus;
@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class FriendDto {
+public class Friend {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

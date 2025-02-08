@@ -1,4 +1,4 @@
-package com.ssafy.ganhoho.domain.group.dto;
+package com.ssafy.ganhoho.domain.group.entity;
 
 
 import jakarta.persistence.*;
@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 // 그룹 기본 정보
-public class GroupDto {
+public class Group {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "group_id")
