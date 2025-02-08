@@ -1,7 +1,16 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
+}
+
+// 1. 추가
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
 }
 
 android {
@@ -38,10 +47,12 @@ android {
         jvmTarget = "1.8"
     }
     buildFeatures {
+        // 3. 추가
+        buildConfig = true
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.10"
     }
     packaging {
         resources {
@@ -68,12 +79,29 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-
     implementation("com.kizitonwose.calendar:compose:2.6.2")
+    implementation("androidx.compose.material:material:1.7.5")
+    implementation("androidx.navigation:navigation-compose:2.8.5")
     implementation("androidx.compose.material:material:1.7.5")     // material2 지원
     implementation ("androidx.navigation:navigation-compose:2.8.5")  // 네비게이션 구현
 
     implementation("androidx.compose.foundation:foundation:1.7.7") // LazyGrid 지원
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0") // 날짜 지원
+
+    // retrofit2
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
+
+    // Compose ViewModel
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+
+    // okhttp3
+    implementation("com.squareup.okhttp3:okhttp")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+
+    // datastore
+    implementation ("androidx.datastore:datastore-preferences:1.1.2")
+    implementation ("androidx.datastore:datastore-core:1.1.2")  // 코어 의존성 (필요 시)
 
 }
