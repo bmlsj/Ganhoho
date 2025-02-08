@@ -41,7 +41,7 @@ class ApplicationClass : Application() {
         val client = OkHttpClient.Builder()
             .readTimeout(5000, TimeUnit.MILLISECONDS)
             .connectTimeout(5000, TimeUnit.MILLISECONDS)
-            .addInterceptor(AuthInterceptor(sharedPreferencesUtil))
+            .addInterceptor(AuthInterceptor(this))
             .addInterceptor(loggingInterceptor)
             .build()
 

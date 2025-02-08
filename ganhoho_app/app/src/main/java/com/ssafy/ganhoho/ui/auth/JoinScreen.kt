@@ -1,4 +1,4 @@
-package com.ssafy.ganhoho.ui.join
+package com.ssafy.ganhoho.ui.auth
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -28,6 +28,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,6 +51,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.ssafy.ganhoho.R
+import com.ssafy.ganhoho.data.model.dto.member.SignUpRequest
 import com.ssafy.ganhoho.ui.theme.FieldGray
 import com.ssafy.ganhoho.ui.theme.FieldLightGray
 import com.ssafy.ganhoho.ui.theme.PrimaryBlue
@@ -58,7 +61,8 @@ import com.ssafy.ganhoho.viewmodel.AuthViewModel
 fun JoinScreen(navController: NavController) {
 
     // 뷰 모델
-    val viewModel: AuthViewModel = viewModel()
+    val authViewModel: AuthViewModel = viewModel()
+    val context = LocalContext.current
 
     // 변수
     var id by remember { mutableStateOf("") }
@@ -68,26 +72,49 @@ fun JoinScreen(navController: NavController) {
     var name by remember { mutableStateOf("") }
     var hospital by remember { mutableStateOf("") }
     var ward by remember { mutableStateOf("") }
-    val context = LocalContext.current
+
+    // 아이디 중복 확인 결과
+    val idCheckResult by authViewModel.isIdUsed.collectAsState()
+    // 회원가입 요청 결과 확인
+    val signUpResult by authViewModel.signUpResult.collectAsState()
+
+    // 회원가입 버튼 활성화 조건
+    val isSignUpEnabled =
+        id.isNotEmpty() && password.isNotEmpty() && name.isNotEmpty() && idCheckResult != null && !idCheck
+
+    // 아이디 중복 체크 결과 감지
+    LaunchedEffect(idCheckResult) {
+        idCheckResult?.onSuccess { isUsed ->
+            idCheck = isUsed
+            val message = if (!isUsed) "사용 가능한 ID입니다." else "이미 사용 중인 ID입니다."
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }?.onFailure { error ->
+            Toast.makeText(context, "아이디 중복 확인 실패: ${error.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // 회원가입 요청 결과 감지 → 성공하면 main 화면으로 이동
+    LaunchedEffect(signUpResult) {
+        signUpResult?.onSuccess {
+            Toast.makeText(context, "회원가입 성공!", Toast.LENGTH_SHORT).show()
+            navController.navigate("login") // ✅ 회원가입 성공하면 login 이동
+        }?.onFailure { error ->
+            Toast.makeText(context, "회원가입 실패: ${error.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
 
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFE9F6FA)), // 배경색
-        horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.Top
+        horizontalAlignment = Alignment.Start, verticalArrangement = Arrangement.Top
     ) {
         Spacer(modifier = Modifier.height(28.dp))
-        Button(
-            onClick = { viewModel.signUpTest() },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("회원가입 테스트 실행")
-        }
+
         // 로고 영역
         Text(
-            text = "GANHOHO",
+            text = "간호호",
             fontSize = 30.sp,
             fontWeight = FontWeight.Bold,
             color = PrimaryBlue,
@@ -100,12 +127,10 @@ fun JoinScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .shadow(
-                    elevation = 10.dp,
-                    shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
+                    elevation = 10.dp, shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
                 )
                 .background(
-                    Color.White,
-                    shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
+                    Color.White, shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
                 )
         ) {
             Column(
@@ -116,7 +141,7 @@ fun JoinScreen(navController: NavController) {
             ) {
                 // Join 텍스트
                 Text(
-                    text = "Join",
+                    text = "회원가입",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black,
@@ -132,7 +157,6 @@ fun JoinScreen(navController: NavController) {
                     label = { Text("ID", color = FieldGray) },
                     leadingIcon = {
                         Row {
-
                             Spacer(modifier = Modifier.width(12.dp))
                             Icon(
                                 imageVector = Icons.Default.Person,
@@ -157,28 +181,34 @@ fun JoinScreen(navController: NavController) {
                                 modifier = Modifier
                                     .alpha(0.2f)
                                     .border(
-                                        width = 1.5.dp,
-                                        color = Color(0xFF79C7E3),
-                                        shape = RoundedCornerShape(size = 5.dp)
+                                        width = 1.5.dp, color = when {
+                                            idCheckResult == null -> Color.Gray  // 버튼을 누르지 않은 상태
+                                            idCheck -> Color.Red  // 중복된 아이디
+                                            else -> PrimaryBlue  // 사용 가능 아이디
+                                        }, shape = RoundedCornerShape(size = 5.dp)
                                     )
                                     .width(25.dp)
                                     .height(25.dp)
                                     .background(
-                                        color = Color(0xFFDAF0F7),
-                                        shape = RoundedCornerShape(size = 5.dp)
+                                        color = when {
+                                            idCheckResult == null -> Color.LightGray  // 버튼을 누르지 않은 상태
+                                            idCheck -> Color.Magenta  // 중복된 아이디(좀더 연하게)
+                                            else -> PrimaryBlue  // 사용 가능 아이디
+                                        }, shape = RoundedCornerShape(size = 5.dp)
                                     )
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = "Name Icon",
-                                    tint = if (idCheck) Color.Gray else PrimaryBlue,
+                                Icon(imageVector = Icons.Default.Check,
+                                    contentDescription = "Check ID",
+                                    tint = when {
+                                        idCheckResult == null -> Color.DarkGray  // 버튼을 누르지 않은 상태
+                                        idCheck -> Color.Red  // 중복된 아이디
+                                        else -> Color.Blue  // 사용 가능 아이디
+                                    },
                                     modifier = Modifier.clickable {
-                                        idCheck = id.isNotEmpty() && id != "alreadyTakenId"
-                                        val message =
-                                            if (idCheck) "사용 가능한 ID입니다." else "이미 사용 중인 ID입니다."
-                                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                                    }
-                                )
+                                        if (id.isNotEmpty()) {
+                                            authViewModel.checkIsIdUsed(id)
+                                        }
+                                    })
 
                             }
 
@@ -190,13 +220,11 @@ fun JoinScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // PW 입력
-                OutlinedTextField(
-                    value = password,
+                OutlinedTextField(value = password,
                     onValueChange = { password = it },
                     label = {
                         Text(
-                            "PW",
-                            color = Color(0xFFC0C0C0)
+                            "PW", color = Color(0xFFC0C0C0)
                         )
                     },
                     leadingIcon = {
@@ -211,18 +239,16 @@ fun JoinScreen(navController: NavController) {
                     },
                     trailingIcon = {
                         Row {
-                            Icon(
-                                painter = if (!passwordVisible) painterResource(id = R.drawable.visibility) else painterResource(
-                                    id = R.drawable.visibilty_off
-                                ),
+                            Icon(painter = if (passwordVisible) painterResource(id = R.drawable.visibility) else painterResource(
+                                id = R.drawable.visibilty_off
+                            ),
                                 contentDescription = "Toggle Password Visibility",
                                 modifier = Modifier
                                     .clickable {
                                         passwordVisible = !passwordVisible
                                     }
                                     .size(22.dp),
-                                tint = Color(0xFFC0C0C0)
-                            )
+                                tint = Color(0xFFC0C0C0))
                             Spacer(modifier = Modifier.width(12.dp))
                         }
                     },
@@ -243,8 +269,7 @@ fun JoinScreen(navController: NavController) {
 
 
                 // Name 입력
-                OutlinedTextField(
-                    value = name,
+                OutlinedTextField(value = name,
                     onValueChange = { name = it },
                     label = { Text("Name", color = FieldGray) },
                     leadingIcon = {
@@ -276,8 +301,7 @@ fun JoinScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    OutlinedTextField(
-                        value = hospital,
+                    OutlinedTextField(value = hospital,
                         onValueChange = { hospital = it },
                         label = { Text("Hospital", color = FieldGray) },
                         leadingIcon = {
@@ -307,8 +331,7 @@ fun JoinScreen(navController: NavController) {
                         onClick = {
                             // 병원 찾기 페이지로 이동
                             navController.navigate("hospitalInfo")
-                        },
-                        colors = ButtonDefaults.buttonColors(
+                        }, colors = ButtonDefaults.buttonColors(
                             containerColor = PrimaryBlue
                         )
                     ) {
@@ -320,8 +343,7 @@ fun JoinScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Ward 선택
-                OutlinedTextField(
-                    value = ward,
+                OutlinedTextField(value = ward,
                     onValueChange = { ward = it },
                     label = { Text("Ward", color = FieldGray) },
                     leadingIcon = {
@@ -350,18 +372,23 @@ fun JoinScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Sign Up 버튼
-                Button(
-                    onClick = { /* 회원가입 로직 */
-                        // 회원 가입 성공 시, mainScreen으로 이동
-                        navController.navigate("main")
-                    },
+                Button(onClick = {
+                    val signUpRequest = SignUpRequest(id, password, name, hospital, ward)
+                    authViewModel.signUp(signUpRequest) // ✅ 회원가입 요청 보내기
+                },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
-                    shape = RoundedCornerShape(20.dp)
+                        .height(50.dp)
+                        .clickable {
+                            // TODO: 회원 가입 viewModel 부르기
+                            val signUpRequest = SignUpRequest(id, password, name, hospital, ward)
+                            authViewModel.signUp(signUpRequest = signUpRequest)
+                        },
+                    colors = ButtonDefaults.buttonColors(containerColor = if (idCheck) Color.Gray else PrimaryBlue),
+                    shape = RoundedCornerShape(20.dp),
+                    enabled = isSignUpEnabled // 활성화
                 ) {
-                    Text(text = "Sign Up", color = Color.White, fontSize = 16.sp)
+                    Text(text = "회원가입", color = Color.White, fontSize = 16.sp)
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -373,15 +400,13 @@ fun JoinScreen(navController: NavController) {
                 ) {
                     Text(text = "Already have an account?", color = Color.Gray, fontSize = 14.sp)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Sign In",
+                    Text(text = "Sign In",
                         color = Color.Red,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.clickable { /* 로그인 화면으로 이동 */
                             navController.navigate("login")
-                        }
-                    )
+                        })
                 }
             }
         }

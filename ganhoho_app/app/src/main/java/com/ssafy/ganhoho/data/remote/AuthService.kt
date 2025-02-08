@@ -12,9 +12,8 @@ import retrofit2.http.Query
 interface AuthService {
 
     // 회원 가입
-    // @Headers("Content-Type: application/json")
     @POST("api/auth/signup")
-    suspend fun signUp(@Body request: SignUpRequest): Response<String>
+    suspend fun signUp(@Body request: SignUpRequest): Response<Boolean>
 
     // 로그인
     @POST("api/auth/login")
@@ -23,6 +22,6 @@ interface AuthService {
     // 아이디 존재 여부
     // true일 때 중복, false일때 사용 가능
     @GET("api/auth/duplicate-check")
-    suspend fun isUsedId(@Query("loginId") id: Long): Response<Boolean>
+    suspend fun isUsedId(@Query("loginId") id: String): Response<Boolean>
 
 }
