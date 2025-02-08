@@ -98,9 +98,12 @@ dependencies {
     // Compose ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
 
-    // ok
+    // okhttp3
     implementation("com.squareup.okhttp3:okhttp")
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
 
+    // datastore
+    implementation ("androidx.datastore:datastore-preferences:1.1.2")
+    implementation ("androidx.datastore:datastore-core:1.1.2")  // 코어 의존성 (필요 시)
 
 }
