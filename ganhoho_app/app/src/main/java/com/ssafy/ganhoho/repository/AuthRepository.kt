@@ -19,7 +19,7 @@ class AuthRepository {
     }
 
     // 회원 가입
-    suspend fun signUp(signUpRequest: SignUpRequest): Result<String> {
+    suspend fun signUp(signUpRequest: SignUpRequest): Result<Boolean> {
         return try {
             val response = RetrofitUtil.authService.signUp(signUpRequest)
             handleResponse(response) // 🔹 공통 응답 처리 함수 호출
@@ -29,7 +29,7 @@ class AuthRepository {
     }
 
     // 아이디 중복 확인 요청
-    suspend fun isUsedId(loginId: Long): Result<Boolean> {
+    suspend fun isUsedId(loginId: String): Result<Boolean> {
         return try {
             val response = RetrofitUtil.authService.isUsedId(loginId)
             handleResponse(response) // 🔹 공통 응답 처리 함수 호출

@@ -1,4 +1,4 @@
-package com.ssafy.ganhoho.ui.join
+package com.ssafy.ganhoho.ui.auth
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable

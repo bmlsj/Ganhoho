@@ -1,4 +1,4 @@
-package com.ssafy.ganhoho.ui.login
+package com.ssafy.ganhoho.ui.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
