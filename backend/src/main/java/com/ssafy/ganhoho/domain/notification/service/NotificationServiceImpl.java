@@ -6,6 +6,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.ssafy.ganhoho.domain.member.MemberRepository;
 import com.ssafy.ganhoho.domain.member.entity.Member;
 import com.ssafy.ganhoho.domain.notification.NotificationMapper;
+import com.ssafy.ganhoho.domain.notification.dto.FcmDto;
 import com.ssafy.ganhoho.domain.notification.dto.NotificationDto;
 import com.ssafy.ganhoho.domain.notification.entity.Notification;
 import com.ssafy.ganhoho.domain.notification.repository.DeviceGroupRepository;
@@ -31,8 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.ssafy.ganhoho.global.auth.SecurityUtil.getCurrentMemberId;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -46,7 +45,7 @@ public class NotificationServiceImpl implements NotificationService{
     public void changeSubscription(Long memberId, Boolean isSubscribe) {
         Member member = memberRepository.findByMemberId(memberId).orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
 
-        String notificationKeyName = KoreanToQwertyConverter.convert(member.getHospital()) + "_"+ KoreanToQwertyConverter.convert(member.getWard());
+        String notificationKeyName = makeNotificationKeyName(member.getHospital(), member.getWard());
         DeviceGroup deviceGroup = deviceGroupRepository.findByNotificationKeyName(notificationKeyName);
         String message;
         try{
@@ -71,18 +70,16 @@ public class NotificationServiceImpl implements NotificationService{
 
     @Override
     public List<NotificationDto> getNotifications(Long memberId) {
-        log.info("memberId : {}",memberId);
         List<Notification> notifications = notificationRepository.findAllByMemberId(memberId);
-        log.info("notification list : {}",notifications);
-        List<NotificationDto> notificationDtos = NotificationMapper.INSTANCE.notificationListToNotificationDtoList(notifications);
-        log.info("notificationDtos : {}",notificationDtos);
         return NotificationMapper.INSTANCE.notificationListToNotificationDtoList(notifications);
     }
 
     @Override
-    public void saveNotification(NotificationDto notificationSendRequestBody) {
-        // 우선 몽고디비 연결 위해 저장하는 것만 하는 함수 생성, 이후 메세지를 보낸 후 저장하는 것으로 로직 변경 예정
-        Long memberId = getCurrentMemberId();
+    public void sendNotification(Long memberId, NotificationDto notificationSendRequestBody) {
+        Member member = memberRepository.findByMemberId(memberId).orElseThrow(() -> new CustomException(ErrorCode.MISSING_REQUIRED_USER_DATA));
+        String notificationKeyName = makeNotificationKeyName(member.getHospital(), member.getWard());
+        sendFcmToServer(notificationKeyName, notificationSendRequestBody.getTitle(), notificationSendRequestBody.getMessage());
+
         Notification notification = Notification.builder()
                 .type(notificationSendRequestBody.getType())
                 .message(notificationSendRequestBody.getMessage())
@@ -92,7 +89,7 @@ public class NotificationServiceImpl implements NotificationService{
         notificationRepository.save(notification);
     }
 
-    public void manageDeviceGroup(String notificationKey, String notificationKeyName, String message) { // 기기그룹에 토큰 추가하기
+    private void manageDeviceGroup(String notificationKey, String notificationKeyName, String message) { // 기기그룹에 토큰 추가하기
         try {
             OkHttpClient client = new OkHttpClient();
             RequestBody requestBody = RequestBody.create(message, MediaType.get("application/json; charset=utf-8"));
@@ -109,14 +106,18 @@ public class NotificationServiceImpl implements NotificationService{
             if(response.isSuccessful()) {
                 if(notificationKey.isEmpty()) saveNewDeviceGroup(notificationKeyName, response);
             }
-            else log.error("notification response not success : {}", response.body().string());
+            else {
+                log.error("notification response not success : {}", response.body().string());
+                throw new Exception(response.body().string());
+            }
 
         }catch (Exception e) {
             log.error("add NewMemberDeviceGroup error : {}",e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
-    public void saveNewDeviceGroup(String notificationKeyName, Response response) throws IOException, ParseException { // db에 deviceGroup 정보 저장
+    private void saveNewDeviceGroup(String notificationKeyName, Response response) throws IOException, ParseException { // db에 deviceGroup 정보 저장
         String jsonString = response.body().string();
 
         JSONParser jsonParser = new JSONParser();
@@ -131,6 +132,42 @@ public class NotificationServiceImpl implements NotificationService{
             deviceGroupRepository.save(deviceGroup);
         } else {
             throw new IllegalStateException("Invalid notification_key type");
+        }
+    }
+
+    private void sendFcmToServer(String notificationKey, String title, String content) {
+        try {
+            Map<String, String> data = new HashMap<>(); // key - value로 알림 데이터 넣어서 보내기
+            data.put("title", title);
+            data.put("content",content);
+
+            FcmDto fcmDto = FcmDto.builder()
+                    .message(FcmDto.Message.builder()
+                            .token(notificationKey)
+                            .data(data)
+                            .build())
+                    .build();
+
+            String message = objectMapper.writeValueAsString(fcmDto);
+
+            OkHttpClient client = new OkHttpClient();
+            RequestBody requestBody = RequestBody.create(message, MediaType.get("application/json; charset=utf-8"));
+            Request request = new Request.Builder()
+                    .url(FcmConstant.FIREBASE_POST_MESSAGE_URL.value())
+                    .post(requestBody)
+                    .addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + getAccessToken())
+                    .addHeader(HttpHeaders.CONTENT_TYPE, "application/json; UTF-8")
+                    .build();
+
+            Response response = client.newCall(request).execute();
+            if(response.isSuccessful() == false) {
+                log.error("notification response not success : {}", response.body().string());
+                throw new Exception(response.body().string());
+            }
+
+        }catch (Exception e) {
+            log.error("add NewMemberDeviceGroup error : {}",e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -155,6 +192,10 @@ public class NotificationServiceImpl implements NotificationService{
         ));
 
         return objectMapper.writeValueAsString(map);
+    }
+
+    private String makeNotificationKeyName(String hospital, String ward){
+        return KoreanToQwertyConverter.convert(hospital) + "_"+ KoreanToQwertyConverter.convert(ward);
     }
 
 }

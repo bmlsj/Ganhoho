@@ -13,6 +13,7 @@ public enum ErrorCode {
     INVALID_REQUEST_DATA("요청 데이터가 유효하지 않습니다.", HttpStatus.BAD_REQUEST),
     INVALID_REQUEST_PARAMETERS("요청 파라미터가 유효하지 않습니다.", HttpStatus.BAD_REQUEST),
     INVALID_IMAGE_FORMAT("유효하지 않은 이미지 형식입니다.", HttpStatus.BAD_REQUEST),
+    MISSING_REQUIRED_USER_DATA("요청을 처리하기 위한 유저의 필수 데이터가 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
 
     // 401 UNAUTHORIZED
     UNAUTHORIZED("인증되지 않은 요청입니다.", HttpStatus.UNAUTHORIZED),

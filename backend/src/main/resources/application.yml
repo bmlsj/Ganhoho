@@ -17,6 +17,12 @@ spring:
     mongodb:
       uri: mongodb://localhost:27017/ganhoho
       auto-index-creation: true
+  mvc:
+    dispatch-options-request: true
+    dispatch-trace-request: true
+  web:
+    resources:
+      add-mappings: false
 
 server:
   servlet:

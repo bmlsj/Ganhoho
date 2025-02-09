@@ -29,7 +29,8 @@ public class NotificationController {
 
     @PostMapping("/button-pattens")
     public void sendNotification(@RequestBody NotificationDto notificationDto) {
-        notificationService.saveNotification(notificationDto);
+        Long memberId = getCurrentMemberId();
+        notificationService.sendNotification(memberId, notificationDto);
     }
 
     @GetMapping
