@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,6 +35,7 @@ import com.ssafy.ganhoho.BuildConfig
 import com.ssafy.ganhoho.data.model.dto.friend.FriendAddRequest
 import com.ssafy.ganhoho.data.model.dto.friend.FriendDto
 import com.ssafy.ganhoho.data.model.dto.member.MemberDto
+import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.FriendViewModel
 
 @Composable
@@ -42,8 +44,18 @@ fun FriendAdd(
     friendList: List<FriendDto>
 ) {
 
-    val token = BuildConfig.TOKEN
+    val authViewModel: AuthViewModel = viewModel()
     val friendViewModel: FriendViewModel = viewModel()
+
+    // 토큰 로드하기
+    val token = authViewModel.accessToken.collectAsState().value
+    val context = LocalContext.current
+
+    LaunchedEffect(token) {
+        if (token.isNullOrEmpty()) {
+            authViewModel.loadTokens(context)
+        }
+    }
 
     // ✅ 현재 검색된 회원이 이미 친구인지 확인
     val isFriend = friendList.any { it.friendLoginId == member.loginId }
@@ -151,9 +163,10 @@ fun FriendAdd(
                             )
                             .padding(horizontal = 18.dp, vertical = 4.dp)
                             .clickable(enabled = isClickable) {
-                                // TODO: 추가 버튼 누를 시,
                                 // 친구 리스트에 친구 추가(POST)하면, true/false 반환
-                                friendViewModel.addFriendList(token, member.loginId)
+                                if (token != null) {
+                                    friendViewModel.addFriendList(token, member.loginId)
+                                }
                             },
                         color = Color.White,
                         fontSize = 12.sp,
