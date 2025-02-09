@@ -45,7 +45,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.ssafy.ganhoho.R
-import com.ssafy.ganhoho.data.model.dto.member.LoginRequest
+import com.ssafy.ganhoho.data.model.dto.auth.LoginRequest
 import com.ssafy.ganhoho.ui.theme.BackgroundBlue40
 import com.ssafy.ganhoho.ui.theme.FieldGray
 import com.ssafy.ganhoho.ui.theme.FieldLightGray

@@ -5,8 +5,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.ganhoho.base.SecureDataStore
-import com.ssafy.ganhoho.data.model.dto.member.LoginRequest
-import com.ssafy.ganhoho.data.model.dto.member.SignUpRequest
+import com.ssafy.ganhoho.data.model.dto.auth.LoginRequest
+import com.ssafy.ganhoho.data.model.dto.auth.SignUpRequest
 import com.ssafy.ganhoho.data.model.response.auth.LoginResponse
 import com.ssafy.ganhoho.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -1,4 +1,4 @@
-package com.ssafy.ganhoho.ui.home.common
+package com.ssafy.ganhoho.ui.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

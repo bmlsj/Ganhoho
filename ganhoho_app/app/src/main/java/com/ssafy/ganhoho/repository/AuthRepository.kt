@@ -1,8 +1,8 @@
 package com.ssafy.ganhoho.repository
 
 import android.util.Log
-import com.ssafy.ganhoho.data.model.dto.member.LoginRequest
-import com.ssafy.ganhoho.data.model.dto.member.SignUpRequest
+import com.ssafy.ganhoho.data.model.dto.auth.LoginRequest
+import com.ssafy.ganhoho.data.model.dto.auth.SignUpRequest
 import com.ssafy.ganhoho.data.model.response.auth.LoginResponse
 import com.ssafy.ganhoho.data.model.response.handleMessageResponse
 import com.ssafy.ganhoho.data.model.response.handleResponse

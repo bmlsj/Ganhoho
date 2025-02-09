@@ -1,4 +1,4 @@
-package com.ssafy.ganhoho.ui.home.common
+package com.ssafy.ganhoho.ui.home
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.core.animateDpAsState
@@ -52,15 +52,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.ssafy.ganhoho.R
-import com.ssafy.ganhoho.data.model.dto.MySchedule
+import com.ssafy.ganhoho.data.model.dto.schedule.MySchedule
+import com.ssafy.ganhoho.data.model.dto.schedule.MyScheduleRequest
+import com.ssafy.ganhoho.ui.home.common.CustomDatePickerDialog
+import com.ssafy.ganhoho.ui.home.common.TimePicker
 import com.ssafy.ganhoho.ui.theme.FieldLightGray
 import com.ssafy.ganhoho.ui.theme.PrimaryBlue
-import kotlinx.datetime.toLocalDate
-import kotlinx.datetime.toLocalDateTime
-import java.time.LocalDateTime
+import com.ssafy.ganhoho.viewmodel.ScheduleViewModel
+import kotlinx.datetime.LocalDateTime
 
 
 @SuppressLint("UnrememberedMutableState")
@@ -68,14 +71,13 @@ import java.time.LocalDateTime
 @Composable
 fun ShowPreview() {
     val navController = rememberNavController()
-    AddDateBottomSheet(mutableStateOf(true), navController, {})
+    AddDateBottomSheet(mutableStateOf(true), navController)
 }
 
 @Composable
 fun AddDateBottomSheet(
     showBottomSheet: MutableState<Boolean>,
-    navController: NavController,
-    onScheduleAdded: (MySchedule) -> Unit  // ✅ 콜백 추가
+    navController: NavController
 ) {
 
     val startDate = remember { mutableStateOf("0000-00-00") } // ✅ 날짜 기본값 설정
@@ -84,6 +86,23 @@ fun AddDateBottomSheet(
     val selectedColor = remember { mutableStateOf(Color.White) }
     var isTimeSet by remember { mutableStateOf(false) } // ✅ 시간 설정 Switch 상태 저장
     val isPublic = remember { mutableStateOf(false) }
+
+    val startTime = remember { mutableStateOf("00:00:00") }
+    val endTime = remember { mutableStateOf("00:00:00") }
+
+    // viewModel
+    val scheduleViewModel: ScheduleViewModel = viewModel()
+    val token = ""
+
+    // 토큰 로드하기
+//    val token = authViewModel.accessToken.collectAsState().value
+//    val context = LocalContext.current
+//
+//    LaunchedEffect(token) {
+//        if (token.isNullOrEmpty()) {
+//            authViewModel.loadTokens(context)
+//        }
+//    }
 
     Column(
         modifier = Modifier
@@ -173,14 +192,16 @@ fun AddDateBottomSheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
-                // time picker
-                TimePicker { _, _ ->
+                // 시작 시간
+                TimePicker { hour, minute ->
+                    startTime.value = "${hour}:${minute}:00"
                 }
 
                 Spacer(modifier = Modifier.width(5.dp))
 
-                // time picker
-                TimePicker { _, _ ->
+                // 종료 시간
+                TimePicker { hour, minute ->
+                    endTime.value = "${hour}:${minute}:00"
                 }
             }
         }
@@ -193,21 +214,27 @@ fun AddDateBottomSheet(
             onClick = {
                 // TODO: 스케줄 추가 기능
                 try {
-                    val startDateTime = LocalDateTime.parse("${startDate.value}T00:00:00")
-                    val endDateTime = LocalDateTime.parse("${endDate.value}T23:59:59")
+                    var startDateTime = LocalDateTime.parse("${startDate.value}T00:00:00")
+                    var endDateTime = LocalDateTime.parse("${endDate.value}T23:59:59")
 
-                    val newSchedule = MySchedule(
+                    if (isTimeSet) {  // 시간 설정시
+                        startDateTime = LocalDateTime.parse("${startDate.value}T${startTime.value}")
+                        endDateTime = LocalDateTime.parse("${endDate.value}T${endTime.value}")
+                    }
+
+                    val newSchedule = MyScheduleRequest(
                         startDt = startDateTime,
                         endDt = endDateTime,
-                        title = title.value,
-                        color = "#${Integer.toHexString(selectedColor.value.hashCode())}", // 색상을 HEX 코드로 변환
+                        scheduleTitle = title.value,
+                        scheduleColor = "#${Integer.toHexString(selectedColor.value.hashCode())}", // 색상을 HEX 코드로 변환
                         isPublic = isPublic.value,
                         isTimeSet = isTimeSet
                     )
 
+                    // 개인 스케쥴 추가
+                    scheduleViewModel.addMySchedule(token = token, request = newSchedule)
+
                     // ✅ 일정 저장 로직 추가 (서버 전송 또는 상태 업데이트)
-                    println("등록된 일정: $newSchedule")
-                    onScheduleAdded(newSchedule)  // ✅ HomeScreen에 새로운 일정 추가
                     showBottomSheet.value = false
 
                     // ✅ HomeScreen에서 WorkScreen으로 이동하는 코드

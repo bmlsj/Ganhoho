@@ -1,0 +1,69 @@
+package com.ssafy.ganhoho.data.remote
+
+import com.ssafy.ganhoho.data.model.dto.group.WorkScheduleDto
+import com.ssafy.ganhoho.data.model.dto.schedule.FriendSchedule
+import com.ssafy.ganhoho.data.model.dto.schedule.MySchedule
+import com.ssafy.ganhoho.data.model.dto.schedule.MyScheduleRequest
+import com.ssafy.ganhoho.data.model.response.schedule.ScheduleUpdateResponse
+import retrofit2.Response
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
+
+interface ScheduleService {
+
+    // 내 근무 스케쥴 조회
+    @GET("api/schedules/work")
+    suspend fun getMyWorkSchedule(
+        @Header("Authorization") token: String,
+        @Path("yearMonth") yearMonth: String
+    ): Response<List<WorkScheduleDto>>
+
+    // 내 근무 스케쥴 수정
+    @PUT("api/schedules/work/{workScheduleId}")
+    suspend fun updateMyWorkSchedule(
+        @Header("Authorization") token: String,
+        @Path("workScheduleId") workScheduleId: Long,
+        @Body request: WorkScheduleDto
+    ): Response<ScheduleUpdateResponse>
+
+
+    // 개인 스케쥴 조회
+    @GET("api/schedules/personal")
+    suspend fun getMySchedule(
+        @Header("Authorization") token: String
+    ): Response<List<MySchedule>>
+
+    // 개인 스케쥴 수정
+    @PUT("api/schedules/personal")
+    suspend fun updateSchedule(
+        @Header("Authorization") token: String,
+        @Path("scheduleId") scheduleId: Long,
+        @Body request: MySchedule
+    ): Response<Void>
+
+    // 개인 스케쥴 추가
+    @POST("api/schedules/personal")
+    suspend fun addMySchedule(
+        @Header("Authorization") token: String,
+        @Body request: MyScheduleRequest
+    ): Response<Void>
+
+    // 친구 근무 스케쥴 조회
+    @GET("api/schedules/work/{memberId}")
+    suspend fun getFriendSchedule(
+        @Header("Authorization") token: String,
+        @Path("memberId") memberId: Long
+    ): Response<List<WorkScheduleDto>>
+
+    // 공개된 개인 스케쥴 조회
+    @GET("/api/schedules/personal/{memberId}")
+    suspend fun getPublicSchedule(
+        @Header("Authorization") token: String,
+        @Path("memberId") memberId: Long
+    ): Response<List<FriendSchedule>>
+
+}
