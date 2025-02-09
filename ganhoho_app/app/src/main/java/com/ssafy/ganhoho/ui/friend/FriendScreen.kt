@@ -31,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -38,10 +39,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.ssafy.ganhoho.BuildConfig
 import com.ssafy.ganhoho.ui.friend.common.FriendAdd
 import com.ssafy.ganhoho.ui.friend.common.FriendList
 import com.ssafy.ganhoho.ui.friend.common.FriendRequestList
+import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.FriendViewModel
 import com.ssafy.ganhoho.viewmodel.MemberViewModel
 
@@ -52,9 +53,9 @@ fun FriendScreen(navController: NavController) {
     val currentScreen = remember { mutableStateOf("list") }
     val searchText = remember { mutableStateOf("") }
 
-    val token = ""
     val friendViewModel: FriendViewModel = viewModel()
     val memberViewModel: MemberViewModel = viewModel()
+    val authViewModel: AuthViewModel = viewModel()
 
     // 친구 목록 조회
     val friendListState = friendViewModel.friendList.collectAsState().value
@@ -77,21 +78,28 @@ fun FriendScreen(navController: NavController) {
     val memberListState = memberViewModel.memberList.collectAsState().value
     val memberList = memberListState.getOrNull() ?: emptyList()
 
-    // 화면 처음 로드 시 친구 목록 불러오기
-    LaunchedEffect(Unit) {
-        friendViewModel.getFriendList(token)  // 친구 목록 조회
-        friendViewModel.getFriendInvite(token)  // 친구 요청 목록 조회
+    // 토큰 로드하기
+    val token = authViewModel.accessToken.collectAsState().value
+    val context = LocalContext.current
+
+    LaunchedEffect(token) {
+        if (token.isNullOrEmpty()) {
+            authViewModel.loadTokens(context)
+        } else {
+            Log.d("token", token)
+            // 화면 처음 로드 시 친구 목록 불러오기
+            friendViewModel.getFriendList(token)  // 친구 목록 조회
+            friendViewModel.getFriendInvite(token)  // 친구 요청 목록 조회
+        }
     }
 
-    LaunchedEffect(searchText.value) {
+    LaunchedEffect(searchText.value, token) {
         println("검색어: ${searchText.value}")
         println("memberList: $memberList")
-
-        memberViewModel.searchFriend(token, searchText.value)  // 검색한 텍스트로 회원 전체 목록 검색
-    }
-
-    LaunchedEffect(memberList) {
-        Log.d("memberList", "$memberList")
+        if (!token.isNullOrEmpty()) {
+            // 검색한 텍스트로 회원 전체 목록 검색
+            memberViewModel.searchFriend(token, searchText.value)
+        }
     }
 
     Column(
@@ -177,11 +185,13 @@ fun FriendScreen(navController: NavController) {
                             FriendList(
                                 friend = friend,
                                 onFavoriteClick = { friendMemberId, isFavorite ->
-                                    friendViewModel.updateFriendFavorite(
-                                        token,
-                                        friendMemberId,
-                                        isFavorite
-                                    )
+                                    if (token != null) {
+                                        friendViewModel.updateFriendFavorite(
+                                            token,
+                                            friendMemberId,
+                                            isFavorite
+                                        )
+                                    }
                                 }
                             )
                         }
