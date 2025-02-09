@@ -9,6 +9,6 @@ import lombok.*;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FriendDeleteResponse {
-    @Schema(description = "삭제된 친구 관계의 ID")
+    @Schema(description = "삭제된 친구 관계의 ID", example = "3")
     private Long friendId;
 }
