@@ -90,6 +90,10 @@ dependencies {
     implementation("androidx.compose.material:material:1.7.5")
     implementation("androidx.navigation:navigation-compose:2.8.5")
 
+    implementation("androidx.compose.foundation:foundation:1.7.7") // LazyGrid 지원
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0") // 날짜 지원
+
+
     // retrofit2
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
