@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,6 +38,7 @@ import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.core.CalendarDay
 import com.kizitonwose.calendar.core.OutDateStyle
+import com.kizitonwose.calendar.core.yearMonth
 import com.ssafy.ganhoho.data.model.dto.MySchedule
 import com.ssafy.ganhoho.ui.home.common.DayBottomSheet
 import java.time.DayOfWeek
@@ -49,9 +51,12 @@ import java.util.Locale
 fun HomeScreen(navController: NavController) {
 
     val currentMonth = remember { YearMonth.now() }
-    val startMonth = remember { currentMonth.minusMonths(1) }
-    val endMonth = remember { currentMonth.plusMonths(1) }
+    val startMonth = remember { currentMonth.minusMonths(5) }
+    val endMonth = remember { currentMonth.plusMonths(5) }
     val daysOfWeek = DayOfWeek.entries
+
+    // 📌 현재 보이는 월을 상태로 저장 (초기값: 현재 월)
+    val currentMonthState = remember { mutableStateOf(YearMonth.now()) }
 
     val events = remember {
         mutableStateListOf<MySchedule>(
@@ -106,14 +111,18 @@ fun HomeScreen(navController: NavController) {
 
             )
     }
-
     val calendarState = rememberCalendarState(
         startMonth = startMonth,
         endMonth = endMonth,
-        firstVisibleMonth = currentMonth,
+        firstVisibleMonth = currentMonthState.value,
         firstDayOfWeek = DayOfWeek.SUNDAY,
         outDateStyle = OutDateStyle.EndOfRow
     )
+
+    // 📌 캘린더의 현재 보이는 달이 변경될 때 상태 업데이트
+    LaunchedEffect(calendarState.firstVisibleMonth) {
+        currentMonthState.value = calendarState.firstVisibleMonth.yearMonth
+    }
 
     Column(
         modifier = Modifier
@@ -122,7 +131,7 @@ fun HomeScreen(navController: NavController) {
     ) {
         // 앱 바
         Text(
-            text = "GANHOHO",
+            text = "간호호",
             fontSize = 40.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF79C7E3)
@@ -133,11 +142,8 @@ fun HomeScreen(navController: NavController) {
 
         // 캘린더 헤더
         Text(
-            text = "${currentMonth.year}년 ${
-                currentMonth.month.getDisplayName(
-                    TextStyle.FULL,
-                    Locale.KOREA
-                )
+            text = "${currentMonthState.value.year}년 ${
+                currentMonthState.value.month.getDisplayName(TextStyle.FULL, Locale.KOREA)
             }",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
@@ -148,7 +154,7 @@ fun HomeScreen(navController: NavController) {
         HorizontalCalendar(
             state = calendarState,
             dayContent = { day ->
-                DayContent(events, day, currentMonth, navController,
+                DayContent(events, day, currentMonthState.value, navController,
                     onScheduleAdded = { newSchedule ->
                         events.add(newSchedule)  // ✅ 새로운 일정 추가
                     })
@@ -212,7 +218,7 @@ fun DayContent(
 ) {
 
     val date = day.date
-    val isOutDate = date.month != currentMonth.month  // ✅ outDate 여부 확인
+    val isOutDate = date.yearMonth != currentMonth  // ✅ outDate 여부 확인
 
     // 해당 날짜의 이벤트 필터링
     // ✅ `LocalDateTime`을 `LocalDate`로 변환 후 비교
@@ -254,7 +260,7 @@ fun DayContent(
             text = date.dayOfMonth.toString(),
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
-            color = if (isOutDate) Color.Gray else Color.Black,  // outDate는 회색
+            color = if (isOutDate) Color.LightGray else Color.Black,  // outDate는 회색
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
         )
@@ -364,6 +370,10 @@ fun DayContent(
         onScheduleAdded = onScheduleAdded
     )
 }
+
+// ✅ YearMonth 확장 함수 추가 (YearMonth 비교를 쉽게 하기 위함)
+val LocalDateTime.yearMonth: YearMonth
+    get() = YearMonth.of(this.year, this.month)
 
 @Preview(showBackground = true)
 @Composable
