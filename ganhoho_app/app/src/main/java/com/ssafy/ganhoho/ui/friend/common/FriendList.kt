@@ -46,7 +46,6 @@ fun FriendList(
     // 즐겨찾기 상태를 기억하고 변경 시, UI 업데이트
     val isFavorite = remember { mutableStateOf(friend.isFavorite) }
 
-    // viewModel
 
     Box(
         modifier = Modifier
@@ -80,7 +79,7 @@ fun FriendList(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = "목록 @${friend.friendLoginId}",
+                        text = "@${friend.friendLoginId}",
                         color = Color.Gray,
                         fontSize = 14.sp
                     )
@@ -90,7 +89,7 @@ fun FriendList(
 
                 // 병원과 병동정보
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    friend.hospital?.let {
+                    friend.hospital?.takeIf { it.isNotBlank() }?.let {
                         Text(
                             text = it,
                             modifier = Modifier
@@ -105,7 +104,7 @@ fun FriendList(
                         )
                     }
 
-                    friend.ward?.let {
+                    friend.ward?.takeIf { it.isNotBlank() }?.let {
                         Text(
                             text = it,
                             modifier = Modifier

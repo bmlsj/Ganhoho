@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.ui.friend.common
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,10 +18,14 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -41,8 +46,24 @@ fun FriendRequestList(
     friend: FriendInviteDto
 ) {
 
-    val viewModel: FriendViewModel = viewModel()
+    var successDialog by remember { mutableStateOf(false) }
+
+    val friendViewModel: FriendViewModel = viewModel()
     val token = BuildConfig.TOKEN
+
+    // 수락 성공 시
+    val friendInviteResponse = friendViewModel.friendResponse.collectAsState().value
+
+    LaunchedEffect(friendInviteResponse) {
+        friendInviteResponse?.let {
+            if (friendInviteResponse.isSuccess) {
+                Log.d("friend", "friend add success")
+                successDialog = true
+            } else {
+                Log.d("friend", "friend add failed")
+            }
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -90,7 +111,7 @@ fun FriendRequestList(
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        friend.hospital?.let {
+                        friend.hospital?.takeIf { it.isNotBlank() }?.let {
                             Text(
                                 text = it,
                                 modifier = Modifier
@@ -105,7 +126,7 @@ fun FriendRequestList(
                             )
                         }
 
-                        friend.ward?.let {
+                        friend.ward?.takeIf { it.isNotBlank() }?.let {
                             Text(
                                 text = it,
                                 modifier = Modifier
@@ -134,7 +155,7 @@ fun FriendRequestList(
                             .padding(horizontal = 16.dp, vertical = 4.dp) // 내부 여백
                             .clickable {
                                 // 친구 요청 수락 API 호출
-                                viewModel.respondToFriendInvite(
+                                friendViewModel.respondToFriendInvite(
                                     token,
                                     friend.friendRequestId,
                                     FriendApproveRequest("ACCEPTED")
@@ -160,6 +181,22 @@ fun FriendRequestList(
 
         }
     }
+
+    // ✅ 친구 신청 완료 다이얼로그
+    if (successDialog) {
+        AlertDialog(
+            onDismissRequest = { successDialog = false }, // ✅ 바깥 클릭 시 닫힘
+            confirmButton = {
+                Button(
+                    onClick = { successDialog = false } // ✅ 확인 버튼 클릭 시 닫힘
+                ) {
+                    Text("확인")
+                }
+            },
+            text = { Text("친구 추가되었습니다.") }
+        )
+    }
+
 }
 
 @Preview(showBackground = true)

@@ -14,12 +14,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -42,6 +45,10 @@ fun FriendAdd(
     friendList: List<FriendDto>
 ) {
 
+    // 다이얼로그
+    var successDialog by remember { mutableStateOf(false) }
+    var errorDialog by remember { mutableStateOf(false) }
+
     val token = BuildConfig.TOKEN
     val friendViewModel: FriendViewModel = viewModel()
 
@@ -54,12 +61,15 @@ fun FriendAdd(
 
         addFriendResult?.onSuccess { response ->
             if (response.success) {
-                Log.d("FriendAdd", "✅ 친구 추가 성공!")
+                Log.d("FriendAdd", "add friend success")
+                successDialog = true  // 친구 추가 시, 확인 다이얼로그 띄우기
             } else {
-                Log.d("FriendAdd", "❌ 친구 추가 실패!")
+                Log.d("FriendAdd", "add friend failed")
+
             }
         }?.onFailure { exception ->
-            Log.e("FriendAdd", "🚨 친구 추가 중 오류 발생: ${exception.message}")
+            Log.e("FriendAdd", "🚨 error: ${exception.message}")
+            errorDialog = true // ✅ 409 에러 발생 시 다이얼로그 표시
         }
     }
 
@@ -93,7 +103,7 @@ fun FriendAdd(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = "검색 @${member.loginId}",
+                        text = "@${member.loginId}",
                         color = Color.Gray,
                         fontSize = 14.sp
                     )
@@ -107,7 +117,7 @@ fun FriendAdd(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        member.hospital?.let {
+                        member.hospital?.takeIf { it.isNotBlank() }?.let {
                             Text(
                                 text = it,
                                 modifier = Modifier
@@ -122,7 +132,7 @@ fun FriendAdd(
                             )
                         }
 
-                        member.ward?.let {
+                        member.hospital?.takeIf { it.isNotBlank() }?.let {
                             Text(
                                 text = it,
                                 modifier = Modifier
@@ -162,6 +172,34 @@ fun FriendAdd(
                 }
             }
         }
+    }
+
+    // ✅ 친구 신청 완료 다이얼로그
+    if (successDialog) {
+        AlertDialog(
+            onDismissRequest = { successDialog = false }, // ✅ 바깥 클릭 시 닫힘
+            confirmButton = {
+                Button(
+                    onClick = { successDialog = false } // ✅ 확인 버튼 클릭 시 닫힘
+                ) {
+                    Text("확인")
+                }
+            },
+            text = { Text("친구 신청이 완료되었습니다.") }
+        )
+    }
+
+    // ✅ 이미 요청된 친구 다이얼로그
+    if (errorDialog) {
+        AlertDialog(
+            onDismissRequest = { errorDialog = false },
+            confirmButton = {
+                Button(onClick = { errorDialog = false }) {
+                    Text("확인")
+                }
+            },
+            text = { Text("이미 요청된 친구입니다.") }
+        )
     }
 
 }
