@@ -46,8 +46,6 @@ fun FriendList(
     // 즐겨찾기 상태를 기억하고 변경 시, UI 업데이트
     val isFavorite = remember { mutableStateOf(friend.isFavorite) }
 
-    // viewModel
-
     Box(
         modifier = Modifier
             .fillMaxWidth()

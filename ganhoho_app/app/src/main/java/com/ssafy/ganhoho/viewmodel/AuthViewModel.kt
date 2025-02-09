@@ -2,6 +2,7 @@ package com.ssafy.ganhoho.viewmodel
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.ganhoho.base.SecureDataStore
