@@ -2,7 +2,9 @@ package com.ssafy.ganhoho.domain.friend;
 
 import com.ssafy.ganhoho.domain.friend.dto.*;
 import com.ssafy.ganhoho.global.auth.SecurityUtil;
+import com.ssafy.ganhoho.global.constant.ErrorCode;
 import com.ssafy.ganhoho.global.error.CustomException;
+import com.ssafy.ganhoho.global.error.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -47,11 +49,11 @@ public class FriendController {
             return ResponseEntity.ok(friendList);
         } catch (CustomException e) {
             return ResponseEntity.status(e.getErrorCode().getHttpStatus())
-                    .body(e.getMessage());
+                    .body(new ErrorResponse(e.getErrorCode()));
         } catch (Exception e) {
             // JWT 관련 예외나 기타 예외 처리
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Invalid or missing authentication token.");
+                    .body(new ErrorResponse(ErrorCode.UNAUTHORIZED));
         }
 
     }
@@ -76,10 +78,10 @@ public class FriendController {
             return ResponseEntity.ok(response);
         } catch (CustomException e) {
             return ResponseEntity.status(e.getErrorCode().getHttpStatus())
-                    .body(e.getMessage());
+                    .body(new ErrorResponse(e.getErrorCode()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Invalid or missing authentication token.");
+                    .body(new ErrorResponse(ErrorCode.UNAUTHORIZED));
         }
     }
 
@@ -100,10 +102,10 @@ public class FriendController {
             return ResponseEntity.ok(requestList);
         } catch (CustomException e) {
             return ResponseEntity.status(e.getErrorCode().getHttpStatus())
-                    .body(e.getMessage());
+                    .body(new ErrorResponse(e.getErrorCode()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Invalid or missing authentication token.");
+                    .body(new ErrorResponse(ErrorCode.UNAUTHORIZED));
         }
     }
 
@@ -126,10 +128,10 @@ public class FriendController {
             return ResponseEntity.ok(response);
         } catch (CustomException e) {
             return ResponseEntity.status(e.getErrorCode().getHttpStatus())
-                    .body(e.getMessage());
+                    .body(new ErrorResponse(e.getErrorCode()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Invalid or missing authentication token.");
+                    .body(new ErrorResponse(ErrorCode.UNAUTHORIZED));
         }
     }
 
@@ -152,10 +154,10 @@ public class FriendController {
             return ResponseEntity.ok(response);
         } catch (CustomException e) {
             return ResponseEntity.status(e.getErrorCode().getHttpStatus())
-                    .body(e.getMessage());
+                    .body(new ErrorResponse(e.getErrorCode()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Invalid or missing authentication token.");
+                    .body(new ErrorResponse(ErrorCode.UNAUTHORIZED));
         }
     }
 
@@ -179,10 +181,10 @@ public class FriendController {
             return ResponseEntity.ok(response);
         } catch (CustomException e) {
             return ResponseEntity.status(e.getErrorCode().getHttpStatus())
-                    .body(e.getMessage());
+                    .body(new ErrorResponse(e.getErrorCode()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Invalid or missing authentication token.");
+                    .body(new ErrorResponse(ErrorCode.UNAUTHORIZED));
         }
 
     }
