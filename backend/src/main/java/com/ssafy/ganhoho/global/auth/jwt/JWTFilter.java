@@ -28,25 +28,21 @@ public class JWTFilter extends OncePerRequestFilter {
 
         String token = jwtUtil.getJwtFromRequest(request);
 
-        try {
-            if (token == null || jwtUtil.isExpired(token)) {
-                throw new CustomException(ErrorCode.EXPIRED_ACCESS_TOKEN);
-            }
-
-            Long userId = jwtUtil.getMemberId(token);
-
-            CustomUserDetails userDetails = new CustomUserDetails(userId);
-
-            Authentication authToken = new UsernamePasswordAuthenticationToken(
-                    userDetails,
-                    null,
-                    userDetails.getAuthorities()
-            );
-
-            SecurityContextHolder.getContext().setAuthentication(authToken);
-        } catch (Exception e) {
-            log.error("JWT authentication failed: {}", e.getMessage());
+        if (token == null || jwtUtil.isExpired(token)) {
+            throw new CustomException(ErrorCode.EXPIRED_ACCESS_TOKEN);
         }
+
+        Long userId = jwtUtil.getMemberId(token);
+
+        CustomUserDetails userDetails = new CustomUserDetails(userId);
+
+        Authentication authToken = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.getAuthorities()
+        );
+
+        SecurityContextHolder.getContext().setAuthentication(authToken);
 
         filterChain.doFilter(request, response);
     }
