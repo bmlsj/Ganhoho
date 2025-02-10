@@ -22,9 +22,6 @@ public class WorkScheduleService {
         List<WorkSchedule> schedules = workScheduleRepository.findByMemberId(memberId);
         return schedules.stream()
                 .map(schedule -> new WorkScheduleResponseDto(
-                        schedule.getWorkScheduleId(),
-                        schedule.getMemberId(),
-                        schedule.getGroupScheduleDetailId(),
                         schedule.getWorkType(),
                         schedule.getWorkDate()))
                 .collect(Collectors.toList());
@@ -38,13 +35,13 @@ public class WorkScheduleService {
             throw new RuntimeException("Unauthorized access");
         }
 
-        schedule.setGroupScheduleDetailId(updatedSchedule.getGroupScheduleDetailId());
+        schedule.setWorkScheduleDetailId(updatedSchedule.getWorkScheduleDetailId());
         schedule.setWorkType(updatedSchedule.getWorkType());
         schedule.setWorkDate(updatedSchedule.getWorkDate());
 
         workScheduleRepository.save(schedule);
 
-        return new WorkScheduleResponseDto(schedule.getWorkScheduleId(), schedule.getMemberId(), schedule.getGroupScheduleDetailId(), schedule.getWorkType(), schedule.getWorkDate());
+        return new WorkScheduleResponseDto( schedule.getWorkType(), schedule.getWorkDate());
     }
 
     public void deleteWorkSchedule(Long workScheduleId, Long memberId) {

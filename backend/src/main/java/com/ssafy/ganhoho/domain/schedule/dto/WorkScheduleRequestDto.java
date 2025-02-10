@@ -12,7 +12,8 @@ import java.util.Date;
 @Builder
 public class WorkScheduleRequestDto {
     private Long memberId;
-    private Long groupScheduleDetailId;
+    private Long workScheduleDetailId;
     private WorkType workType;
     private Date workDate;
+    //s
 } 

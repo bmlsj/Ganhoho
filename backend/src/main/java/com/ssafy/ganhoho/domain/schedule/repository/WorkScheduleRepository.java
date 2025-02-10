@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Long> {
     List<WorkSchedule> findByMemberId(Long memberId);
-} 
+    //s
+}

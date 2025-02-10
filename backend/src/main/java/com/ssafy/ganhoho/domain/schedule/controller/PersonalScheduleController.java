@@ -13,10 +13,14 @@ import org.springframework.web.bind.annotation.*;
 import com.ssafy.ganhoho.global.auth.dto.CustomUserDetails;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.stream.Collectors;
+import java.text.SimpleDateFormat;
 
 @RestController
 @Slf4j
-@RequestMapping("/api/personal-schedules")
+@RequestMapping("/api/schedules")
 @RequiredArgsConstructor
 public class PersonalScheduleController {
 
@@ -36,26 +40,39 @@ public class PersonalScheduleController {
     }
 
     @GetMapping("/personal")
-    public ResponseEntity<List<PersonalScheduleResponseDto>> getPersonalSchedules() {
-        // JWTFilter를 통해 인증된 사용자 정보 가져오기
+    public ResponseEntity<Map<String, List<Map<String, Object>>>> getPersonalSchedules() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        Long memberId = userDetails.getUserId();  // getId() 대신 getUserId() 사용
+        Long memberId = userDetails.getUserId();
 
-        List<PersonalScheduleResponseDto> schedules = personalScheduleService.getPersonalSchedules(memberId);
-        return new ResponseEntity<>(schedules, HttpStatus.OK);
+        return new ResponseEntity<>(personalScheduleService.getFormattedPersonalSchedules(memberId), HttpStatus.OK);
     }
 
     @PutMapping("/personal/{scheduleId}")
-    public ResponseEntity<PersonalScheduleResponseDto> updatePersonalSchedule(
+    public ResponseEntity<Map<String, Object>> updatePersonalSchedule(
             @PathVariable Long scheduleId,
             @RequestBody PersonalScheduleRequestDto requestDto) {
-        // JWTFilter를 통해 인증된 사용자 정보 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        Long memberId = userDetails.getUserId();  // getId() 대신 getUserId() 사용
+        Long memberId = userDetails.getUserId();
 
-        PersonalScheduleResponseDto updatedSchedule = personalScheduleService.updatePersonalSchedule(scheduleId, requestDto, memberId);
-        return new ResponseEntity<>(updatedSchedule, HttpStatus.OK);
+        Map<String, Object> response = new HashMap<>();
+        try {
+            personalScheduleService.updatePersonalSchedule(scheduleId, requestDto, memberId);
+            response.put("success", true);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            response.put("status", HttpStatus.BAD_REQUEST.value());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/personal/{memberId}")
+    public ResponseEntity<Map<String, List<Map<String, Object>>>> getPersonalSchedulesByMemberId(
+            @PathVariable Long memberId) {
+        Map<String, List<Map<String, Object>>> response = personalScheduleService.getPersonalSchedulesByMemberId(memberId);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
