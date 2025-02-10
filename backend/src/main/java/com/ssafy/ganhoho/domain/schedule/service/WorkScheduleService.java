@@ -8,6 +8,9 @@ import com.ssafy.ganhoho.global.auth.jwt.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,21 +40,47 @@ public class WorkScheduleService {
 
         schedule.setWorkScheduleDetailId(updatedSchedule.getWorkScheduleDetailId());
         schedule.setWorkType(updatedSchedule.getWorkType());
-        schedule.setWorkDate(updatedSchedule.getWorkDate());
+        schedule.setWorkDate(updatedSchedule.getWorkDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
 
         workScheduleRepository.save(schedule);
 
-        return new WorkScheduleResponseDto( schedule.getWorkType(), schedule.getWorkDate());
+        return new WorkScheduleResponseDto(schedule.getWorkType(), schedule.getWorkDate());
+    }
+    public List<WorkScheduleResponseDto> addWorkSchedules(List<WorkScheduleRequestDto> requestDtos, Long memberId) {
+        List<WorkSchedule> schedules = requestDtos.stream()
+                .map(requestDto -> WorkSchedule.builder()
+                        .memberId(memberId)
+                        .workScheduleDetailId(requestDto.getWorkScheduleDetailId())
+                        .workType(requestDto.getWorkType())
+                        .workDate(requestDto.getWorkDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
+                        .build())
+                .collect(Collectors.toList());
+
+        workScheduleRepository.saveAll(schedules);
+
+        return schedules.stream()
+                .map(schedule -> new WorkScheduleResponseDto(
+                        schedule.getWorkType(),
+                        schedule.getWorkDate()))
+                .collect(Collectors.toList());
     }
 
-    public void deleteWorkSchedule(Long workScheduleId, Long memberId) {
-        WorkSchedule schedule = workScheduleRepository.findById(workScheduleId)
-                .orElseThrow(() -> new RuntimeException("Schedule not found"));
+    public WorkSchedule saveWorkSchedule(WorkSchedule workSchedule) {
+        return workScheduleRepository.save(workSchedule);
+    }
 
-        if (!schedule.getMemberId().equals(memberId)) {
-            throw new RuntimeException("Unauthorized access");
-        }
+    public List<WorkScheduleResponseDto> getWorkSchedulesByMemberIdAndDateRange(
+            Long memberId, LocalDate startDate, LocalDate endDate) {
+        
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
 
-        workScheduleRepository.delete(schedule);
+        return workScheduleRepository.findByMemberIdAndWorkDateBetween(
+                memberId, startDateTime, endDateTime)
+                .stream()
+                .map(schedule -> new WorkScheduleResponseDto(
+                        schedule.getWorkType(),
+                        schedule.getWorkDate()))
+                .collect(Collectors.toList());
     }
 }
