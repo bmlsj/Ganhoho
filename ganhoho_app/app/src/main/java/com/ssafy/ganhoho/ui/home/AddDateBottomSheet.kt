@@ -36,7 +36,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -56,14 +59,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.ssafy.ganhoho.R
-import com.ssafy.ganhoho.data.model.dto.schedule.MySchedule
 import com.ssafy.ganhoho.data.model.dto.schedule.MyScheduleRequest
 import com.ssafy.ganhoho.ui.home.common.CustomDatePickerDialog
 import com.ssafy.ganhoho.ui.home.common.TimePicker
 import com.ssafy.ganhoho.ui.theme.FieldLightGray
 import com.ssafy.ganhoho.ui.theme.PrimaryBlue
+import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.ScheduleViewModel
-import kotlinx.datetime.LocalDateTime
+import java.time.LocalDateTime
 
 
 @SuppressLint("UnrememberedMutableState")
@@ -92,17 +95,17 @@ fun AddDateBottomSheet(
 
     // viewModel
     val scheduleViewModel: ScheduleViewModel = viewModel()
-    val token = ""
+    val authViewModel: AuthViewModel = viewModel()
 
     // 토큰 로드하기
-//    val token = authViewModel.accessToken.collectAsState().value
-//    val context = LocalContext.current
-//
-//    LaunchedEffect(token) {
-//        if (token.isNullOrEmpty()) {
-//            authViewModel.loadTokens(context)
-//        }
-//    }
+    val token = authViewModel.accessToken.collectAsState().value
+    val context = LocalContext.current
+
+    LaunchedEffect(token) {
+        if (token.isNullOrEmpty()) {
+            authViewModel.loadTokens(context)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -232,7 +235,9 @@ fun AddDateBottomSheet(
                     )
 
                     // 개인 스케쥴 추가
-                    scheduleViewModel.addMySchedule(token = token, request = newSchedule)
+                    if (token != null) {
+                        scheduleViewModel.addMySchedule(token = token, request = newSchedule)
+                    }
 
                     // ✅ 일정 저장 로직 추가 (서버 전송 또는 상태 업데이트)
                     showBottomSheet.value = false
@@ -331,9 +336,18 @@ fun ColorDropdownMenu(
 ) {
     var expanded by remember { mutableStateOf(false) }
     val colors = listOf(
-        Color.Red, Color(0xFFFFA500), Color.Yellow, Color(0xFFADFF2F), Color.Green, Color.Cyan,
-        Color.Blue, Color(0xFF8A2BE2), Color(0xFFFF1493), Color(0xFFFFB6C1), Color.Black
-    )
+        Color(0xFFF08080),
+        Color(0xFFFFADAD),
+        Color(0xFFFFD6A5),
+        Color(0xFFFDFFB6),
+        Color(0xFFCAFFBF),
+        Color(0xFFBDE0FE),
+        Color(0xFFA2D2FF),
+        Color(0xFFCDB4DB),
+        Color(0xFFFFC6FF),
+        Color(0xFFFFC8DD),
+
+        )
 
     // 컬러 드롭다운
     Box(

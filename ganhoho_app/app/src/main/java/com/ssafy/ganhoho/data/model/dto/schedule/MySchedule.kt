@@ -1,6 +1,6 @@
 package com.ssafy.ganhoho.data.model.dto.schedule
 
-import kotlinx.datetime.LocalDateTime
+import java.time.LocalDateTime
 
 data class MySchedule(
     val startDt: LocalDateTime,  // 시작 날짜

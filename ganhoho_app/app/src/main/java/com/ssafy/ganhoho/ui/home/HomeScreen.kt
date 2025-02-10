@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -43,7 +44,6 @@ import com.kizitonwose.calendar.core.yearMonth
 import com.ssafy.ganhoho.data.model.dto.schedule.MySchedule
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.ScheduleViewModel
-import kotlinx.datetime.toJavaLocalDate
 import java.time.DayOfWeek
 import java.time.LocalDateTime
 import java.time.YearMonth
@@ -69,20 +69,20 @@ fun HomeScreen(navController: NavController) {
     val myScheduleState = scheduleViewModel.mySchedule.collectAsState().value
     val myScheduleList = myScheduleState?.getOrNull() ?: emptyList()
 
-    val token = ""
-    
     // 토큰 로드하기
-//    val token = authViewModel.accessToken.collectAsState().value
-//    val context = LocalContext.current
-//
-//    LaunchedEffect(token) {
-//        if (token.isNullOrEmpty()) {
-//            authViewModel.loadTokens(context)
-//        }
-//    }
+    val token = authViewModel.accessToken.collectAsState().value
+    val context = LocalContext.current
 
     LaunchedEffect(token) {
-        scheduleViewModel.getMySchedule(token)
+        if (token.isNullOrEmpty()) {
+            authViewModel.loadTokens(context)
+        }
+    }
+
+    LaunchedEffect(token) {
+        if (token != null) {
+            scheduleViewModel.getMySchedule(token)
+        }
     }
 
 //    val events = remember {
@@ -135,7 +135,6 @@ fun HomeScreen(navController: NavController) {
 //                isPublic = false,
 //                isTimeSet = true
 //            ),
-//
 //            )
 //    }
 
@@ -150,7 +149,9 @@ fun HomeScreen(navController: NavController) {
     // 📌 캘린더의 현재 보이는 달이 변경될 때 상태 업데이트
     LaunchedEffect(calendarState.firstVisibleMonth) {
         currentMonthState.value = calendarState.firstVisibleMonth.yearMonth
-        scheduleViewModel.getMySchedule(token)  // 월이 바뀔때마다 일정 로드
+        if (token != null) {
+            scheduleViewModel.getMySchedule(token)
+        }  // 월이 바뀔때마다 일정 로드
     }
 
     Column(
@@ -248,7 +249,7 @@ fun DayContent(
     // 해당 날짜의 이벤트 필터링
     // ✅ `LocalDateTime`을 `LocalDate`로 변환 후 비교
     val matchingEvents = events.filter {
-        it.startDt.date.toJavaLocalDate() <= date && date <= it.endDt.date.toJavaLocalDate()
+        it.startDt.toLocalDate() <= date && date <= it.endDt.toLocalDate()
     }
 
     val textHeight = remember { mutableStateOf(15.dp) } // 첫날의 Text 높이를 저장
@@ -264,7 +265,7 @@ fun DayContent(
     // 🎯 장기 일정을 기간이 긴 순서대로 정렬하고, 단기 일정은 그대로 배치
     val sortedEvents =
         longEvents.sortedByDescending {
-            it.endDt.date.toEpochDays() - it.startDt.date.toEpochDays()
+            it.endDt.toLocalDate().toEpochDay() - it.startDt.toLocalDate().toEpochDay()
         } + singleEvents
 
 
@@ -304,8 +305,8 @@ fun DayContent(
                 // 정렬된 이벤트 표시
                 sortedEvents.forEachIndexed { index, event ->
 
-                    val startDate = event.startDt.date.toJavaLocalDate()
-                    val endDate = event.endDt.date.toJavaLocalDate()
+                    val startDate = event.startDt.toLocalDate()
+                    val endDate = event.endDt.toLocalDate()
 
                     // 🎯 처음과 끝에 RoundedCornerShape 설정
                     val shape = when {
@@ -400,8 +401,121 @@ val LocalDateTime.yearMonth: YearMonth
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-
     val navController = rememberNavController()
-    HomeScreen(navController)
+
+    // ✅ 테스트 근무 일정
+    val testWorkSchedules = listOf(
+        MySchedule(
+            scheduleId = 1,
+            startDt = LocalDateTime.parse("2025-02-03T00:00:00"),
+            endDt = LocalDateTime.parse("2025-02-03T23:59:59"),
+            title = "근무 일정 (오전 근무)",
+            color = "#D1EEF2",
+            isPublic = true,
+            isTimeSet = true
+        ),
+        MySchedule(
+            scheduleId = 2,
+            startDt = LocalDateTime.parse("2025-02-07T00:00:00"),
+            endDt = LocalDateTime.parse("2025-02-07T23:59:59"),
+            title = "근무 일정 (야간 근무)",
+            color = "#79C7E3",
+            isPublic = true,
+            isTimeSet = true
+        )
+    )
+
+    // ✅ 테스트 개인 일정
+    val testPersonalSchedules = listOf(
+        MySchedule(
+            scheduleId = 3,
+            startDt = LocalDateTime.parse("2025-02-03T00:00:00"),
+            endDt = LocalDateTime.parse("2025-02-04T23:59:59"),
+            title = "동기 모임 🎉",
+            color = "#FFCAE6",
+            isPublic = true,
+            isTimeSet = false
+        ),
+        MySchedule(
+            scheduleId = 4,
+            startDt = LocalDateTime.parse("2025-02-10T00:00:00"),
+            endDt = LocalDateTime.parse("2025-02-10T23:59:59"),
+            title = "북 스터디 📚",
+            color = "#FFA726",
+            isPublic = false,
+            isTimeSet = false
+        ),
+        MySchedule(
+            scheduleId = 5,
+            startDt = LocalDateTime.parse("2025-02-15T00:00:00"),
+            endDt = LocalDateTime.parse("2025-02-15T23:59:59"),
+            title = "제주도 여행 🍊",
+            color = "#FFD1DC",
+            isPublic = false,
+            isTimeSet = true
+        )
+    )
+
+    // ✅ 근무 일정 + 개인 일정 합치기
+    val testSchedules = testWorkSchedules + testPersonalSchedules
+
+    // ✅ `HomeScreen`을 테스트 데이터와 함께 실행
+    HomeScreenWithTestData(navController, testSchedules)
 }
 
+@Composable
+fun HomeScreenWithTestData(navController: NavController, testSchedules: List<MySchedule>) {
+    val currentMonth = remember { YearMonth.of(2025, 2) }
+    val startMonth = currentMonth.minusMonths(1)
+    val endMonth = currentMonth.plusMonths(1)
+    val daysOfWeek = DayOfWeek.entries
+    val currentMonthState = remember { mutableStateOf(currentMonth) }
+
+    val calendarState = rememberCalendarState(
+        startMonth = startMonth,
+        endMonth = endMonth,
+        firstVisibleMonth = currentMonthState.value,
+        firstDayOfWeek = DayOfWeek.SUNDAY,
+        outDateStyle = OutDateStyle.EndOfRow
+    )
+
+    Column(
+        modifier = Modifier
+            .padding(10.dp)
+            .fillMaxWidth(),
+    ) {
+        // 앱 바
+        Text(
+            text = "간호호 (테스트 데이터)",
+            fontSize = 36.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF79C7E3)
+        )
+
+        Spacer(modifier = Modifier.height(30.dp))
+
+        // 캘린더 헤더
+        Text(
+            text = "${currentMonthState.value.year}년 ${
+                currentMonthState.value.month.getDisplayName(TextStyle.FULL, Locale.KOREA)
+            }",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        // 캘린더 출력
+        HorizontalCalendar(
+            state = calendarState,
+            dayContent = { day ->
+                DayContent(testSchedules, day, currentMonthState.value, navController)
+            },
+            monthHeader = {
+                MonthHeader(daysOfWeek)
+            },
+            modifier = Modifier.fillMaxSize(),
+            contentHeightMode = ContentHeightMode.Fill,
+            contentPadding = PaddingValues(top = 10.dp, bottom = 50.dp)
+        )
+    }
+}
