@@ -42,7 +42,7 @@ public class NotificationServiceImpl implements NotificationService{
     private final ObjectMapper objectMapper;
 
     @Override
-    public void changeSubscription(Long memberId, Boolean isSubscribe) {
+    public void changeSubscription(Long memberId, Boolean isSubscribed) {
         Member member = memberRepository.findByMemberId(memberId).orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
 
         String notificationKeyName = makeNotificationKeyName(member.getHospital(), member.getWard());
@@ -50,12 +50,12 @@ public class NotificationServiceImpl implements NotificationService{
         String message;
         try{
             if(deviceGroup == null) {
-                if(isSubscribe == false) throw new CustomException(ErrorCode.BAD_REQUEST);
+                if(isSubscribed == false) throw new CustomException(ErrorCode.BAD_REQUEST);
                 message = makeJsonDeviceGroup("", notificationKeyName, member.getAppFcmToken(), "create");
                 manageDeviceGroup("", notificationKeyName, message);
             }
             else {
-                if(isSubscribe == false) {
+                if(isSubscribed == false) {
                     message = makeJsonDeviceGroup(deviceGroup.getNotificationKey(), notificationKeyName, member.getAppFcmToken(), "remove");
                     manageDeviceGroup(deviceGroup.getNotificationKey(), notificationKeyName, message);
                 } else {
@@ -78,7 +78,8 @@ public class NotificationServiceImpl implements NotificationService{
     public void sendNotification(Long memberId, NotificationDto notificationSendRequestBody) {
         Member member = memberRepository.findByMemberId(memberId).orElseThrow(() -> new CustomException(ErrorCode.MISSING_REQUIRED_USER_DATA));
         String notificationKeyName = makeNotificationKeyName(member.getHospital(), member.getWard());
-        sendFcmToServer(notificationKeyName, notificationSendRequestBody.getTitle(), notificationSendRequestBody.getMessage());
+        DeviceGroup deviceGroup = deviceGroupRepository.findByNotificationKeyName(notificationKeyName);
+        sendFcmToServer(deviceGroup.getNotificationKey(), notificationSendRequestBody.getTitle(), notificationSendRequestBody.getMessage());
 
         Notification notification = Notification.builder()
                 .type(notificationSendRequestBody.getType())
@@ -93,11 +94,12 @@ public class NotificationServiceImpl implements NotificationService{
         try {
             OkHttpClient client = new OkHttpClient();
             RequestBody requestBody = RequestBody.create(message, MediaType.get("application/json; charset=utf-8"));
+            String accessToken = getAccessToken();
             Request request = new Request.Builder()
                     .url(FcmConstant.FIREBASE_DEVICE_GROUP_URL.value())
                     .post(requestBody)
                     .addHeader("access_token_auth", "true")
-                    .addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + getAccessToken())
+                    .addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                     .addHeader(HttpHeaders.CONTENT_TYPE, "application/json; UTF-8")
                     .addHeader("project_id", FcmConstant.FIREBASE_SENDER_ID.value())
                     .build();
@@ -112,7 +114,7 @@ public class NotificationServiceImpl implements NotificationService{
             }
 
         }catch (Exception e) {
-            log.error("add NewMemberDeviceGroup error : {}",e.getMessage());
+            log.error("add manageDeviceGroup error : {}",e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -149,7 +151,6 @@ public class NotificationServiceImpl implements NotificationService{
                     .build();
 
             String message = objectMapper.writeValueAsString(fcmDto);
-
             OkHttpClient client = new OkHttpClient();
             RequestBody requestBody = RequestBody.create(message, MediaType.get("application/json; charset=utf-8"));
             Request request = new Request.Builder()
@@ -166,7 +167,7 @@ public class NotificationServiceImpl implements NotificationService{
             }
 
         }catch (Exception e) {
-            log.error("add NewMemberDeviceGroup error : {}",e.getMessage());
+            log.error("add sendFcmToServer error : {}",e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
     }

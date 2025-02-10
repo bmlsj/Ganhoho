@@ -24,7 +24,7 @@ public class NotificationController {
     public void changeNotificationSubscription(@RequestBody NotificationSubscribeRequestBody notificationSubscribeRequestBody) {
         // 멤버의 알림 구독 여부를 변경하는 함수
         Long memberId = getCurrentMemberId();
-        notificationService.changeSubscription(memberId, notificationSubscribeRequestBody.isSubscribed());
+        notificationService.changeSubscription(memberId, notificationSubscribeRequestBody.getIsSubscribed());
     }
 
     @PostMapping("/button-pattens")

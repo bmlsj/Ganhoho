@@ -7,7 +7,7 @@ import java.util.List;
 
 @Service
 public interface NotificationService {
-    void changeSubscription(Long memberId, Boolean isSubscribe);
+    void changeSubscription(Long memberId, Boolean isSubscribed);
 
     List<NotificationDto> getNotifications(Long memberId);
 

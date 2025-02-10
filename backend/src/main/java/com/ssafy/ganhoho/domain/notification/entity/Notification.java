@@ -9,7 +9,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Document(collection = "notification")
 @Getter
@@ -25,7 +24,7 @@ public class Notification implements Persistable<String> {
     private Long memberId;
 
     @CreatedDate
-    @Indexed(name = "idx_notification", expireAfter = "5m") // 5분 데이터 유지
+    @Indexed(expireAfter = "5m") // 5분 데이터 유지
     @Field(name = "created_at")
     private LocalDateTime createdAt;
 
