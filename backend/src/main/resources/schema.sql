@@ -93,6 +93,16 @@ CREATE TABLE `schedule_detail` (
                                    FOREIGN KEY (`schedule_id`) REFERENCES `personal_schedule`(`schedule_id`)
 );
 
+
+
+
+-- 인덱스 추가
+CREATE INDEX idx_member_login_id ON member(login_id);
+CREATE INDEX idx_group_name ON `group`(group_name);
+CREATE INDEX idx_work_schedule_date ON work_schedule(work_date);
+
+
+-- 근무스케줄
 INSERT INTO member (login_id, password, name, hospital, ward, created_at, updated_at, app_fcm_token, watch_fcm_token)
 VALUES ('testuser', 'testpassword', 'Test User', 'Test Hospital', 'General', NOW(), NOW(), NULL, NULL);
 
@@ -126,11 +136,4 @@ VALUES
 (1, '2025-02-26 00:00:00', 'N', NOW(), NOW()),
 (1, '2025-02-27 00:00:00', 'E', NOW(), NOW()),
 (1, '2025-02-28 00:00:00', 'OF', NOW(), NOW());
-
-
-
--- 인덱스 추가
-CREATE INDEX idx_member_login_id ON member(login_id);
-CREATE INDEX idx_group_name ON `group`(group_name);
-CREATE INDEX idx_work_schedule_date ON work_schedule(work_date);
 
