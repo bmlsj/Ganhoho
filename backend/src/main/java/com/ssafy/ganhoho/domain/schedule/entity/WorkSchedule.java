@@ -20,8 +20,9 @@ public class WorkSchedule {
     @Column(name = "member_id", nullable = false)
     private Long memberId;
 
-    @Column(name = "group_schedule_detail_id", nullable = false)
-    private Long groupScheduleDetailId;
+
+    @Column(name = "work_schedule_detail_id", nullable = false)
+    private Long workScheduleDetailId;  // 필드명 수정
 
     @Enumerated(EnumType.STRING)
     @Column(name = "work_type", nullable = false)
@@ -29,5 +30,5 @@ public class WorkSchedule {
 
     @Column(name = "work_date", nullable = false)
     private Date workDate;
-
+    //s
 }
