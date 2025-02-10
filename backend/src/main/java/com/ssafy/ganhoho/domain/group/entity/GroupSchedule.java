@@ -17,7 +17,7 @@ public class GroupSchedule {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "group_schedule_detail_id") // 추후 work_schedule_detail_id 로 수정해야함
+    @Column(name = "work_schedule_detail_id") // 추후 work_schedule_detail_id 로 수정해야함
     private Long workScheduleDetailId;
 
     @Column(name = "group_id", nullable = false)

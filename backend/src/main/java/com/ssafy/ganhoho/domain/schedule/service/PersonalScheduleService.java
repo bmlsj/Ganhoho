@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.HashMap;
+import java.text.SimpleDateFormat;
 
 @Service
 @RequiredArgsConstructor
@@ -25,18 +28,21 @@ public class PersonalScheduleService {
     public PersonalScheduleResponseDto addPersonalSchedule(PersonalScheduleRequestDto requestDto, Long memberId) {
         PersonalSchedule schedule = new PersonalSchedule();
         schedule.setMemberId(memberId);
+        schedule.setIsPublic(requestDto.getIsPublic() != null ? requestDto.getIsPublic() : false);
         personalScheduleRepository.save(schedule);
 
         // ScheduleDetail 생성 및 저장
-        ScheduleDetail detail = new ScheduleDetail();
-        detail.setScheduleId(schedule.getScheduleId());
-        detail.setStartDt(requestDto.getStartDt() != null ? requestDto.getStartDt() : new Date());
-        detail.setEndDt(requestDto.getEndDt() != null ? requestDto.getEndDt() : new Date());
-        detail.setScheduleTitle(requestDto.getScheduleTitle());
-        detail.setScheduleColor(requestDto.getScheduleColor());
-        detail.setIsTimeSet(requestDto.getIsTimeSet() != null ? requestDto.getIsTimeSet() : false);
-        detail.setIsPublic(requestDto.getIsPublic() != null ? requestDto.getIsPublic() : false);
-        scheduleDetailRepository.save(detail);
+        ScheduleDetail detail = ScheduleDetail.builder()
+                .personalSchedule(schedule)
+                .startDt(requestDto.getStartDt() != null ? requestDto.getStartDt() : new Date())
+                .endDt(requestDto.getEndDt() != null ? requestDto.getEndDt() : new Date())
+                .scheduleTitle(requestDto.getScheduleTitle())
+                .scheduleColor(requestDto.getScheduleColor())
+                .isTimeSet(requestDto.getIsTimeSet() != null ? requestDto.getIsTimeSet() : false)
+                .build();
+
+        schedule.getScheduleDetails().add(detail);
+        personalScheduleRepository.save(schedule);
 
         return new PersonalScheduleResponseDto(schedule.getScheduleId(), memberId, List.of(
                 new PersonalScheduleResponseDto.ScheduleDetailDto(
@@ -46,18 +52,29 @@ public class PersonalScheduleService {
                         detail.getScheduleTitle(),
                         detail.getScheduleColor(),
                         detail.getIsTimeSet(),
-                        detail.getIsPublic()
+                        schedule.getIsPublic()
                 )
         ));
     }
 
     public List<PersonalScheduleResponseDto> getPersonalSchedules(Long memberId) {
         List<PersonalSchedule> schedules = personalScheduleRepository.findByMemberId(memberId);
+
         return schedules.stream()
-                .map(schedule -> new PersonalScheduleResponseDto(
-                        schedule.getScheduleId(),
-                        schedule.getMemberId(),
-                        null))  // details는 나중에 구현
+                .flatMap(schedule -> schedule.getScheduleDetails().stream()
+                        .map(detail -> new PersonalScheduleResponseDto(
+                                detail.getPersonalSchedule().getScheduleId(),
+                                schedule.getMemberId(),
+                                List.of(new PersonalScheduleResponseDto.ScheduleDetailDto(
+                                        detail.getDetailId(),
+                                        detail.getStartDt(),
+                                        detail.getEndDt(),
+                                        detail.getScheduleTitle(),
+                                        detail.getScheduleColor(),
+                                        detail.getIsTimeSet(),
+                                        schedule.getIsPublic()
+                                ))
+                        )))
                 .collect(Collectors.toList());
     }
 
@@ -69,17 +86,20 @@ public class PersonalScheduleService {
             throw new RuntimeException("Unauthorized access");
         }
 
-        // ScheduleDetail 생성 및 저장
-        ScheduleDetail detail = new ScheduleDetail();
-        detail.setScheduleId(scheduleId);
-        detail.setStartDt(requestDto.getStartDt());
-        detail.setEndDt(requestDto.getEndDt());
-        detail.setScheduleTitle(requestDto.getScheduleTitle());
-        detail.setScheduleColor(requestDto.getScheduleColor());
-        detail.setIsTimeSet(requestDto.getIsTimeSet());
-        detail.setIsPublic(requestDto.getIsPublic());
-        scheduleDetailRepository.save(detail);
+        // isPublic 업데이트
+        schedule.setIsPublic(requestDto.getIsPublic());
 
+        // ScheduleDetail 생성 및 저장
+        ScheduleDetail detail = ScheduleDetail.builder()
+                .personalSchedule(schedule)
+                .startDt(requestDto.getStartDt())
+                .endDt(requestDto.getEndDt())
+                .scheduleTitle(requestDto.getScheduleTitle())
+                .scheduleColor(requestDto.getScheduleColor())
+                .isTimeSet(requestDto.getIsTimeSet())
+                .build();
+
+        schedule.getScheduleDetails().add(detail);
         personalScheduleRepository.save(schedule);
 
         return new PersonalScheduleResponseDto(schedule.getScheduleId(), memberId, List.of(
@@ -90,7 +110,7 @@ public class PersonalScheduleService {
                         detail.getScheduleTitle(),
                         detail.getScheduleColor(),
                         detail.getIsTimeSet(),
-                        detail.getIsPublic()
+                        schedule.getIsPublic()
                 )
         ));
     }
@@ -104,5 +124,55 @@ public class PersonalScheduleService {
         }
 
         personalScheduleRepository.delete(schedule);
+    }
+
+    public Map<String, List<Map<String, Object>>> getPersonalSchedulesByMemberId(Long memberId) {
+        List<PersonalSchedule> schedules = personalScheduleRepository.findByMemberId(memberId);
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm");
+
+        List<Map<String, Object>> formattedSchedules = schedules.stream()
+                .flatMap(schedule -> schedule.getScheduleDetails().stream()
+                        .map(detail -> {
+                            Map<String, Object> map = new HashMap<>();
+                            map.put("scheduleId", schedule.getScheduleId());
+                            map.put("startDt", dateFormat.format(detail.getStartDt()));
+                            map.put("endDt", detail.getEndDt() != null ? dateFormat.format(detail.getEndDt()) : null);
+                            map.put("title", detail.getScheduleTitle());
+                            map.put("color", detail.getScheduleColor());
+                            return map;
+                        }))
+                .collect(Collectors.toList());
+
+        Map<String, List<Map<String, Object>>> response = new HashMap<>();
+        response.put("data", formattedSchedules);
+
+        return response;
+    }
+
+    public Map<String, List<Map<String, Object>>> getFormattedPersonalSchedules(Long memberId) {
+        List<PersonalScheduleResponseDto> schedules = getPersonalSchedules(memberId);
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm");
+
+        List<Map<String, Object>> formattedSchedules = schedules.stream()
+                .flatMap(schedule -> schedule.getDetails().stream()
+                        .map(detail -> {
+                            Map<String, Object> map = new HashMap<>();
+                            map.put("scheduleId", schedule.getScheduleId());
+                            map.put("startDt", dateFormat.format(detail.getStartDt()));
+                            map.put("endDt", detail.getEndDt() != null ? dateFormat.format(detail.getEndDt()) : null);
+                            map.put("title", detail.getScheduleTitle());
+                            map.put("color", detail.getScheduleColor());
+                            map.put("isPublic", detail.getIsPublic());
+                            map.put("isTimeSet", detail.getIsTimeSet());
+                            return map;
+                        }))
+                .collect(Collectors.toList());
+
+        Map<String, List<Map<String, Object>>> response = new HashMap<>();
+        response.put("data", formattedSchedules);
+
+        return response;
     }
 }

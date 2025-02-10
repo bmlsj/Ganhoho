@@ -11,9 +11,8 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 public class WorkScheduleResponseDto {
-    private Long workScheduleId;
-    private Long memberId;
-    private Long groupScheduleDetailId;
+
     private WorkType workType;
     private Date workDate;
+    //s
 } 

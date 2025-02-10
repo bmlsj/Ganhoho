@@ -32,6 +32,12 @@ public class WorkScheduleController {
         return new ResponseEntity<>(schedules, HttpStatus.OK);
     }
 
+    @GetMapping("/work/{memberId}")
+    public ResponseEntity<List<WorkScheduleResponseDto>> getWorkSchedulesByMemberId(@PathVariable Long memberId) {
+        List<WorkScheduleResponseDto> schedules = workScheduleService.getWorkSchedules(memberId);
+        return new ResponseEntity<>(schedules, HttpStatus.OK);
+    }
+
     @PutMapping("/work/{workScheduleId}")
     public ResponseEntity<WorkScheduleResponseDto> updateWorkSchedule(
             @PathVariable Long workScheduleId,

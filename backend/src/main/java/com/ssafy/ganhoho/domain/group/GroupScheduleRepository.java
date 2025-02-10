@@ -20,7 +20,7 @@ public interface GroupScheduleRepository extends JpaRepository<GroupSchedule, Lo
 
     // 특정 그룹 모든 스케줄 조회
     @Query("SELECT ws FROM WorkSchedule ws " +
-            "WHERE ws.groupScheduleDetailId IN " + // 추후 work_schedule_detail_id 로 수정해야함
+            "WHERE ws.workScheduleDetailId IN " + // 추후 work_schedule_detail_id 로 수정해야함
             "(SELECT gs.workScheduleDetailId FROM GroupSchedule gs WHERE gs.groupId = :groupId AND gs.scheduleMonth = :yearMonth)")
     List<WorkSchedule> findWorkScheduleByGroupIdAndYearMonth(
             @Param("groupId") Long groupId,
