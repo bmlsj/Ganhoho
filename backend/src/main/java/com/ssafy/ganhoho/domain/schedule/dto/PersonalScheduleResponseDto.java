@@ -2,6 +2,7 @@ package com.ssafy.ganhoho.domain.schedule.dto;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -20,8 +21,8 @@ public class PersonalScheduleResponseDto {
     @AllArgsConstructor
     public static class ScheduleDetailDto {
         private Long detailId;
-        private Date startDt;
-        private Date endDt;
+        private LocalDateTime startDt;
+        private LocalDateTime endDt;
         private String scheduleTitle;
         private String scheduleColor;
         private Boolean isTimeSet;
