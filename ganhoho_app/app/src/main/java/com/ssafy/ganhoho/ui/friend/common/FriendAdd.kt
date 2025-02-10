@@ -1,5 +1,7 @@
 package com.ssafy.ganhoho.ui.friend.common
 
+import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,21 +16,65 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ssafy.ganhoho.BuildConfig
+import com.ssafy.ganhoho.data.model.dto.friend.FriendAddRequest
 import com.ssafy.ganhoho.data.model.dto.friend.FriendDto
+import com.ssafy.ganhoho.data.model.dto.member.MemberDto
+import com.ssafy.ganhoho.viewmodel.AuthViewModel
+import com.ssafy.ganhoho.viewmodel.FriendViewModel
 
 @Composable
 fun FriendAdd(
-    friend: FriendDto
+    member: MemberDto,
+    friendList: List<FriendDto>
 ) {
+
+    val authViewModel: AuthViewModel = viewModel()
+    val friendViewModel: FriendViewModel = viewModel()
+
+    // 토큰 로드하기
+    val token = authViewModel.accessToken.collectAsState().value
+    val context = LocalContext.current
+
+    LaunchedEffect(token) {
+        if (token.isNullOrEmpty()) {
+            authViewModel.loadTokens(context)
+        }
+    }
+
+    // ✅ 현재 검색된 회원이 이미 친구인지 확인
+    val isFriend = friendList.any { it.friendLoginId == member.loginId }
+    val addFriendResult = friendViewModel.addFriendResult.collectAsState().value
+
+    LaunchedEffect(addFriendResult) {
+        Log.d("FriendAdd", "addFriendResult 값 변경 감지: $addFriendResult")
+
+        addFriendResult?.onSuccess { response ->
+            if (response.success) {
+                Log.d("FriendAdd", "✅ 친구 추가 성공!")
+            } else {
+                Log.d("FriendAdd", "❌ 친구 추가 실패!")
+            }
+        }?.onFailure { exception ->
+            Log.e("FriendAdd", "🚨 친구 추가 중 오류 발생: ${exception.message}")
+        }
+    }
+
 
     Box(
         modifier = Modifier
@@ -51,7 +97,7 @@ fun FriendAdd(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = friend.name,
+                        text = member.name,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -59,7 +105,7 @@ fun FriendAdd(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = friend.friendLoginId,
+                        text = "검색 @${member.loginId}",
                         color = Color.Gray,
                         fontSize = 14.sp
                     )
@@ -73,44 +119,54 @@ fun FriendAdd(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(
-                            text = friend.hospital,
-                            modifier = Modifier
-                                .background(
-                                    Color(0xfff0f0f0),
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .padding(horizontal = 8.dp, vertical = 4.dp),
-                            color = Color.Black,
-                            fontSize = 12.sp,
-                            textAlign = TextAlign.Center
-                        )
+                        member.hospital?.let {
+                            Text(
+                                text = it,
+                                modifier = Modifier
+                                    .background(
+                                        Color(0xfff0f0f0),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                color = Color.Black,
+                                fontSize = 12.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
 
-                        Text(
-                            text = friend.ward,
-                            modifier = Modifier
-                                .background(
-                                    Color(0xfff0f0f0),
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .padding(horizontal = 8.dp, vertical = 4.dp),
-                            color = Color.Black,
-                            fontSize = 12.sp,
-                            textAlign = TextAlign.Center
-                        )
+                        member.ward?.let {
+                            Text(
+                                text = it,
+                                modifier = Modifier
+                                    .background(
+                                        Color(0xfff0f0f0),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                color = Color.Black,
+                                fontSize = 12.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
+
+                    // ✅ 친구 목록에 이미 있는 경우 버튼을 회색으로 비활성화
+                    val buttonColor = if (isFriend) Color.LightGray else Color(0xff79C7E3)
+                    val isClickable = !isFriend // 이미 친구라면 클릭 비활성화
 
                     Text(
                         text = "추가",
                         modifier = Modifier
                             .background(
-                                Color(0xff79C7E3),
+                                buttonColor,
                                 shape = RoundedCornerShape(15.dp)
                             )
                             .padding(horizontal = 18.dp, vertical = 4.dp)
-                            .clickable {
-                                // TODO: 추가 버튼 누를 시,
+                            .clickable(enabled = isClickable) {
                                 // 친구 리스트에 친구 추가(POST)하면, true/false 반환
+                                if (token != null) {
+                                    friendViewModel.addFriendList(token, member.loginId)
+                                }
                             },
                         color = Color.White,
                         fontSize = 12.sp,
@@ -123,13 +179,17 @@ fun FriendAdd(
 
 }
 
+@SuppressLint("UnrememberedMutableState")
 @Preview(showBackground = true)
 @Composable
 fun FriendAddPreview() {
     FriendAdd(
-        FriendDto(
-            "@jeonghu1010", "서정후",
-            "싸피병원", "일반병동", true
+        MemberDto(
+            -1, "jeonghu1010", "서정후",
+            "싸피병원", "일반병동"
+        ),
+        friendList = listOf(  // ✅ 이미 친구로 등록된 경우를 테스트
+            FriendDto(-1, -1, "jeonghu1010", "서정후", "싸피병원", "일반병동", true)
         )
     )
 }

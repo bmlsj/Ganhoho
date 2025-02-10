@@ -5,9 +5,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.ssafy.ganhoho.ui.join.HospitalInfoScreen
-import com.ssafy.ganhoho.ui.join.JoinScreen
-import com.ssafy.ganhoho.ui.login.LoginScreen
+import com.ssafy.ganhoho.ui.auth.HospitalInfoScreen
+import com.ssafy.ganhoho.ui.auth.JoinScreen
+import com.ssafy.ganhoho.ui.auth.LoginScreen
 import com.ssafy.ganhoho.ui.theme.GANHOHOTheme
 
 @Composable

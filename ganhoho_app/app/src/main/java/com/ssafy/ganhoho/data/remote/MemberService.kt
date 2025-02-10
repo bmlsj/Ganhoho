@@ -10,10 +10,10 @@ import kotlin.jvm.Throws
 interface MemberService {
 
     // 회원 검색
-    @GET("api/member/search")
+    @GET("api/members/search")
     suspend fun searchFriend(
         @Header("Authorization") token: String,
-        @Query("friendLoginId") friendLoginId: String
+        @Query("friendLoginId") memberLoginId: String
     ): Response<List<MemberDto>>
 
 }

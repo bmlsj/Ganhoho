@@ -7,7 +7,6 @@ plugins {
     id("com.google.gms.google-services")
 }
 
-
 // 1. 추가
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
@@ -27,11 +26,7 @@ android {
         versionName = "1.0"
 
         // 2. 추가
-        buildConfigField(
-            "String",
-            "SERVER_URL",
-            "\"${localProperties.getProperty("SERVER_URL", "")}\""
-        )
+        buildConfigField("String", "SERVER_URL", "\"${localProperties.getProperty("SERVER_URL", "")}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -100,6 +95,7 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
+
     // Compose ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     // fcm
@@ -107,5 +103,12 @@ dependencies {
     implementation("com.google.firebase:firebase-messaging")
     implementation("com.google.firebase:firebase-analytics")
 
+    // okhttp3
+    implementation("com.squareup.okhttp3:okhttp")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+
+    // datastore
+    implementation ("androidx.datastore:datastore-preferences:1.1.2")
+    implementation ("androidx.datastore:datastore-core:1.1.2")  // 코어 의존성 (필요 시)
 
 }
