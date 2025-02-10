@@ -1,6 +1,5 @@
 package com.ssafy.ganhoho.domain.schedule.service;
 
-import com.google.api.client.util.DateTime;
 import com.ssafy.ganhoho.domain.schedule.dto.PersonalScheduleRequestDto;
 import com.ssafy.ganhoho.domain.schedule.dto.PersonalScheduleResponseDto;
 import com.ssafy.ganhoho.domain.schedule.entity.PersonalSchedule;
@@ -9,18 +8,22 @@ import com.ssafy.ganhoho.domain.schedule.repository.PersonalScheduleRepository;
 import com.ssafy.ganhoho.domain.schedule.repository.ScheduleDetailRepository;
 import com.ssafy.ganhoho.global.auth.jwt.JWTUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.HashMap;
 import java.text.SimpleDateFormat;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PersonalScheduleService {
 
     private final PersonalScheduleRepository personalScheduleRepository;
@@ -176,5 +179,10 @@ public class PersonalScheduleService {
         response.put("data", formattedSchedules);
 
         return response;
+    }
+
+    public PersonalSchedule getSchedule(Long scheduleId) {
+        Optional<PersonalSchedule> schedule = personalScheduleRepository.findById(scheduleId);
+        return schedule.orElseThrow(() -> new RuntimeException("Schedule not found"));
     }
 }
