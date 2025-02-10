@@ -93,6 +93,42 @@ CREATE TABLE `schedule_detail` (
                                    FOREIGN KEY (`schedule_id`) REFERENCES `personal_schedule`(`schedule_id`)
 );
 
+INSERT INTO member (login_id, password, name, hospital, ward, created_at, updated_at, app_fcm_token, watch_fcm_token)
+VALUES ('testuser', 'testpassword', 'Test User', 'Test Hospital', 'General', NOW(), NOW(), NULL, NULL);
+
+INSERT INTO work_schedule (member_id, work_date, work_type, created_at, updated_at)
+VALUES 
+(1, '2025-02-01 00:00:00', 'D', NOW(), NOW()),
+(1, '2025-02-02 00:00:00', 'N', NOW(), NOW()),
+(1, '2025-02-03 00:00:00', 'E', NOW(), NOW()),
+(1, '2025-02-04 00:00:00', 'OF', NOW(), NOW()),
+(1, '2025-02-05 00:00:00', 'D', NOW(), NOW()),
+(1, '2025-02-06 00:00:00', 'N', NOW(), NOW()),
+(1, '2025-02-07 00:00:00', 'E', NOW(), NOW()),
+(1, '2025-02-08 00:00:00', 'OF', NOW(), NOW()),
+(1, '2025-02-09 00:00:00', 'D', NOW(), NOW()),
+(1, '2025-02-10 00:00:00', 'N', NOW(), NOW()),
+(1, '2025-02-11 00:00:00', 'E', NOW(), NOW()),
+(1, '2025-02-12 00:00:00', 'OF', NOW(), NOW()),
+(1, '2025-02-13 00:00:00', 'D', NOW(), NOW()),
+(1, '2025-02-14 00:00:00', 'N', NOW(), NOW()),
+(1, '2025-02-15 00:00:00', 'E', NOW(), NOW()),
+(1, '2025-02-16 00:00:00', 'OF', NOW(), NOW()),
+(1, '2025-02-17 00:00:00', 'D', NOW(), NOW()),
+(1, '2025-02-18 00:00:00', 'N', NOW(), NOW()),
+(1, '2025-02-19 00:00:00', 'E', NOW(), NOW()),
+(1, '2025-02-20 00:00:00', 'OF', NOW(), NOW()),
+(1, '2025-02-21 00:00:00', 'D', NOW(), NOW()),
+(1, '2025-02-22 00:00:00', 'N', NOW(), NOW()),
+(1, '2025-02-23 00:00:00', 'E', NOW(), NOW()),
+(1, '2025-02-24 00:00:00', 'OF', NOW(), NOW()),
+(1, '2025-02-25 00:00:00', 'D', NOW(), NOW()),
+(1, '2025-02-26 00:00:00', 'N', NOW(), NOW()),
+(1, '2025-02-27 00:00:00', 'E', NOW(), NOW()),
+(1, '2025-02-28 00:00:00', 'OF', NOW(), NOW());
+
+
+
 -- 인덱스 추가
 CREATE INDEX idx_member_login_id ON member(login_id);
 CREATE INDEX idx_group_name ON `group`(group_name);
