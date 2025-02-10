@@ -1,6 +1,8 @@
 package com.ssafy.ganhoho.global.auth.jwt;
 
 import com.ssafy.ganhoho.global.auth.dto.CustomUserDetails;
+import com.ssafy.ganhoho.global.constant.ErrorCode;
+import com.ssafy.ganhoho.global.error.CustomException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,12 +28,11 @@ public class JWTFilter extends OncePerRequestFilter {
 
         String token = jwtUtil.getJwtFromRequest(request);
 
-        if (token == null || jwtUtil.isExpired(token)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         try {
+            if (token == null || jwtUtil.isExpired(token)) {
+                throw new CustomException(ErrorCode.EXPIRED_ACCESS_TOKEN);
+            }
+
             Long userId = jwtUtil.getMemberId(token);
 
             CustomUserDetails userDetails = new CustomUserDetails(userId);

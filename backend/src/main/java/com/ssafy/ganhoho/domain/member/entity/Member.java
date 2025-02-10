@@ -17,8 +17,10 @@ import java.time.LocalDateTime;
 public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "member_id")
     private Long memberId;
 
+    @Column(name = "login_id")
     private String loginId;
     private String password;
     private String name;
@@ -26,13 +28,15 @@ public class Member {
     private String ward;
 
     @CreationTimestamp
-    @Column(updatable = false)
+    @Column(updatable = false, name = "created_at")
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(insertable = false)
+    @Column(insertable = false, name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "app_fcm_token")
     private String appFcmToken;
+    @Column(name = "watch_fcm_token")
     private String watchFcmToken;
 }
