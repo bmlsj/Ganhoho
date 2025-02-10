@@ -102,7 +102,7 @@ CREATE INDEX idx_group_name ON `group`(group_name);
 CREATE INDEX idx_work_schedule_date ON work_schedule(work_date);
 
 
--- 근무스케줄
+-- 근무스케줄추가가
 INSERT INTO member (login_id, password, name, hospital, ward, created_at, updated_at, app_fcm_token, watch_fcm_token)
 VALUES ('testuser', 'testpassword', 'Test User', 'Test Hospital', 'General', NOW(), NOW(), NULL, NULL);
 
