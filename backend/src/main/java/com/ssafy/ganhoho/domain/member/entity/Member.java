@@ -10,14 +10,17 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name="member")
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "member_id")
     private Long memberId;
 
+    @Column(name = "login_id")
     private String loginId;
     private String password;
     private String name;
@@ -25,13 +28,15 @@ public class Member {
     private String ward;
 
     @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @Column(updatable = false, name = "created_at")
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(nullable = false)
+    @Column(insertable = false, name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "app_fcm_token")
     private String appFcmToken;
+    @Column(name = "watch_fcm_token")
     private String watchFcmToken;
 }

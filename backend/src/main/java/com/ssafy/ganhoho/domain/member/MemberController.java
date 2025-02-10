@@ -1,14 +1,13 @@
 package com.ssafy.ganhoho.domain.member;
 
+import com.ssafy.ganhoho.domain.member.dto.HospitalWardRequestBody;
 import com.ssafy.ganhoho.domain.member.dto.MemberInfoResponse;
 import com.ssafy.ganhoho.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,7 +19,7 @@ import static com.ssafy.ganhoho.global.auth.SecurityUtil.getCurrentMemberId;
 @RequiredArgsConstructor
 public class MemberController {
     private final MemberService memberService;
-    //하이
+
     @GetMapping("/mypage")
     public ResponseEntity<MemberInfoResponse> getMemberInfo(){
         Long memberId = getCurrentMemberId();
@@ -32,4 +31,17 @@ public class MemberController {
         return ResponseEntity.ok(memberService.searchMembers(friendLoginId));
     }
 
+    @DeleteMapping("/withdrawal")
+    public ResponseEntity withdrawal() {
+        Long memberId = getCurrentMemberId();
+        memberService.withdrawal(memberId);
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @PutMapping("/mypage/hospital-ward")
+    public ResponseEntity<MemberInfoResponse> updateHospitalWard(@RequestBody HospitalWardRequestBody hospitalWardRequestBody) {
+        Long memberId = getCurrentMemberId();
+        MemberInfoResponse memberInfoResponse = memberService.updateHospitalWard(memberId, hospitalWardRequestBody.getHospital(), hospitalWardRequestBody.getWard());
+        return ResponseEntity.ok(memberInfoResponse);
+    }
 }
