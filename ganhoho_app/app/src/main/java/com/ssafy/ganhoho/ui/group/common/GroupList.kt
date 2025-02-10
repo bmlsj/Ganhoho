@@ -26,8 +26,6 @@ fun GroupList(
     navController: NavController
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth(),
         onClick = {
             // 각 그룹 상세페이지로 이동
             navController.navigate("")
@@ -36,33 +34,33 @@ fun GroupList(
         elevation = CardDefaults.cardElevation(6.dp), // 그림자 적용
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
-        Row(
-            verticalAlignment = Alignment.Bottom,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        Column(
             modifier = Modifier
                 .padding(horizontal = 20.dp, vertical = 14.dp) // 내부 패딩 조정
         ) {
-            // 아이콘
-            Icon(
-                painter = painterResource(id = group.groupIconType),
-                contentDescription = "그룹 아이콘",
-                modifier = Modifier.size(26.dp)
-            )
+
 
             // 그룹명
             Text(
                 text = group.groupName,
-                fontSize = 18.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(modifier = Modifier.weight(1f))
-
             // 그룹 멤버 수
             Text(
-                text = "👤 ${group.groupMemberCount}",
+                text = "${group.groupMemberCount}명의 그룹원",
                 fontSize = 12.sp,
                 color = Color.Gray
+            )
+
+            // 아이콘
+            Icon(
+                painter = painterResource(id = group.groupIconType),
+                contentDescription = "그룹 아이콘",
+                modifier = Modifier
+                    .size(26.dp)
+                    .align(Alignment.End)
             )
         }
     }
