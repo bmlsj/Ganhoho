@@ -11,8 +11,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import com.ssafy.ganhoho.domain.schedule.entity.WorkSchedule;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.util.List;
+
 
 @RestController
 @Slf4j
@@ -33,7 +37,8 @@ public class WorkScheduleController {
     }
 
     @GetMapping("/work/{memberId}")
-    public ResponseEntity<List<WorkScheduleResponseDto>> getWorkSchedulesByMemberId(@PathVariable Long memberId) {
+    public ResponseEntity<List<WorkScheduleResponseDto>> getWorkSchedulesByMemberId(
+            @PathVariable Long memberId) {
         List<WorkScheduleResponseDto> schedules = workScheduleService.getWorkSchedules(memberId);
         return new ResponseEntity<>(schedules, HttpStatus.OK);
     }
@@ -47,5 +52,15 @@ public class WorkScheduleController {
 
         WorkScheduleResponseDto updatedSchedule = workScheduleService.updateWorkSchedule(workScheduleId, requestDto, memberId);
         return new ResponseEntity<>(updatedSchedule, HttpStatus.OK);
+    }
+    @PostMapping("/work/create")
+    public ResponseEntity<List<WorkScheduleResponseDto>> addWorkSchedules(
+            @RequestBody List<WorkScheduleRequestDto> requestDtos) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Long memberId = userDetails.getUserId();
+
+        List<WorkScheduleResponseDto> createdSchedules = workScheduleService.addWorkSchedules(requestDtos, memberId);
+        return new ResponseEntity<>(createdSchedules, HttpStatus.CREATED);
     }
 }

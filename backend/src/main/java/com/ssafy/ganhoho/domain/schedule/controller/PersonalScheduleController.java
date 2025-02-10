@@ -11,6 +11,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import com.ssafy.ganhoho.global.auth.dto.CustomUserDetails;
+import com.ssafy.ganhoho.global.error.ErrorResponse;
+import com.ssafy.ganhoho.global.constant.ErrorCode;
 
 import java.util.List;
 import java.util.Map;
@@ -74,5 +76,21 @@ public class PersonalScheduleController {
             @PathVariable Long memberId) {
         Map<String, List<Map<String, Object>>> response = personalScheduleService.getPersonalSchedulesByMemberId(memberId);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/{scheduleId}")
+    public ResponseEntity<?> getSchedule(@PathVariable Long scheduleId) {
+        if (scheduleId == null || scheduleId <= 0) {
+            return ResponseEntity.badRequest()
+                .body(new ErrorResponse(ErrorCode.INVALID_REQUEST_PARAMETERS));
+        }
+        
+        try {
+            return ResponseEntity.ok(personalScheduleService.getSchedule(scheduleId));
+        } catch (Exception e) {
+            log.error("일정 조회 실패: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponse(ErrorCode.SERVER_ERROR));
+        }
     }
 }
