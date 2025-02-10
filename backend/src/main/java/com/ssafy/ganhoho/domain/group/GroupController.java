@@ -4,6 +4,7 @@ import com.ssafy.ganhoho.domain.group.dto.*;
 import com.ssafy.ganhoho.global.auth.SecurityUtil;
 import com.ssafy.ganhoho.global.constant.ErrorCode;
 import com.ssafy.ganhoho.global.error.CustomException;
+import com.ssafy.ganhoho.global.error.ErrorResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.Response;
@@ -32,16 +33,17 @@ public class GroupController {
             return ResponseEntity.ok()
                     .body(response);
         } catch (CustomException e) {
+            // 멤버없음 에러 발생시 접근 거부됨으로 변환하여 처리
             if (e.getErrorCode().equals(ErrorCode.NOT_EXIST_MEMBER)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("ACCESS_DENIED");
+                        .body(new ErrorResponse(ErrorCode.ACCES_DENIED));
             }
             return ResponseEntity.status(e.getErrorCode().getHttpStatus())
-                    .body(e.getMessage());
+                    .body(new ErrorResponse(e.getErrorCode()));
         } catch (Exception e) {
             // JWT 관련
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("UNAUTHORIZED");
+                    .body(new ErrorResponse(ErrorCode.UNAUTHORIZED));
         }
     }
 
@@ -53,10 +55,10 @@ public class GroupController {
             return ResponseEntity.ok(response);
         } catch (CustomException e) {
             return ResponseEntity.status(e.getErrorCode().getHttpStatus())
-                    .body(e.getMessage());
+                    .body(new ErrorResponse(e.getErrorCode()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("UNAUTHORIZED");
+                    .body(new ErrorResponse(ErrorCode.UNAUTHORIZED));
         }
     }
 
@@ -68,10 +70,10 @@ public class GroupController {
             return ResponseEntity.ok(response);
         } catch (CustomException e) {
             return ResponseEntity.status(e.getErrorCode().getHttpStatus())
-                    .body(e.getMessage());
+                    .body(new ErrorResponse(e.getErrorCode()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("UNAUTHORIZED");
+                    .body(new ErrorResponse(ErrorCode.UNAUTHORIZED));
         }
 
     }
@@ -85,13 +87,13 @@ public class GroupController {
         } catch (CustomException e) {
             if (e.getErrorCode().equals(ErrorCode.ACCES_DENIED)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("ACCESS_DENIED");
+                        .body(new ErrorResponse(ErrorCode.ACCES_DENIED));
             }
             return ResponseEntity.status(e.getErrorCode().getHttpStatus())
                     .body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("UNAUTHORIZED");
+                    .body(new ErrorResponse(ErrorCode.UNAUTHORIZED));
         }
     }
 
@@ -104,13 +106,13 @@ public class GroupController {
         } catch (CustomException e) {
             if (e.getErrorCode().equals(ErrorCode.ACCES_DENIED)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("ACCESS_DENIED");
+                        .body(new ErrorResponse(ErrorCode.ACCES_DENIED));
             }
             return ResponseEntity.status(e.getErrorCode().getHttpStatus())
-                    .body(e.getMessage());
+                    .body(new ErrorResponse(e.getErrorCode()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("UNAUTHORIZED");
+                    .body(new ErrorResponse(ErrorCode.UNAUTHORIZED));
         }
     }
 
@@ -123,13 +125,13 @@ public class GroupController {
         } catch (CustomException e) {
             if (e.getErrorCode().equals(ErrorCode.ACCES_DENIED)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("ACCESS_DENIED");
+                        .body(new ErrorResponse(ErrorCode.ACCES_DENIED));
             }
             return ResponseEntity.status(e.getErrorCode().getHttpStatus())
-                    .body(e.getMessage());
+                    .body(new ErrorResponse(e.getErrorCode()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("UNAUTHORIZED");
+                    .body(new ErrorResponse(ErrorCode.UNAUTHORIZED));
         }
     }
 
@@ -144,13 +146,13 @@ public class GroupController {
         } catch (CustomException e) {
             if (e.getErrorCode().equals(ErrorCode.ACCES_DENIED)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("ACCESS_DENIED");
+                        .body(new ErrorResponse(ErrorCode.ACCES_DENIED));
             }
             return ResponseEntity.status(e.getErrorCode().getHttpStatus())
-                    .body(e.getMessage());
+                    .body(new ErrorResponse(e.getErrorCode()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("UNAUTHORIZED");
+                    .body(new ErrorResponse(ErrorCode.UNAUTHORIZED));
         }
     }
 
