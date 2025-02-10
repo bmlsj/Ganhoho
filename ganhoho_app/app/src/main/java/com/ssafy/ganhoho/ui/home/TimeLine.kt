@@ -26,14 +26,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ssafy.ganhoho.data.model.dto.schedule.TimelineEvent
 
-data class TimelineEvent(
-    val startTime: String, // 시작 시간
-    val title: String,     // 이벤트 제목
-    val dateRange: String, // 날짜 범위
-    val color: Color,      // 점 색상
-    val isLast: Boolean    // 마지막 항목 여부
-)
 
 @Composable
 fun TimelineScreen(events: List<TimelineEvent>) {
@@ -127,13 +121,16 @@ fun TimelineItem(event: TimelineEvent) {
 @Composable
 fun TimelineExample() {
     val events = listOf(
+        // ✅ 1. 근무 일정 (항상 "All Day", 우선순위 가장 높음)
         TimelineEvent(
             startTime = "All Day",
-            title = "Eve",
+            title = "오전 근무",
             dateRange = "2025.01.01",
-            color = Color.LightGray,
+            color = Color(0xffD1EEF2), // 근무 일정 색상
             isLast = false
         ),
+
+        // ✅ 2. 장기 일정 (우선순위 두 번째)
         TimelineEvent(
             startTime = "19:00",
             title = "동기 회식 🎉",
@@ -141,14 +138,32 @@ fun TimelineExample() {
             color = Color(0xffD1EEF2),
             isLast = false
         ),
+
         TimelineEvent(
             startTime = "20:00",
             title = "북 스터디 📖",
             dateRange = "2025.01.01 - 2025.01.10",
             color = Color(0xffFFCAE6),
-            isLast = true
+            isLast = false
+        ),
+
+        // ✅ 3. 당일 일정 (우선순위 가장 낮음)
+        TimelineEvent(
+            startTime = "09:00",
+            title = "병원 예약 🏥",
+            dateRange = "2025.01.05",
+            color = Color(0xffFFD700), // 노란색
+            isLast = false
+        ),
+        TimelineEvent(
+            startTime = "14:00",
+            title = "스터디 그룹 회의 📚",
+            dateRange = "2025.01.06",
+            color = Color(0xff98FB98), // 연한 초록색
+            isLast = true // 마지막 일정
         )
     )
+
 
     TimelineScreen(events = events)
 }

@@ -4,6 +4,8 @@ import com.ssafy.ganhoho.data.model.dto.group.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.dto.schedule.FriendSchedule
 import com.ssafy.ganhoho.data.model.dto.schedule.MySchedule
 import com.ssafy.ganhoho.data.model.dto.schedule.MyScheduleRequest
+import com.ssafy.ganhoho.data.model.response.schedule.MyScheduleResponse
+import com.ssafy.ganhoho.data.model.response.schedule.AddMyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.schedule.ScheduleUpdateResponse
 import retrofit2.Response
 import retrofit2.http.Body
@@ -35,7 +37,7 @@ interface ScheduleService {
     @GET("api/schedules/personal")
     suspend fun getMySchedule(
         @Header("Authorization") token: String
-    ): Response<List<MySchedule>>
+    ): Response<MyScheduleResponse>
 
     // 개인 스케쥴 수정
     @PUT("api/schedules/personal")
@@ -50,7 +52,7 @@ interface ScheduleService {
     suspend fun addMySchedule(
         @Header("Authorization") token: String,
         @Body request: MyScheduleRequest
-    ): Response<Void>
+    ): Response<AddMyScheduleResponse>
 
     // 친구 근무 스케쥴 조회
     @GET("api/schedules/work/{memberId}")

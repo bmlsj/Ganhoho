@@ -3,12 +3,9 @@ package com.ssafy.ganhoho.ui.home
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -29,23 +26,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.ssafy.ganhoho.data.model.dto.schedule.MySchedule
+import com.ssafy.ganhoho.data.model.dto.schedule.TimelineEvent
 import com.ssafy.ganhoho.ui.theme.PrimaryBlue
-import kotlinx.datetime.LocalDateTime
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DayBottomSheet(
     showBottomSheet: MutableState<Boolean>,
     selectedEvents: List<MySchedule>,
-    date: LocalDate,
     navController: NavController
 ) {
 
@@ -82,12 +76,26 @@ fun DayBottomSheet(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    if (selectedEvents.isNotEmpty()) {
+                    if (selectedEvents.isNotEmpty()) {  // 일정이 있으면, 타임라인 보여주기
+
                         TimelineScreen(events = selectedEvents.mapIndexed { index, event ->
+                            val startDt = event.startDt.toLocalDateTime()
+                            val endDt = event.endDt.toLocalDateTime()
                             TimelineEvent(
-                                startTime = "All Day",
+                                startTime = if (event.isTimeSet) {
+                                    "${startDt.hour}:00"
+                                } else {
+                                    "All Day"
+                                },
                                 title = event.title,
-                                dateRange = "${date.year}.${date.monthValue}.${date.dayOfMonth}",
+                                dateRange = if (startDt.toLocalDate() == endDt.toLocalDate()) {
+                                    // 당일 일정
+                                    "${startDt.year}.${startDt.monthValue}.${startDt.dayOfMonth}"
+                                } else {
+                                    // 장기 일정
+                                    "${startDt.year}.${startDt.monthValue}.${startDt.dayOfMonth} - " +
+                                            "${endDt.year}.${endDt.monthValue}.${endDt.dayOfMonth}"
+                                },
                                 // TODO: 서버 연동 후 컬러 테스트 필요
                                 color = if (event.color.startsWith("#") && event.color.length == 7) {
                                     Color(android.graphics.Color.parseColor(event.color))
@@ -97,7 +105,8 @@ fun DayBottomSheet(
                                 isLast = index == selectedEvents.size - 1
                             )
                         })
-                    } else {
+
+                    } else {  // 일정이 없는 경우, 일정 추가 모달 보여주기
                         AddDateBottomSheet(
                             showBottomSheet = showBottomSheet,
                             navController = navController

@@ -1,10 +1,14 @@
 package com.ssafy.ganhoho.repository
 
+import android.util.Log
 import com.ssafy.ganhoho.data.model.dto.group.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.dto.schedule.FriendSchedule
 import com.ssafy.ganhoho.data.model.dto.schedule.MySchedule
 import com.ssafy.ganhoho.data.model.dto.schedule.MyScheduleRequest
+import com.ssafy.ganhoho.data.model.response.handleMessageResponse
+import com.ssafy.ganhoho.data.model.response.schedule.AddMyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.handleResponse
+import com.ssafy.ganhoho.data.model.response.schedule.MyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.schedule.ScheduleUpdateResponse
 import com.ssafy.ganhoho.data.remote.RetrofitUtil
 
@@ -44,17 +48,17 @@ class ScheduleRepository {
     // 개인 스케쥴 조회
     suspend fun getMySchedule(
         token: String
-    ): Result<List<MySchedule>> {
+    ): Result<MyScheduleResponse> {
         return try {
             val response = RetrofitUtil.scheduleService.getMySchedule(
                 "Bearer $token"
             )
-            handleResponse(response)
+            Log.d("ScheduleViewModel", "레포지토리 응답: ${response} $token")
+            handleMessageResponse(response)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
-
 
     // 개인 스케쥴 수정
     suspend fun updateSchedule(
@@ -76,7 +80,7 @@ class ScheduleRepository {
     suspend fun addMySchedule(
         token: String,
         request: MyScheduleRequest
-    ): Result<Void> {
+    ): Result<AddMyScheduleResponse> {
         return try {
             val response = RetrofitUtil.scheduleService.addMySchedule(
                 "Bearer $token", request

@@ -41,14 +41,22 @@ import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.core.CalendarDay
 import com.kizitonwose.calendar.core.OutDateStyle
 import com.kizitonwose.calendar.core.yearMonth
+import com.ssafy.ganhoho.data.model.dto.group.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.dto.schedule.MySchedule
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.ScheduleViewModel
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
+
+
+var testWorkSchedules: List<WorkScheduleDto> = emptyList()
+var testPersonalSchedules: List<MySchedule> = emptyList()
 
 @Composable
 fun HomeScreen(navController: NavController) {
@@ -57,7 +65,7 @@ fun HomeScreen(navController: NavController) {
     val startMonth = remember { currentMonth.minusMonths(5) }
     val endMonth = remember { currentMonth.plusMonths(5) }
     val daysOfWeek = DayOfWeek.entries
-    val yearMonth = currentMonth.toString()
+    val yearMonth = currentMonth.toString() // 2025-02 형태
 
     // 📌 현재 보이는 월을 상태로 저장 (초기값: 현재 월)
     val currentMonthState = remember { mutableStateOf(YearMonth.now()) }
@@ -67,7 +75,11 @@ fun HomeScreen(navController: NavController) {
 
     // 개인 스케쥴 조회 리스트
     val myScheduleState = scheduleViewModel.mySchedule.collectAsState().value
-    val myScheduleList = myScheduleState?.getOrNull() ?: emptyList()
+    val myScheduleList = myScheduleState?.getOrNull()?.data ?: emptyList()
+
+    // 근무 스케쥴 조회
+    val myWorkScheduleState = scheduleViewModel.myWorkSchedule.collectAsState().value
+    val myWorkSchedule = myWorkScheduleState?.getOrNull() ?: emptyList()
 
     // 토큰 로드하기
     val token = authViewModel.accessToken.collectAsState().value
@@ -81,62 +93,19 @@ fun HomeScreen(navController: NavController) {
 
     LaunchedEffect(token) {
         if (token != null) {
+            // 근무 스케쥴 불러오기
+            scheduleViewModel.getMyWorkSchedule(token, yearMonth)
+            // 개인 스케쥴 불러오기
             scheduleViewModel.getMySchedule(token)
         }
     }
 
-//    val events = remember {
-//        mutableStateListOf(
-//            MySchedule(
-//                startDt = LocalDateTime.parse("2025-02-03T00:00:00"),
-//                endDt = LocalDateTime.parse("2025-02-04T23:59:59"),
-//                title = "동기 회식 🎉",
-//                color = "#D1EEF2",
-//                isPublic = true,
-//                isTimeSet = false
-//            ),
-//            MySchedule(
-//                startDt = LocalDateTime.parse("2025-02-07T00:00:00"),
-//                endDt = LocalDateTime.parse("2025-02-10T23:59:59"),
-//                title = "북 스터디",
-//                color = "#FFCAE6",
-//                isPublic = false,
-//                isTimeSet = true
-//            ),
-//            MySchedule(
-//                startDt = LocalDateTime.parse("2025-02-15T00:00:00"),
-//                endDt = LocalDateTime.parse("2025-02-15T23:59:59"),
-//                title = "월세 🌼",
-//                color = "#FFF59D",
-//                isPublic = true,
-//                isTimeSet = false
-//            ),
-//            MySchedule(
-//                startDt = LocalDateTime.parse("2025-02-17T00:00:00"),
-//                endDt = LocalDateTime.parse("2025-02-18T23:59:59"),
-//                title = "북 스터디2 📚",
-//                color = "#FFCAE6",
-//                isPublic = true,
-//                isTimeSet = false
-//            ),
-//            MySchedule(
-//                startDt = LocalDateTime.parse("2025-02-17T00:00:00"),
-//                endDt = LocalDateTime.parse("2025-02-20T23:59:59"),
-//                title = "북 스터디2 📚",
-//                color = "#FFCAE6",
-//                isPublic = true,
-//                isTimeSet = false
-//            ),
-//            MySchedule(
-//                startDt = LocalDateTime.parse("2025-02-28T00:00:00"),
-//                endDt = LocalDateTime.parse("2025-02-28T23:59:59"),
-//                title = "제주도 여행 🍊",
-//                color = "#FFD1DC",
-//                isPublic = false,
-//                isTimeSet = true
-//            ),
-//            )
-//    }
+    LaunchedEffect(token, currentMonthState.value) {  // ✅ 달력이 바뀌어도 다시 불러오기
+        if (token != null) {
+            scheduleViewModel.getMySchedule(token)
+        }
+    }
+
 
     val calendarState = rememberCalendarState(
         startMonth = startMonth,
@@ -151,7 +120,7 @@ fun HomeScreen(navController: NavController) {
         currentMonthState.value = calendarState.firstVisibleMonth.yearMonth
         if (token != null) {
             scheduleViewModel.getMySchedule(token)
-        }  // 월이 바뀔때마다 일정 로드
+        }  // 월이 바뀔때마다 일정 다시 로드
     }
 
     Column(
@@ -184,7 +153,21 @@ fun HomeScreen(navController: NavController) {
         HorizontalCalendar(
             state = calendarState,
             dayContent = { day ->
-                DayContent(myScheduleList, day, currentMonthState.value, navController)
+
+                DayContent(
+                    myScheduleList,
+                    myWorkSchedule,
+                    day, currentMonthState.value, navController
+                )
+
+//                getTestData()
+//                DayContent(
+//                    myScheduleList = testPersonalSchedules ,
+//                    myWorkScheduleList = testWorkSchedules,
+//                    day = day,
+//                    currentMonth = currentMonthState.value,
+//                    navController = navController
+//                )
             },
             monthHeader = {
                 MonthHeader(daysOfWeek)
@@ -237,19 +220,30 @@ fun MonthHeader(daysOfWeek: List<DayOfWeek>) {
 @SuppressLint("RememberReturnType")
 @Composable
 fun DayContent(
-    events: List<MySchedule>,
+    myScheduleList: List<MySchedule>,
+    myWorkScheduleList: List<WorkScheduleDto>,
     day: CalendarDay,
     currentMonth: YearMonth,
     navController: NavController
 ) {
 
+    /// Log.d("homeScreen", myScheduleList.toString())
     val date = day.date
     val isOutDate = date.yearMonth != currentMonth  // ✅ outDate 여부 확인
 
+    // ✅ 근무 일정 변환 -> MySchedule형태로 변환
+    val convertedWorkSchedules = convertWorkScheduleToMySchedule(myWorkScheduleList)
+
+    // ✅ 해당 날짜의 *근무 스케줄* 필터링 (근무 일정은 무조건 당일 일정)
+    val workScheduleEvents = convertedWorkSchedules.filter {
+        it.startDt.toLocalDate() == date
+    }
+
     // 해당 날짜의 이벤트 필터링
     // ✅ `LocalDateTime`을 `LocalDate`로 변환 후 비교
-    val matchingEvents = events.filter {
-        it.startDt.toLocalDate() <= date && date <= it.endDt.toLocalDate()
+    val matchingEvents = myScheduleList.filter {
+        it.startDt.toLocalDate() <= date &&
+                date <= it.endDt.toLocalDate()
     }
 
     val textHeight = remember { mutableStateOf(15.dp) } // 첫날의 Text 높이를 저장
@@ -262,11 +256,13 @@ fun DayContent(
     val longEvents = matchingEvents.filter { it.startDt != it.endDt } // 이틀 이상 지속되는 일정
     val singleEvents = matchingEvents.filter { it.startDt == it.endDt } // 당일 일정
 
-    // 🎯 장기 일정을 기간이 긴 순서대로 정렬하고, 단기 일정은 그대로 배치
-    val sortedEvents =
-        longEvents.sortedByDescending {
-            it.endDt.toLocalDate().toEpochDay() - it.startDt.toLocalDate().toEpochDay()
-        } + singleEvents
+    // 🎯 근무 시간 다음, 장기 일정을 기간이 긴 순서대로 정렬하고, 단기 일정은 시간 순서대로 정렬
+    val sortedEvents = workScheduleEvents +  // 근무 일정
+            longEvents.sortedByDescending {  // 장기 일정
+                LocalDate.parse(it.endDt).toEpochDay() - LocalDate.parse(it.startDt).toEpochDay()
+            } + singleEvents.sortedBy {  // 당일 일정(시작 시간 순으로 정렬)
+        LocalTime.parse(it.startDt)
+    }
 
 
     Column(
@@ -291,7 +287,7 @@ fun DayContent(
 
         Spacer(modifier = Modifier.height(5.dp))
 
-        if (!isOutDate) {
+        if (!isOutDate) {  // 해당 월에 속하는 날짜일 경우,
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -338,7 +334,7 @@ fun DayContent(
                             // 첫날일 경우 제목 표시
                             Text(
                                 text = event.title,
-                                fontSize = 8.sp,
+                                fontSize = 9.sp,
                                 color = Color.Black,
                                 maxLines = 2,
                                 softWrap = true, // ✅ 자동 줄바꿈 활성화
@@ -389,7 +385,6 @@ fun DayContent(
     DayBottomSheet(
         showBottomSheet = showBottomSheet,
         selectedEvents = selectedEvents.value,
-        date = date,
         navController = navController
     )
 }
@@ -398,73 +393,151 @@ fun DayContent(
 val LocalDateTime.yearMonth: YearMonth
     get() = YearMonth.of(this.year, this.month)
 
+// ✅ WorkScheduleDto를 MySchedule로 변환하여 캘린더에 표시
+fun convertWorkScheduleToMySchedule(workSchedules: List<WorkScheduleDto>): List<MySchedule> {
+    return workSchedules.map { work ->
+        MySchedule(
+            scheduleId = -1,  // 근무 일정은 임시 ID 사용
+            startDt = work.workDate.toString(),
+            endDt = work.workDate.toString(),  // 근무 일정은 당일 일정
+            title = work.workType,
+            color = "#D1EEF2",  // 근무 일정 색 => 아직 결정..? 못함
+            isPublic = true,
+            isTimeSet = false
+        )
+    }
+}
+
+
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
     val navController = rememberNavController()
 
-    // ✅ 테스트 근무 일정
-    val testWorkSchedules = listOf(
-        MySchedule(
-            scheduleId = 1,
-            startDt = LocalDateTime.parse("2025-02-03T00:00:00"),
-            endDt = LocalDateTime.parse("2025-02-03T23:59:59"),
-            title = "근무 일정 (오전 근무)",
-            color = "#D1EEF2",
-            isPublic = true,
-            isTimeSet = true
-        ),
-        MySchedule(
-            scheduleId = 2,
-            startDt = LocalDateTime.parse("2025-02-07T00:00:00"),
-            endDt = LocalDateTime.parse("2025-02-07T23:59:59"),
-            title = "근무 일정 (야간 근무)",
-            color = "#79C7E3",
-            isPublic = true,
-            isTimeSet = true
-        )
+    getTestData()
+
+    // ✅ `HomeScreenWithTestData` 호출 시 근무 일정도 포함
+    HomeScreenWithTestData(navController, testWorkSchedules, testPersonalSchedules)
+}
+
+fun getTestData() {
+    // ✅ 테스트 근무 일정 (당일 일정)
+    testWorkSchedules = listOf(
+        WorkScheduleDto(LocalDateTime.parse("2025-02-01T00:00:00"), "day"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-02T00:00:00"), "night"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-03T00:00:00"), "eve"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-04T00:00:00"), "off"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-05T00:00:00"), "day"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-06T00:00:00"), "night"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-07T00:00:00"), "eve"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-08T00:00:00"), "off"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-09T00:00:00"), "day"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-10T00:00:00"), "night"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-11T00:00:00"), "eve"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-12T00:00:00"), "off"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-13T00:00:00"), "day"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-14T00:00:00"), "night"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-15T00:00:00"), "eve"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-16T00:00:00"), "off"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-17T00:00:00"), "day"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-18T00:00:00"), "night"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-19T00:00:00"), "eve"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-20T00:00:00"), "off"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-21T00:00:00"), "day"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-22T00:00:00"), "night"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-23T00:00:00"), "eve"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-24T00:00:00"), "off"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-25T00:00:00"), "day"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-26T00:00:00"), "night"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-27T00:00:00"), "eve"),
+        WorkScheduleDto(LocalDateTime.parse("2025-02-28T00:00:00"), "off")
     )
 
     // ✅ 테스트 개인 일정
-    val testPersonalSchedules = listOf(
+    testPersonalSchedules = listOf(
         MySchedule(
-            scheduleId = 3,
-            startDt = LocalDateTime.parse("2025-02-03T00:00:00"),
-            endDt = LocalDateTime.parse("2025-02-04T23:59:59"),
-            title = "동기 모임 🎉",
-            color = "#FFCAE6",
-            isPublic = true,
-            isTimeSet = false
+            1,
+            "2025-02-02T10:00:00",
+            "2025-02-02T12:00:00",
+            "병원 방문",
+            "#FFA07A",
+            true,
+            true
         ),
         MySchedule(
-            scheduleId = 4,
-            startDt = LocalDateTime.parse("2025-02-10T00:00:00"),
-            endDt = LocalDateTime.parse("2025-02-10T23:59:59"),
-            title = "북 스터디 📚",
-            color = "#FFA726",
-            isPublic = false,
-            isTimeSet = false
+            2,
+            "2025-02-05T00:00:00",
+            "2025-02-08T23:59:59",
+            "휴가",
+            "#98FB98",
+            false,
+            false
         ),
         MySchedule(
-            scheduleId = 5,
-            startDt = LocalDateTime.parse("2025-02-15T00:00:00"),
-            endDt = LocalDateTime.parse("2025-02-15T23:59:59"),
-            title = "제주도 여행 🍊",
-            color = "#FFD1DC",
-            isPublic = false,
-            isTimeSet = true
-        )
+            3,
+            "2025-02-10T14:00:00",
+            "2025-02-10T16:00:00",
+            "스터디 모임",
+            "#4682B4",
+            true,
+            true
+        ),
+        MySchedule(
+            6,
+            "2025-02-14T18:00:00",
+            "2025-02-14T23:59:59",
+            "가족 여행",
+            "#FF69B4",
+            false,
+            false
+        ),
+        MySchedule(
+            6,
+            "2025-02-17T18:00:00",
+            "2025-02-19T23:59:59",
+            "가족 여행",
+            "#FF69B4",
+            false,
+            false
+        ),
+        MySchedule(
+            4,
+            "2025-02-14T00:00:00",
+            "2025-02-20T23:59:59",
+            "해외 출장",
+            "#DDA0DD",
+            false,
+            false
+        ),
+        MySchedule(
+            5,
+            "2025-02-22T09:00:00",
+            "2025-02-22T12:00:00",
+            "운동",
+            "#FFD700",
+            true,
+            true
+        ),
+        MySchedule(
+            6,
+            "2025-02-25T18:00:00",
+            "2025-02-28T23:59:59",
+            "가족 여행",
+            "#FF69B4",
+            false,
+            false
+        ),
     )
 
-    // ✅ 근무 일정 + 개인 일정 합치기
-    val testSchedules = testWorkSchedules + testPersonalSchedules
-
-    // ✅ `HomeScreen`을 테스트 데이터와 함께 실행
-    HomeScreenWithTestData(navController, testSchedules)
 }
 
+
 @Composable
-fun HomeScreenWithTestData(navController: NavController, testSchedules: List<MySchedule>) {
+fun HomeScreenWithTestData(
+    navController: NavController,
+    testWorkSchedules: List<WorkScheduleDto>,
+    testPersonalSchedules: List<MySchedule>
+) {
     val currentMonth = remember { YearMonth.of(2025, 2) }
     val startMonth = currentMonth.minusMonths(1)
     val endMonth = currentMonth.plusMonths(1)
@@ -508,7 +581,10 @@ fun HomeScreenWithTestData(navController: NavController, testSchedules: List<MyS
         HorizontalCalendar(
             state = calendarState,
             dayContent = { day ->
-                DayContent(testSchedules, day, currentMonthState.value, navController)
+                DayContent(
+                    testPersonalSchedules, testWorkSchedules,
+                    day, currentMonthState.value, navController
+                )
             },
             monthHeader = {
                 MonthHeader(daysOfWeek)
@@ -518,4 +594,13 @@ fun HomeScreenWithTestData(navController: NavController, testSchedules: List<MyS
             contentPadding = PaddingValues(top = 10.dp, bottom = 50.dp)
         )
     }
+}
+
+// ISO-8601 형식의 날짜를 LocalDateTime으로 변환하는 함수
+fun String.toLocalDateTime(): LocalDateTime {
+    return LocalDateTime.parse(this, DateTimeFormatter.ISO_DATE_TIME)
+}
+
+fun String.toLocalDate(): LocalDate {
+    return LocalDateTime.parse(this, DateTimeFormatter.ISO_DATE_TIME).toLocalDate()
 }

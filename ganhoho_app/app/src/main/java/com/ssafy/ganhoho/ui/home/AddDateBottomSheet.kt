@@ -1,6 +1,7 @@
 package com.ssafy.ganhoho.ui.home
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -66,7 +67,9 @@ import com.ssafy.ganhoho.ui.theme.FieldLightGray
 import com.ssafy.ganhoho.ui.theme.PrimaryBlue
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.ScheduleViewModel
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
 @SuppressLint("UnrememberedMutableState")
@@ -83,15 +86,15 @@ fun AddDateBottomSheet(
     navController: NavController
 ) {
 
-    val startDate = remember { mutableStateOf("0000-00-00") } // ✅ 날짜 기본값 설정
-    val endDate = remember { mutableStateOf("0000-00-00") }
+    val startDate = remember { mutableStateOf<LocalDate?>(null) } // ✅ 날짜 기본값 설정
+    val endDate = remember { mutableStateOf<LocalDate?>(null) }
     val title = remember { mutableStateOf("") }  // 일정 제목 입력
     val selectedColor = remember { mutableStateOf(Color.White) }
     var isTimeSet by remember { mutableStateOf(false) } // ✅ 시간 설정 Switch 상태 저장
     val isPublic = remember { mutableStateOf(false) }
 
-    val startTime = remember { mutableStateOf("00:00:00") }
-    val endTime = remember { mutableStateOf("00:00:00") }
+    val startTime = remember { mutableStateOf("00:00") }
+    val endTime = remember { mutableStateOf("00:00") }
 
     // viewModel
     val scheduleViewModel: ScheduleViewModel = viewModel()
@@ -101,9 +104,27 @@ fun AddDateBottomSheet(
     val token = authViewModel.accessToken.collectAsState().value
     val context = LocalContext.current
 
+    // 일정 추가 결과
+    val addScheduleResult by scheduleViewModel.addMyScheduleResult.collectAsState()
+
     LaunchedEffect(token) {
         if (token.isNullOrEmpty()) {
             authViewModel.loadTokens(context)
+        }
+    }
+
+    // 일정 추가 성공 시
+    LaunchedEffect(addScheduleResult) {
+        addScheduleResult?.let { result ->
+            if (result.isSuccess) {
+                showBottomSheet.value = false
+                navController.navigate("home") {
+                    popUpTo("home") { inclusive = true }
+                }
+                scheduleViewModel.resetScheduleResult()  // 일정 추가 후, 다시 상태 초기화
+            } else {
+                Log.e("addScheduleResult", "일정 추가 실패: ${result.exceptionOrNull()?.message}")
+            }
         }
     }
 
@@ -144,12 +165,11 @@ fun AddDateBottomSheet(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(45.dp), // ✅ 두 요소의 height를 동일하게 맞춤
+                .height(45.dp),
             verticalAlignment = Alignment.CenterVertically // ✅ 수직 정렬
         ) {
             // 컬러 드롭다운
             ColorDropdownMenu(selectedColor)
-
             Spacer(modifier = Modifier.width(6.dp))
 
             // 공개 비공개 버튼
@@ -159,6 +179,7 @@ fun AddDateBottomSheet(
         Spacer(modifier = Modifier.height(10.dp))
         // ✅ 수정된 DateRangePicker 적용
         DateRangePicker(startDate, endDate)
+
         Spacer(modifier = Modifier.height(20.dp))
 
         // 시간 설정 부분
@@ -196,16 +217,12 @@ fun AddDateBottomSheet(
                 horizontalArrangement = Arrangement.Center
             ) {
                 // 시작 시간
-                TimePicker { hour, minute ->
-                    startTime.value = "${hour}:${minute}:00"
-                }
-
+                TimePicker { hour, minute -> startTime.value = "%02d:%02d".format(hour, minute) }
+                Log.d("addTimePicker", startTime.value)
                 Spacer(modifier = Modifier.width(5.dp))
-
                 // 종료 시간
-                TimePicker { hour, minute ->
-                    endTime.value = "${hour}:${minute}:00"
-                }
+                TimePicker { hour, minute -> endTime.value = "%02d:%02d".format(hour, minute) }
+
             }
         }
 
@@ -217,34 +234,36 @@ fun AddDateBottomSheet(
             onClick = {
                 // TODO: 스케줄 추가 기능
                 try {
-                    var startDateTime = LocalDateTime.parse("${startDate.value}T00:00:00")
-                    var endDateTime = LocalDateTime.parse("${endDate.value}T23:59:59")
-
-                    if (isTimeSet) {  // 시간 설정시
-                        startDateTime = LocalDateTime.parse("${startDate.value}T${startTime.value}")
-                        endDateTime = LocalDateTime.parse("${endDate.value}T${endTime.value}")
+                    val startDateTime = if (isTimeSet) {
+                        LocalDateTime.parse("${startDate.value}T${startTime.value}:01")
+                    } else {
+                        startDate.value!!.atStartOfDay()  // 00:00:00
                     }
 
-                    val newSchedule = MyScheduleRequest(
-                        startDt = startDateTime,
-                        endDt = endDateTime,
-                        scheduleTitle = title.value,
-                        scheduleColor = "#${Integer.toHexString(selectedColor.value.hashCode())}", // 색상을 HEX 코드로 변환
-                        isPublic = isPublic.value,
-                        isTimeSet = isTimeSet
-                    )
+                    val endDateTime = if (isTimeSet) {
+                        LocalDateTime.parse("${endDate.value}T${endTime.value}:01")
+                    } else {
+                        endDate.value!!.atTime(23, 59, 59)  // 23:59:59
+                    }
+
+                    Log.d("addTime", "${startDate.value} ${endDate.value}")
+
+                    val newSchedule =
+                        MyScheduleRequest(  // 새 일정 추가
+                            startDt = startDateTime,
+                            endDt = endDateTime,
+                            scheduleTitle = title.value,
+                            scheduleColor = "#${Integer.toHexString(selectedColor.value.hashCode())}", // 색상을 HEX 코드로 변환
+                            isPublic = isPublic.value,
+                            isTimeSet = isTimeSet
+                        )
+
+
+                    Log.d("addSchedule", newSchedule.toString())
 
                     // 개인 스케쥴 추가
                     if (token != null) {
                         scheduleViewModel.addMySchedule(token = token, request = newSchedule)
-                    }
-
-                    // ✅ 일정 저장 로직 추가 (서버 전송 또는 상태 업데이트)
-                    showBottomSheet.value = false
-
-                    // ✅ HomeScreen에서 WorkScreen으로 이동하는 코드
-                    navController.navigate("home") {
-                        launchSingleTop = true // 중복 방지
                     }
 
                 } catch (e: Exception) {
@@ -269,15 +288,13 @@ fun AddDateBottomSheet(
     }
 }
 
-
+// 공개/비공개
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
 fun ToggleButton(isPublic: MutableState<Boolean>) {
 
-    // var isPublic by remember { mutableStateOf(true) }
-
     val toggleOffset by animateDpAsState(
-        targetValue = if (isPublic.value) 0.dp else 55.dp,
+        targetValue = if (isPublic.value) 0.dp else 60.dp,
         animationSpec = tween(durationMillis = 300), label = ""
     )
 
@@ -287,7 +304,7 @@ fun ToggleButton(isPublic: MutableState<Boolean>) {
             .height(35.dp)
             .padding(1.dp)
             .clip(RoundedCornerShape(25.dp))
-            .background(Color.White) // 배경색
+            .background(Color(0xffDADADA)) // 배경색
             .border(BorderStroke(1.dp, color = FieldLightGray), shape = RoundedCornerShape(25.dp))
             .clickable { isPublic.value = !isPublic.value },
         contentAlignment = Alignment.CenterStart
@@ -314,13 +331,16 @@ fun ToggleButton(isPublic: MutableState<Boolean>) {
                 text = "공개",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f),
                 color = if (isPublic.value) Color.White else Color.Black
             )
 
+            Spacer(modifier = Modifier.weight(0.5f))
             Text(
                 text = "비공개",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f),
                 color = if (!isPublic.value) Color.White else Color.Black
             )
         }
@@ -346,23 +366,26 @@ fun ColorDropdownMenu(
         Color(0xFFCDB4DB),
         Color(0xFFFFC6FF),
         Color(0xFFFFC8DD),
+    )
 
-        )
+    // ✅ 선택되지 않은 경우 기본 색상은 `gray`
+    val borderColor =
+        if (selectedColor.value == Color.White) Color.LightGray else selectedColor.value
 
     // 컬러 드롭다운
     Box(
         modifier = Modifier
-            .background(Color.White, shape = RoundedCornerShape(12.dp))
-            .border(1.dp, Color.Gray, shape = RoundedCornerShape(12.dp))
+            .background(Color.White, shape = RoundedCornerShape(10.dp))
+            .border(1.dp, borderColor, shape = RoundedCornerShape(10.dp))
             .clickable { expanded = true }
-            .padding(10.dp),
+            .padding(3.dp),
         contentAlignment = Alignment.Center
     ) {
         Box(
             modifier = Modifier
                 .size(30.dp)
-                .background(selectedColor.value, shape = CircleShape)
-                .border(1.dp, Color.Gray, shape = CircleShape)
+                .background(selectedColor.value, shape = RoundedCornerShape(10.dp))
+                .border(1.dp, borderColor, shape = RoundedCornerShape(10.dp))
         )
 
         DropdownMenu(
@@ -370,7 +393,7 @@ fun ColorDropdownMenu(
             onDismissRequest = { expanded = false },
             modifier = Modifier
                 .background(Color.White)
-                .border(1.dp, Color.Gray, shape = RoundedCornerShape(12.dp))
+                .border(1.dp, borderColor, shape = RoundedCornerShape(10.dp))
                 .padding(8.dp)
         ) {
             Column {
@@ -384,11 +407,6 @@ fun ColorDropdownMenu(
                                 modifier = Modifier
                                     .size(30.dp)
                                     .background(color, shape = CircleShape)
-                                    .border(
-                                        width = if (selectedColor.value == color) 3.dp else 1.dp,
-                                        color = if (selectedColor.value == color) Color.Gray else Color.LightGray,
-                                        shape = CircleShape
-                                    )
                                     .clickable {
                                         selectedColor.value = color
                                         expanded = false
@@ -406,8 +424,8 @@ fun ColorDropdownMenu(
 // 날짜 범위 선택
 @Composable
 fun DateRangePicker(
-    startDate: MutableState<String>,
-    endDate: MutableState<String>
+    startDate: MutableState<LocalDate?>,
+    endDate: MutableState<LocalDate?>
 ) {
 
     val showDatePicker = remember { mutableStateOf(false) }
@@ -417,8 +435,8 @@ fun DateRangePicker(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier.fillMaxWidth()
     ) {
-        DateField(
-            label = startDate.value,
+        DateField( // 시작 날짜 선택 부분 표시
+            date = startDate.value,
             modifier = Modifier.weight(1f)
         )
 
@@ -430,8 +448,8 @@ fun DateRangePicker(
         )
 
         Spacer(modifier = Modifier.width(10.dp))
-        DateField(
-            label = endDate.value,
+        DateField( // 시작 날짜 선택 부분 표시
+            date = endDate.value,
             modifier = Modifier.weight(1f)
         )
 
@@ -456,15 +474,17 @@ fun DateRangePicker(
 // 날짜 선택 필드
 @Composable
 fun DateField(
-    label: String,
+    date: LocalDate?,
     modifier: Modifier = Modifier
 ) {
+
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd") // ✅ 날짜 포맷 설정
+    val formattedDate = date?.format(formatter) ?: "yyyy-mm-dd" // ✅ null이면 플레이스홀더 표시
 
     Box(
         modifier = modifier
             .height(40.dp)
             .fillMaxWidth(), // ✅ 가득 차게 설정
-        // .shadow(elevation = 1.dp, shape = RoundedCornerShape(12.dp))
         contentAlignment = Alignment.CenterStart
     ) {
 
@@ -475,12 +495,15 @@ fun DateField(
             modifier = Modifier.matchParentSize() // Box의 크기에 맞춤
         )
 
-        Row {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Spacer(modifier = Modifier.width(10.dp))
             Text(
-                text = label,
+                text = formattedDate,
                 fontSize = 15.sp,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (formattedDate == "yyyy-mm-dd") Color.Gray else Color.Black
             )
             Spacer(modifier = Modifier.width(10.dp))
         }
@@ -494,7 +517,7 @@ fun DateFieldPreview() {
         modifier = Modifier.fillMaxWidth() // ✅ 가득 차게 설정
     ) {
         DateField(
-            label = "2025-01-22"
+            date = "2025-01-22".toLocalDate()
         )
     }
 }

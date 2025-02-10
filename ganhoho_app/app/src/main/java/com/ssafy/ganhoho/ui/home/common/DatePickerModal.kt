@@ -25,24 +25,24 @@ import java.util.*
 @Composable
 fun ShowCustomDatePicker() {
     val showDialog = remember { mutableStateOf(true) }
-    val start = remember {
-        mutableStateOf("")
+    val startDate = remember {
+        mutableStateOf(LocalDate.parse(""))
     }
-    val end = remember {
-        mutableStateOf("")
+    val endDate = remember {
+        mutableStateOf(LocalDate.parse(""))
     }
     CustomDatePickerDialog(
         showDialog = showDialog,
-        start,
-        end
+        startDate,
+        endDate
     )
 }
 
 @Composable
 fun CustomDatePickerDialog(
     showDialog: MutableState<Boolean>,
-    startDate: MutableState<String>,
-    endDate: MutableState<String>,
+    startDate: MutableState<LocalDate?>,
+    endDate: MutableState<LocalDate?>,
 ) {
     if (showDialog.value) {
         Dialog(onDismissRequest = { showDialog.value = false }) {
@@ -67,8 +67,8 @@ fun CustomDatePickerDialog(
                 Button(
                     onClick = {
                         if (tempStartDate.value != null && tempEndDate.value != null) {
-                            startDate.value = tempStartDate.value.toString() // ✅ 선택한 값 반영
-                            endDate.value = tempEndDate.value.toString()
+                            startDate.value = tempStartDate.value!! // ✅ 선택한 값 반영
+                            endDate.value = tempEndDate.value!!
                             showDialog.value = false // ✅ 다이얼로그 닫기
                         }
                         showDialog.value = false
