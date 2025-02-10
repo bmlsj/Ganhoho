@@ -66,6 +66,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
 fun MainScreen() {
@@ -229,6 +230,7 @@ fun calculateFabOffset(currentRoute: String, itemWidth: Dp): Dp {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Preview(showBackground = true)
 @Composable
 fun MainActivityPreview() {

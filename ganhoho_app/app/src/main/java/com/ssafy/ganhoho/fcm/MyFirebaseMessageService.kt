@@ -26,13 +26,13 @@ class MyFirebaseMessageService : FirebaseMessagingService() {
         // MainActivity.uploadToken(token)
     }
 
-    /*
     // 메시지 수신 시 호출
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         var messageTitle = ""
         var messageContent = ""
         var messageChannel = ""
 
+        Log.d("remoteMessage", remoteMessage.toString())
         // Notification이 있는 경우 (Foreground 처리)
         if (remoteMessage.notification != null) {
 
@@ -48,48 +48,48 @@ class MyFirebaseMessageService : FirebaseMessagingService() {
         }
 
         // 알림 생성 및 표시
-        createNotification(messageChannel, messageTitle, messageContent)
+      //  createNotification(messageChannel, messageTitle, messageContent)
 
         // 서버에 알림 저장
-        saveNotificationToServer(messageTitle, messageContent, messageChannel)
+      //  saveNotificationToServer(messageTitle, messageContent, messageChannel)
 
     }
-      private fun createNotification(channel: String, title: String, content: String) {
-          val intent = Intent(this, NotificationActivity::class.java).apply {
-              flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-              putExtra("channel", channel) // 필요한 데이터 전달
-              Log.d(TAG, "createNotification: $channel")
-          }
+//      private fun createNotification(channel: String, title: String, content: String) {
+//          val intent = Intent(this, NotificationActivity::class.java).apply {
+//              flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+//              putExtra("channel", channel) // 필요한 데이터 전달
+//              Log.d(TAG, "createNotification: $channel")
+//          }
+//
+//          val mainPendingIntent: PendingIntent = PendingIntent.getActivity(
+//              this, 0,
+//              intent, PendingIntent.FLAG_IMMUTABLE
+//          )
+//
+//          // 아이콘 설정
+//          val smallIcon = when (channel) {
+//              MainActivity.DELIVERY_CHANNEL -> R.drawable.notification_notice_ib // 배송 채널 아이콘
+//              MainActivity.BROAD_CHANNEL -> R.drawable.notification_notice_ib // 일반 알림 채널 아이콘
+//              else -> R.drawable.notification_notice_ib // 기본 아이콘
+//
+//
+//          }
+//
+//          val builder = NotificationCompat.Builder(
+//              this,
+//              if (channel == MainActivity.DELIVERY_CHANNEL) MainActivity.DELIVERY_CHANNEL else MainActivity.BROAD_CHANNEL
+//          )
+//              .setSmallIcon(smallIcon)
+//              .setContentTitle(title)
+//              .setContentText(content)
+//              .setAutoCancel(true)
+//              .setContentIntent(mainPendingIntent)
+//
+//          val notificationManager: NotificationManager =
+//              getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+//          notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
+//      }
 
-          val mainPendingIntent: PendingIntent = PendingIntent.getActivity(
-              this, 0,
-              intent, PendingIntent.FLAG_IMMUTABLE
-          )
+//      private fun saveNotificationToServer(title: String, content: String, c
 
-          // 아이콘 설정
-          val smallIcon = when (channel) {
-              MainActivity.DELIVERY_CHANNEL -> R.drawable.notification_notice_ib // 배송 채널 아이콘
-              MainActivity.BROAD_CHANNEL -> R.drawable.notification_notice_ib // 일반 알림 채널 아이콘
-              else -> R.drawable.notification_notice_ib // 기본 아이콘
-
-
-          }
-
-          val builder = NotificationCompat.Builder(
-              this,
-              if (channel == MainActivity.DELIVERY_CHANNEL) MainActivity.DELIVERY_CHANNEL else MainActivity.BROAD_CHANNEL
-          )
-              .setSmallIcon(smallIcon)
-              .setContentTitle(title)
-              .setContentText(content)
-              .setAutoCancel(true)
-              .setContentIntent(mainPendingIntent)
-
-          val notificationManager: NotificationManager =
-              getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-          notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
-      }
-
-      private fun saveNotificationToServer(title: String, content: String, c
-      */
 }
