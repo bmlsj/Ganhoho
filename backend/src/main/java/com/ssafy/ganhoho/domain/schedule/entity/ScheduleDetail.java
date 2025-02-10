@@ -2,6 +2,7 @@ package com.ssafy.ganhoho.domain.schedule.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -22,10 +23,10 @@ public class ScheduleDetail {
     private PersonalSchedule personalSchedule;
 
     @Column(name = "start_dt", nullable = false)
-    private Date startDt;
+    private LocalDateTime startDt;
 
     @Column(name = "end_dt")
-    private Date endDt;
+    private LocalDateTime endDt;
 
     @Column(name = "schedule_title")
     private String scheduleTitle;

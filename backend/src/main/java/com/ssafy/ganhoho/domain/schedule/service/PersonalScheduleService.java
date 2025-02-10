@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.domain.schedule.service;
 
+import com.google.api.client.util.DateTime;
 import com.ssafy.ganhoho.domain.schedule.dto.PersonalScheduleRequestDto;
 import com.ssafy.ganhoho.domain.schedule.dto.PersonalScheduleResponseDto;
 import com.ssafy.ganhoho.domain.schedule.entity.PersonalSchedule;
@@ -10,6 +11,7 @@ import com.ssafy.ganhoho.global.auth.jwt.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,19 +36,19 @@ public class PersonalScheduleService {
         // ScheduleDetail 생성 및 저장
         ScheduleDetail detail = ScheduleDetail.builder()
                 .personalSchedule(schedule)
-                .startDt(requestDto.getStartDt() != null ? requestDto.getStartDt() : new Date())
-                .endDt(requestDto.getEndDt() != null ? requestDto.getEndDt() : new Date())
+                .startDt(requestDto.getStartDt() != null ? requestDto.getStartDt() : LocalDateTime.now())
+                .endDt(requestDto.getEndDt() != null ? requestDto.getEndDt() : LocalDateTime.now())
                 .scheduleTitle(requestDto.getScheduleTitle())
                 .scheduleColor(requestDto.getScheduleColor())
                 .isTimeSet(requestDto.getIsTimeSet() != null ? requestDto.getIsTimeSet() : false)
                 .build();
 
         schedule.getScheduleDetails().add(detail);
-        personalScheduleRepository.save(schedule);
+        Long scheduleDetailId = personalScheduleRepository.save(schedule).getScheduleId();
 
         return new PersonalScheduleResponseDto(schedule.getScheduleId(), memberId, List.of(
                 new PersonalScheduleResponseDto.ScheduleDetailDto(
-                        detail.getDetailId(),
+                        scheduleDetailId,
                         detail.getStartDt(),
                         detail.getEndDt(),
                         detail.getScheduleTitle(),
@@ -136,8 +138,8 @@ public class PersonalScheduleService {
                         .map(detail -> {
                             Map<String, Object> map = new HashMap<>();
                             map.put("scheduleId", schedule.getScheduleId());
-                            map.put("startDt", dateFormat.format(detail.getStartDt()));
-                            map.put("endDt", detail.getEndDt() != null ? dateFormat.format(detail.getEndDt()) : null);
+                            map.put("startDt", detail.getStartDt());
+                            map.put("endDt", detail.getEndDt() != null ? detail.getEndDt() : null);
                             map.put("title", detail.getScheduleTitle());
                             map.put("color", detail.getScheduleColor());
                             return map;
@@ -153,15 +155,15 @@ public class PersonalScheduleService {
     public Map<String, List<Map<String, Object>>> getFormattedPersonalSchedules(Long memberId) {
         List<PersonalScheduleResponseDto> schedules = getPersonalSchedules(memberId);
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm");
+//        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm");
 
         List<Map<String, Object>> formattedSchedules = schedules.stream()
                 .flatMap(schedule -> schedule.getDetails().stream()
                         .map(detail -> {
                             Map<String, Object> map = new HashMap<>();
                             map.put("scheduleId", schedule.getScheduleId());
-                            map.put("startDt", dateFormat.format(detail.getStartDt()));
-                            map.put("endDt", detail.getEndDt() != null ? dateFormat.format(detail.getEndDt()) : null);
+                            map.put("startDt", detail.getStartDt());
+                            map.put("endDt", detail.getEndDt() != null ? detail.getEndDt() : null);
                             map.put("title", detail.getScheduleTitle());
                             map.put("color", detail.getScheduleColor());
                             map.put("isPublic", detail.getIsPublic());
