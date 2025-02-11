@@ -250,8 +250,8 @@ fun AddDateBottomSheet(
 
                     val newSchedule =
                         MyScheduleRequest(  // 새 일정 추가
-                            startDt = startDateTime,
-                            endDt = endDateTime,
+                            startDt = startDateTime.toString(),
+                            endDt = endDateTime.toString(),
                             scheduleTitle = title.value,
                             scheduleColor = "#${Integer.toHexString(selectedColor.value.hashCode())}", // 색상을 HEX 코드로 변환
                             isPublic = isPublic.value,
