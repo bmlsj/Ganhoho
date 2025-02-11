@@ -5,21 +5,15 @@ spring:
   application:
     name: Ganhoho
   datasource:
-    url: jdbc:mysql://localhost:3306/ganhoho?serverTimezone=UTC&useSSL=false
-    username: root
+    url: jdbc:mysql://localhost:3306/ganhoho
+    username: d209
     password: d209
-
-
-
   jpa:
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-    defer-datasource-initialization: true
-    hibernate:
-      ddl-auto: none
-
+        dialect: org.hibernate.dialect.MySQLDialect
   data:
     mongodb:
       uri: mongodb://localhost:27017/ganhoho
@@ -47,6 +41,8 @@ server:
 logging:
   pattern:
     console: "%green(%d{HH:mm:ss.SSS}) %blue(%-5level) %red([%thread]) %yellow(%logger{15}) - %msg%n"
+  level:
+    root: debug
 
 jwt:
   secret: lcCoZ5lvEmT7BNFMCz9TGgw0zy2lqTSv
