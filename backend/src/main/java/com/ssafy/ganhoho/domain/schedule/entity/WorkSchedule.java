@@ -20,7 +20,7 @@ public class WorkSchedule {
     @Column(name = "member_id", nullable = false)
     private Long memberId;
 
-    @Column(name = "work_schedule_detail_id", nullable = false)
+    @Column(name = "work_schedule_detail_id")
     private Long workScheduleDetailId;
 
     @Enumerated(EnumType.STRING)
