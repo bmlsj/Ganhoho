@@ -12,6 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+import com.ssafy.ganhoho.global.error.CustomException;
+import com.ssafy.ganhoho.global.constant.ErrorCode;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,6 +26,7 @@ import java.text.SimpleDateFormat;
 import java.util.Optional;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class PersonalScheduleService {
@@ -84,40 +89,75 @@ public class PersonalScheduleService {
     }
 
     public PersonalScheduleResponseDto updatePersonalSchedule(Long scheduleId, PersonalScheduleRequestDto requestDto, Long memberId) {
+        // 1. 일정 존재 여부 확인
         PersonalSchedule schedule = personalScheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new RuntimeException("Schedule not found"));
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_DATA));
 
+        // 2. 권한 확인
         if (!schedule.getMemberId().equals(memberId)) {
-            throw new RuntimeException("Unauthorized access");
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
 
-        // isPublic 업데이트
-        schedule.setIsPublic(requestDto.getIsPublic());
+        try {
+            // 3. isPublic 업데이트
+            schedule.setIsPublic(requestDto.getIsPublic());
 
-        // ScheduleDetail 생성 및 저장
-        ScheduleDetail detail = ScheduleDetail.builder()
-                .personalSchedule(schedule)
-                .startDt(requestDto.getStartDt())
-                .endDt(requestDto.getEndDt())
-                .scheduleTitle(requestDto.getScheduleTitle())
-                .scheduleColor(requestDto.getScheduleColor())
-                .isTimeSet(requestDto.getIsTimeSet())
-                .build();
+            // 4. 기존 ScheduleDetail 업데이트
+            if (!schedule.getScheduleDetails().isEmpty()) {
+                ScheduleDetail existingDetail = schedule.getScheduleDetails().get(0);
+                existingDetail.setStartDt(requestDto.getStartDt());
+                existingDetail.setEndDt(requestDto.getEndDt());
+                existingDetail.setScheduleTitle(requestDto.getScheduleTitle());
+                existingDetail.setScheduleColor(requestDto.getScheduleColor());
+                existingDetail.setIsTimeSet(requestDto.getIsTimeSet());
+            } else {
+                // 만약 ScheduleDetail이 없다면 새로 생성
+                ScheduleDetail newDetail = ScheduleDetail.builder()
+                    .personalSchedule(schedule)
+                    .startDt(requestDto.getStartDt())
+                    .endDt(requestDto.getEndDt())
+                    .scheduleTitle(requestDto.getScheduleTitle())
+                    .scheduleColor(requestDto.getScheduleColor())
+                    .isTimeSet(requestDto.getIsTimeSet())
+                    .build();
+                schedule.getScheduleDetails().add(newDetail);
+            }
 
-        schedule.getScheduleDetails().add(detail);
-        personalScheduleRepository.save(schedule);
+            personalScheduleRepository.save(schedule);
 
-        return new PersonalScheduleResponseDto(schedule.getScheduleId(), memberId, List.of(
+            // 5. 응답 생성
+            ScheduleDetail updatedDetail = schedule.getScheduleDetails().get(0);
+            return new PersonalScheduleResponseDto(schedule.getScheduleId(), memberId, List.of(
                 new PersonalScheduleResponseDto.ScheduleDetailDto(
-                        detail.getDetailId(),
-                        detail.getStartDt(),
-                        detail.getEndDt(),
-                        detail.getScheduleTitle(),
-                        detail.getScheduleColor(),
-                        detail.getIsTimeSet(),
-                        schedule.getIsPublic()
+                    updatedDetail.getDetailId(),
+                    updatedDetail.getStartDt(),
+                    updatedDetail.getEndDt(),
+                    updatedDetail.getScheduleTitle(),
+                    updatedDetail.getScheduleColor(),
+                    updatedDetail.getIsTimeSet(),
+                    schedule.getIsPublic()
                 )
-        ));
+            ));
+            
+        } catch (DataIntegrityViolationException e) {
+            log.error("데이터 무결성 위반: {}", e.getMessage());
+            throw new CustomException(ErrorCode.DUPLICATE_RESOURCE);
+        } catch (Exception e) {
+            log.error("일정 업데이트 실패: {}", e.getMessage());
+            throw new CustomException(ErrorCode.SERVER_ERROR);
+        }
+    }
+
+    private void validateScheduleRequest(PersonalScheduleRequestDto requestDto) {
+        if (requestDto.getScheduleTitle() == null || requestDto.getScheduleTitle().trim().isEmpty()) {
+            throw new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS);
+        }
+        if (requestDto.getStartDt() == null || requestDto.getEndDt() == null) {
+            throw new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS);
+        }
+        if (requestDto.getStartDt().isAfter(requestDto.getEndDt())) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST_DATA);
+        }
     }
 
     public void deletePersonalSchedule(Long scheduleId, Long memberId) {
