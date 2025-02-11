@@ -56,9 +56,11 @@ public class NotificationServiceImpl implements NotificationService {
             manageDeviceGroup("", notificationKeyName, message);
         } else {
             if (isSubscribed == false) {
+                log.warn("isSubscribed false: {}", isSubscribed);
                 message = makeJsonDeviceGroup(deviceGroup.getNotificationKey(), notificationKeyName, member.getAppFcmToken(), "remove");
                 manageDeviceGroup(deviceGroup.getNotificationKey(), notificationKeyName, message);
             } else {
+                log.warn("isSubscribed true: {}", isSubscribed);
                 message = makeJsonDeviceGroup(deviceGroup.getNotificationKey(), notificationKeyName, member.getAppFcmToken(), "add");
                 manageDeviceGroup(deviceGroup.getNotificationKey(), notificationKeyName, message);
             }
