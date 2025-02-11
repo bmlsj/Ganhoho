@@ -13,6 +13,15 @@ import org.springframework.web.bind.annotation.*;
 import com.ssafy.ganhoho.global.auth.dto.CustomUserDetails;
 import com.ssafy.ganhoho.global.error.ErrorResponse;
 import com.ssafy.ganhoho.global.constant.ErrorCode;
+import com.ssafy.ganhoho.global.error.CustomException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.Parameter;
 
 import java.util.List;
 import java.util.Map;
@@ -20,77 +29,360 @@ import java.util.HashMap;
 import java.util.stream.Collectors;
 import java.text.SimpleDateFormat;
 
-@RestController
 @Slf4j
+@Tag(name = "PersonalSchedule", description = "개인 일정 API")
+@SecurityRequirement(name = "bearer-jwt")
+@RestController
 @RequestMapping("/api/schedules")
 @RequiredArgsConstructor
 public class PersonalScheduleController {
 
     private final PersonalScheduleService personalScheduleService;
 
+    private CustomUserDetails validateToken() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        if (authentication == null) {
+            throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
+        }
+        
+        if (!(authentication.getPrincipal() instanceof CustomUserDetails)) {
+            throw new CustomException(ErrorCode.EXPIRED_ACCESS_TOKEN);
+        }
+
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        if (userDetails.getUserId() == null) {
+            throw new CustomException(ErrorCode.MISSING_REQUIRED_USER_DATA);
+        }
+
+        return userDetails;
+    }
+
+    @Operation(summary = "개인 일정 추가", description = "새로운 개인 일정 추가")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "일정 생성 성공",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "scheduleId": 1,
+                            "memberId": 1,
+                            "details": [
+                                {
+                                    "detailId": 1,
+                                    "startDt": "2024-03-21T09:00:00",
+                                    "endDt": "2024-03-21T18:00:00",
+                                    "scheduleTitle": "일정 제목",
+                                    "scheduleColor": "#FF5733",
+                                    "isTimeSet": false,
+                                    "isPublic": true
+                                }
+                            ]
+                        }
+                        """))),
+            @ApiResponse(responseCode = "400", description = "필수 항목이 누락되었습니다.",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "400",
+                            "message": "필수 항목이 누락되었습니다."
+                        }
+                        """))),
+            @ApiResponse(responseCode = "401", description = "토큰이 없는 경우",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "401",
+                            "message": "유효하지 않은 토큰입니다."
+                        }
+                        """))),
+            @ApiResponse(responseCode = "401", description = "토큰이 만료된 경우",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "401",
+                            "message": "만료된 토큰입니다."
+                        }
+                        """))),
+            @ApiResponse(responseCode = "401", description = "토큰에서 userId를 추출할 수 없는 경우",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "401",
+                            "message": "필수 사용자 데이터가 누락되었습니다."
+                        }
+                        """))),
+            @ApiResponse(responseCode = "500", description = "서버에서 예외가 발생한 경우",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "500",
+                            "message": "서버 내부 오류가 발생했습니다."
+                        }
+                        """))),
+    })
     @PostMapping("/personal")
     public ResponseEntity<PersonalScheduleResponseDto> addPersonalSchedule(
+            @Parameter(description = "추가할 일정 정보", required = true,
+                schema = @Schema(example = """
+                    {
+                        "scheduleTitle": "새로운 일정",
+                        "startDt": "2024-03-21T09:00:00",
+                        "endDt": "2024-03-21T18:00:00",
+                        "scheduleColor": "#FF5733",
+                        "isTimeSet": false,
+                        "isPublic": true
+                    }
+                    """))
             @RequestBody PersonalScheduleRequestDto requestDto) {
-        // JWTFilter를 통해 인증된 사용자 정보 가져오기
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        Long memberId = userDetails.getUserId();  // getId() 대신 getUserId() 사용
+        CustomUserDetails userDetails = validateToken();
+        
+        if (requestDto == null) {
+            throw new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS);
+        }
 
-        // 개인 스케줄 추가
+        Long memberId = userDetails.getUserId();
         PersonalScheduleResponseDto createdSchedule = personalScheduleService.addPersonalSchedule(requestDto, memberId);
         return new ResponseEntity<>(createdSchedule, HttpStatus.CREATED);
     }
 
+    @Operation(summary = "개인 일정 조회", description = "인증된 사용자의 전체 개인 일정 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "일정 조회 성공",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "data": [
+                                {
+                                    "scheduleId": 1,
+                                    "startDt": "2024-03-21T09:00:00",
+                                    "endDt": "2024-03-21T18:00:00",
+                                    "title": "일정 제목",
+                                    "color": "#FF5733",
+                                    "isPublic": true,
+                                    "isTimeSet": false
+                                }
+                            ]
+                        }
+                        """))),
+            @ApiResponse(responseCode = "200", description = "조회된 데이터가 없습니다.",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "200",
+                            "message": "데이터가 존재하지 않습니다."
+                        }
+                        """))),
+            @ApiResponse(responseCode = "401", description = "토큰이 없는 경우",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "401",
+                            "message": "유효하지 않은 토큰입니다."
+                        }
+                        """))),
+            @ApiResponse(responseCode = "401", description = "토큰이 만료된 경우",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "401",
+                            "message": "만료된 토큰입니다."
+                        }
+                        """))),
+            @ApiResponse(responseCode = "401", description = "토큰에서 userId를 추출할 수 없는 경우",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "401",
+                            "message": "필수 사용자 데이터가 누락되었습니다."
+                        }
+                        """))),
+            @ApiResponse(responseCode = "500", description = "서버에서 예외가 발생한 경우",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "500",
+                            "message": "서버 내부 오류가 발생했습니다."
+                        }
+                        """))),
+    })
     @GetMapping("/personal")
     public ResponseEntity<Map<String, List<Map<String, Object>>>> getPersonalSchedules() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        CustomUserDetails userDetails = validateToken();
         Long memberId = userDetails.getUserId();
 
-        return new ResponseEntity<>(personalScheduleService.getFormattedPersonalSchedules(memberId), HttpStatus.OK);
-    }
-
-    @PutMapping("/personal/{scheduleId}")
-    public ResponseEntity<Map<String, Object>> updatePersonalSchedule(
-            @PathVariable Long scheduleId,
-            @RequestBody PersonalScheduleRequestDto requestDto) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        Long memberId = userDetails.getUserId();
-
-        Map<String, Object> response = new HashMap<>();
-        try {
-            personalScheduleService.updatePersonalSchedule(scheduleId, requestDto, memberId);
-            response.put("success", true);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (Exception e) {
-            response.put("success", false);
-            response.put("error", e.getMessage());
-            response.put("status", HttpStatus.BAD_REQUEST.value());
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        Map<String, List<Map<String, Object>>> schedules = personalScheduleService.getFormattedPersonalSchedules(memberId);
+        if (schedules.isEmpty()) {
+            throw new CustomException(ErrorCode.NOT_EXIST_DATA);
         }
+        
+        return new ResponseEntity<>(schedules, HttpStatus.OK);
     }
 
-    @GetMapping("/personal/{memberId}")
-    public ResponseEntity<Map<String, List<Map<String, Object>>>> getPersonalSchedulesByMemberId(
-            @PathVariable Long memberId) {
-        Map<String, List<Map<String, Object>>> response = personalScheduleService.getPersonalSchedulesByMemberId(memberId);
+    @Operation(summary = "개인 일정 수정", description = "특정 개인 일정을 수정")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "일정 수정 성공",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "success": true
+                        }
+                        """))),
+            @ApiResponse(responseCode = "400", description = "scheduleId가 null인 경우",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "400",
+                            "message": "잘못된 요청 파라미터입니다."
+                        }
+                        """))),
+            @ApiResponse(responseCode = "400", description = "requestDto가 null이거나 필수 필드 누락",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "400",
+                            "message": "필수 항목이 누락되었습니다."
+                        }
+                        """))),
+            @ApiResponse(responseCode = "401", description = "토큰이 없거나 유효하지 않은 경우",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "401",
+                            "message": "인증되지 않은 요청입니다."
+                        }
+                        """))),
+            @ApiResponse(responseCode = "404", description = "해당 scheduleId의 일정이 없는 경우",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "404",
+                            "message": "데이터가 존재하지 않습니다."
+                        }
+                        """))),
+            @ApiResponse(responseCode = "409", description = "데이터 무결성 위반 시",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "409",
+                            "message": "이미 존재하는 리소스입니다."
+                        }
+                        """))),
+            @ApiResponse(responseCode = "500", description = "기타 서버 오류 발생 시",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "500",
+                            "message": "서버 내부 오류가 발생했습니다."
+                        }
+                        """))),
+    })
+    @PutMapping("/personal/{scheduleId}")
+    public ResponseEntity<Map<String, Boolean>> updatePersonalSchedule(
+            @Parameter(description = "수정할 일정의 ID") @PathVariable Long scheduleId,
+            @Parameter(description = "수정할 일정 정보", required = true,
+                schema = @Schema(example = """
+                    {
+                        "scheduleTitle": "수정된 일정",
+                        "startDt": "2024-03-21T09:00:00",
+                        "endDt": "2024-03-21T18:00:00",
+                        "scheduleColor": "#FF5733",
+                        "isTimeSet": false,
+                        "isPublic": true
+                    }
+                    """))
+            @RequestBody PersonalScheduleRequestDto requestDto) {
+        CustomUserDetails userDetails = validateToken();
+
+        if (scheduleId == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST_PARAMETERS);
+        }
+
+        if (requestDto == null) {
+            throw new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS);
+        }
+
+        Long memberId = userDetails.getUserId();
+        personalScheduleService.updatePersonalSchedule(scheduleId, requestDto, memberId);
+        
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("success", true);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("/{scheduleId}")
-    public ResponseEntity<?> getSchedule(@PathVariable Long scheduleId) {
-        if (scheduleId == null || scheduleId <= 0) {
-            return ResponseEntity.badRequest()
-                .body(new ErrorResponse(ErrorCode.INVALID_REQUEST_PARAMETERS));
+    @Operation(summary = "특정 멤버의 일정 조회", description = "특정 멤버의 전체 일정 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "일정 조회 성공",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "data": [
+                                {
+                                    "scheduleId": 1,
+                                    "startDt": "2024-03-21T09:00:00",
+                                    "endDt": "2024-03-21T18:00:00",
+                                    "title": "일정 제목",
+                                    "color": "#FF5733",
+                                    "isPublic": true,
+                                    "isTimeSet": false
+                                }
+                            ]
+                        }
+                        """))),
+            @ApiResponse(responseCode = "200", description = "조회된 데이터가 없습니다.",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "200",
+                            "message": "데이터가 존재하지 않습니다."
+                        }
+                        """))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "400",
+                            "message": "잘못된 요청 파라미터입니다."
+                        }
+                        """))),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 요청입니다.",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "401",
+                            "message": "인증되지 않은 요청입니다."
+                        }
+                        """))),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 회원입니다.",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "404",
+                            "message": "데이터가 존재하지 않습니다."
+                        }
+                        """))),
+            @ApiResponse(responseCode = "500", description = "서버 내부 오류가 발생했습니다.",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "500",
+                            "message": "서버 내부 오류가 발생했습니다."
+                        }
+                        """))),
+    })
+    @GetMapping("/personal/{memberId}")
+    public ResponseEntity<Map<String, List<Map<String, Object>>>> getPersonalSchedulesByMemberId(
+            @Parameter(description = "조회할 멤버의 ID") @PathVariable Long memberId) {
+        validateToken();  // 토큰 검증
+
+        if (memberId == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST_PARAMETERS);
+        }
+
+        Map<String, List<Map<String, Object>>> response = personalScheduleService.getPersonalSchedulesByMemberId(memberId);
+        if (response.isEmpty()) {
+            throw new CustomException(ErrorCode.NOT_EXIST_DATA);
         }
         
-        try {
-            return ResponseEntity.ok(personalScheduleService.getSchedule(scheduleId));
-        } catch (Exception e) {
-            log.error("일정 조회 실패: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse(ErrorCode.SERVER_ERROR));
-        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

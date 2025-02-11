@@ -39,6 +39,7 @@ public enum ErrorCode {
     // 409 CONFLICT
     CONFLICT("중복된 요청이 발생했습니다.", HttpStatus.CONFLICT),
     FRIEND_REQUEST_EXISTS("이미 친구 요청이 존재하거나 이미 친구 상태입니다.", HttpStatus.CONFLICT),
+    DUPLICATE_RESOURCE("이미 존재하는 리소스입니다.", HttpStatus.CONFLICT),
 
     // 500 SEVER_ERROR
     SERVER_ERROR("서버 내부 오류가 발생했습니다. 다시 시도해 주세요.", HttpStatus.INTERNAL_SERVER_ERROR);
