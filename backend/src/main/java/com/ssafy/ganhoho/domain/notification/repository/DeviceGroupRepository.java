@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface DeviceGroupRepository extends JpaRepository<DeviceGroup, Long> {
-    Optional<DeviceGroup> findByNotificationKeyName(String notificationKeyName);
+    DeviceGroup findByNotificationKeyName(String notificationKeyName);
 }
