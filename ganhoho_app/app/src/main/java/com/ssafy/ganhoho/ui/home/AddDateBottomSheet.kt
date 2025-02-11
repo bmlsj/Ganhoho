@@ -2,6 +2,7 @@ package com.ssafy.ganhoho.ui.home
 
 import android.annotation.SuppressLint
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -232,21 +233,32 @@ fun AddDateBottomSheet(
         // 등록 버튼
         Button(
             onClick = {
-                // TODO: 스케줄 추가 기능
+                // 📌 스케줄 추가 기능
                 try {
+
+                    // 입력 항목이 비었다면
+                    if(title.value == "" ) {
+                        Toast.makeText(context, "제목을 입력해주세요.", Toast.LENGTH_SHORT).show()
+                    }
+
+                    if(startDate.value == null || endDate.value == null) {
+                        Toast.makeText(context, "날짜를 입력해주세요.", Toast.LENGTH_SHORT).show()
+                    }
+
+                    // 시간 설정 했을 경우
                     val startDateTime = if (isTimeSet) {
                         LocalDateTime.parse("${startDate.value}T${startTime.value}:01")
                     } else {
                         startDate.value!!.atStartOfDay()  // 00:00:00
                     }
 
-                    val endDateTime = if (isTimeSet) {
+                    val endDateTime = if (isTimeSet) { // 시간 설정 했을 경우
                         LocalDateTime.parse("${endDate.value}T${endTime.value}:01")
                     } else {
                         endDate.value!!.atTime(23, 59, 59)  // 23:59:59
                     }
 
-                    Log.d("addTime", "${startDate.value} ${endDate.value}")
+                    Log.d("addTime", "${startDate.value} ${startTime} ${endDate.value} $endTime")
 
                     val newSchedule =
                         MyScheduleRequest(  // 새 일정 추가
@@ -260,6 +272,7 @@ fun AddDateBottomSheet(
 
 
                     Log.d("addSchedule", newSchedule.toString())
+
 
                     // 개인 스케쥴 추가
                     if (token != null) {
@@ -397,7 +410,7 @@ fun ColorDropdownMenu(
                 .padding(8.dp)
         ) {
             Column {
-                colors.chunked(6).forEach { rowColors ->
+                colors.chunked(5).forEach { rowColors ->
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.padding(vertical = 4.dp)
@@ -479,7 +492,7 @@ fun DateField(
 ) {
 
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd") // ✅ 날짜 포맷 설정
-    val formattedDate = date?.format(formatter) ?: "yyyy-mm-dd" // ✅ null이면 플레이스홀더 표시
+    val formattedDate = date?.format(formatter) ?: "yyyy-mm-dd" // ✅ null이면  "yyyy-mm-dd" 표시
 
     Box(
         modifier = modifier

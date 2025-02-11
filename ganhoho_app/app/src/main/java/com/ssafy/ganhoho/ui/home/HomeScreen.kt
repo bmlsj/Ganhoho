@@ -249,7 +249,7 @@ fun DayContent(
     // 🎯 근무 시간 다음, 장기 일정을 기간이 긴 순서대로 정렬하고, 단기 일정은 시간 순서대로 정렬
     val sortedEvents = workScheduleEvents +  // 근무 일정
             longEvents.sortedByDescending {  // 장기 일정
-                LocalDate.parse(it.endDt).toEpochDay() - LocalDate.parse(it.startDt).toEpochDay()
+                (it.endDt).toLocalDate().toEpochDay() - (it.startDt).toLocalDate().toEpochDay()
             } + singleEvents.sortedBy {  // 당일 일정(시작 시간 순으로 정렬)
         LocalTime.parse(it.startDt)
     }
@@ -416,5 +416,12 @@ fun String.toLocalDateTime(): LocalDateTime {
 }
 
 fun String.toLocalDate(): LocalDate {
-    return LocalDateTime.parse(this, DateTimeFormatter.ISO_DATE_TIME).toLocalDate()
+    return try {
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")  // ISO 8601 형식
+        LocalDateTime.parse(this, formatter).toLocalDate()  // LocalDateTime으로 파싱 후 날짜만 반환
+    } catch (e: Exception) {
+        Log.e("DateError", "날짜 변환 실패: $this", e)
+        LocalDate.MIN  // 기본 값 반환하여 오류 방지
+    }
 }
+
