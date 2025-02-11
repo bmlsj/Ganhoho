@@ -25,7 +25,7 @@ export const useApiStore = defineStore('api', () => {
         return;
       }
       const response = await axios.get(`${API_URL}/api/schedules/ocr`, {
-        //const response = await axios.get(`http://localhost:5000/schedules`, {
+        //const response = await axios.get(`http://localhost:5000/schedules`, { 목데이터 api
         headers: {
           Authorization: `Bearer ${token.value}`,
         },
@@ -121,7 +121,7 @@ export const useApiStore = defineStore('api', () => {
   const fetchMedicineList = async (keyword) => { //약 검색 받아오기기
     try {
       const response = await axios.get(`${API_URL}/api/medicines/search`, {
-        //const response = await axios.get(`http://localhost:5000/medicines`, {
+        //const response = await axios.get(`http://localhost:5000/medicines`, { 목데이터 api
       headers: {
         Authorization: `Bearer ${token.value}`,
       },
@@ -153,7 +153,7 @@ export const useApiStore = defineStore('api', () => {
       const formattedId = String(medicineId); // 혹시 숫자가 아니라 문자열이면 변환
       console.log("📢 변환된 약 ID:", formattedId);
       const response = await axios.get(`${API_URL}/api/medicines/${medicineId}`, {
-        // const response = await axios.get(`http://localhost:5000/medicines?medicineId=${medicineId}`, {
+        // const response = await axios.get(`http://localhost:5000/medicines?medicineId=${medicineId}`, { mock데이터 api
       headers: {
         Authorization: `Bearer ${token.value}`,
       },
@@ -172,6 +172,31 @@ export const useApiStore = defineStore('api', () => {
       return false; 
     }
   };
+  
+  const acceptInvitation = async () => { //수정 필요.. 
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/schedules/ocr`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token.value}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        console.log("✅ 초대 수락 성공:", response.data);
+        return true;
+      } else {
+        console.error("초대 수락 실패:", response.data);
+        return false;
+      }
+    } catch (error) {
+      console.error("API 요청 오류:", error);
+      return false;
+    }
+  };
 
   return {
     people,
@@ -186,6 +211,7 @@ export const useApiStore = defineStore('api', () => {
     sendImageToAPI,
     fetchMedicineList,
     fetchMedicineDetail,
+    acceptInvitation,
     token,
   }
 },{ strict: false });// ✅ Pinia Persist 추가 (새로고침해도 데이터 유지)

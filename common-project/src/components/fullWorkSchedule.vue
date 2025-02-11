@@ -28,7 +28,7 @@
     <!-- 데이터가 없을 경우 -->
     <div v-if="store.people.length === 0" class="empty-state">
       <p>현재 등록된 일정이 없습니다.</p>
-      <button class="reset-button" @click="resetTutorial">튜토리얼 다시 보기</button>
+      <!-- <button class="reset-button" @click="resetTutorial">튜토리얼 다시 보기</button> --><!--튜토리얼 잘 되는지 확인하기.-->
     </div>
 
     <!-- 캘린더 UI -->
@@ -106,19 +106,19 @@ const handleFileSelection = async (event) => {
   }
 }
 
-const resetTutorial = () => {
-  // ✅ 기존 이벤트 제거 (중복 방지)
-  document.removeEventListener('click', nextTutorialStep)
+// const resetTutorial = () => {튜토리얼 개발할 때 필요했음 나중에 삭제하기.
+//   // ✅ 기존 이벤트 제거 (중복 방지)
+//   document.removeEventListener('click', nextTutorialStep)
 
-  localStorage.setItem('visitedFullWorkSchedule', 'false') // ✅ 튜토리얼 다시 시작
-  isFirstVisit.value = true
-  tutorialStep.value = 1
+//   localStorage.setItem('visitedFullWorkSchedule', 'false') // ✅ 튜토리얼 다시 시작
+//   isFirstVisit.value = true
+//   tutorialStep.value = 1
 
-  // ✅ 튜토리얼 시작 시 이벤트 다시 등록
-  setTimeout(() => {
-    document.addEventListener('click', nextTutorialStep)
-  }, 100) // **잠시 대기 후 등록 → 버튼 클릭 이벤트 무효화 방지**
-}
+//   // ✅ 튜토리얼 시작 시 이벤트 다시 등록
+//   setTimeout(() => {
+//     document.addEventListener('click', nextTutorialStep)
+//   }, 100) // **잠시 대기 후 등록 → 버튼 클릭 이벤트 무효화 방지**
+// }
 
 onMounted(async () => {
   console.log("📢 캘린더 업데이트 실행!");

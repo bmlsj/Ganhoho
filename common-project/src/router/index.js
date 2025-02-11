@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import FullWorkScheduleView from '@/views/FullWorkScheduleView.vue'
 import PillSearchView from '@/views/PillSearchView.vue'
 import PillDetailView from '@/views/PillDetailView.vue'
+import InvitationLinkView from '@/views/InvitationLinkView.vue'
 
 import DefaultView from '@/views/DefaultView.vue'
 import IdentificationView from '@/views/IdentificationView.vue'
@@ -20,6 +21,11 @@ const router = createRouter({
       path: '/pillsearch',
       name: 'PillSearchView',
       component: PillSearchView
+    },
+    {
+      path: '/invitationlinkview',
+      name: 'InvitationLinkView',
+      component: InvitationLinkView
     },
     {
       path: '/pill-detail/:id', // ✅ ID를 동적으로 전달
