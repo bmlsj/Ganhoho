@@ -33,8 +33,8 @@ public enum ErrorCode {
     NO_MATCHING_FRIENDS("요청 조건에 맞는 친구를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     NO_MATCHING_FRIEND_REQUESTS("친구 요청이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
     AUTH_FAILURE("로그인에 실패하였습니다.", HttpStatus.NOT_FOUND),
+    NOT_EXIST_DEVICE_GROUP("존재하지 않는 알림 그룹입니다.", HttpStatus.NOT_FOUND),
     NOT_EXIST_GROUP("존재하지 않는 그룹입니다.", HttpStatus.NOT_FOUND),
-
 
     // 409 CONFLICT
     CONFLICT("중복된 요청이 발생했습니다.", HttpStatus.CONFLICT),
