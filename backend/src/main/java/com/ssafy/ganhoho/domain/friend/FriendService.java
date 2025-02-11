@@ -18,4 +18,7 @@ public interface FriendService {
 
     //친구 추가요청
     FriendAddResponse addFriend(Long memberId, FriendAddRequest request);
+
+    // 친구 즐겨찾기 수정
+    FriendFavoriteResponse updateFriendFavorite(Long memberId, Long friendId, FriendFavoriteRequest request);
 }
