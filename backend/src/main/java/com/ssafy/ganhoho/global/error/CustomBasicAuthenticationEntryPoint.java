@@ -16,7 +16,6 @@ public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryP
         LocalDateTime currentTimeStamp = LocalDateTime.now();
         String message = (authException != null && authException.getMessage() != null) ? authException.getMessage()
                 : "Unauthorized";
-        String path = request.getRequestURI();
         response.setHeader("ganhoho-error-reason", "Authentication failed");
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType("application/json;charset=UTF-8");

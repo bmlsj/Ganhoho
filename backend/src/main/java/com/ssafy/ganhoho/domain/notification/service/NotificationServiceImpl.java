@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.domain.notification.service;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -35,7 +36,7 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class NotificationServiceImpl implements NotificationService{
+public class NotificationServiceImpl implements NotificationService {
     private final DeviceGroupRepository deviceGroupRepository;
     private final MemberRepository memberRepository;
     private final NotificationRepository notificationRepository;
@@ -46,26 +47,23 @@ public class NotificationServiceImpl implements NotificationService{
         Member member = memberRepository.findByMemberId(memberId).orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
 
         String notificationKeyName = makeNotificationKeyName(member.getHospital(), member.getWard());
-        DeviceGroup deviceGroup = deviceGroupRepository.findByNotificationKeyName(notificationKeyName);
+        DeviceGroup deviceGroup = deviceGroupRepository.findByNotificationKeyName(notificationKeyName).orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_DEVICE_GROUP));
         String message;
-        try{
-            if(deviceGroup == null) {
-                if(isSubscribed == false) throw new CustomException(ErrorCode.BAD_REQUEST);
-                message = makeJsonDeviceGroup("", notificationKeyName, member.getAppFcmToken(), "create");
-                manageDeviceGroup("", notificationKeyName, message);
+
+        if (deviceGroup == null) {
+            if (isSubscribed == false) throw new CustomException(ErrorCode.BAD_REQUEST);
+            message = makeJsonDeviceGroup("", notificationKeyName, member.getAppFcmToken(), "create");
+            manageDeviceGroup("", notificationKeyName, message);
+        } else {
+            if (isSubscribed == false) {
+                message = makeJsonDeviceGroup(deviceGroup.getNotificationKey(), notificationKeyName, member.getAppFcmToken(), "remove");
+                manageDeviceGroup(deviceGroup.getNotificationKey(), notificationKeyName, message);
+            } else {
+                message = makeJsonDeviceGroup(deviceGroup.getNotificationKey(), notificationKeyName, member.getAppFcmToken(), "add");
+                manageDeviceGroup(deviceGroup.getNotificationKey(), notificationKeyName, message);
             }
-            else {
-                if(isSubscribed == false) {
-                    message = makeJsonDeviceGroup(deviceGroup.getNotificationKey(), notificationKeyName, member.getAppFcmToken(), "remove");
-                    manageDeviceGroup(deviceGroup.getNotificationKey(), notificationKeyName, message);
-                } else {
-                    message = makeJsonDeviceGroup(deviceGroup.getNotificationKey(), notificationKeyName, member.getAppFcmToken(), "add");
-                    manageDeviceGroup(deviceGroup.getNotificationKey(), notificationKeyName, message);
-                }
-            }
-        }catch (Exception e){
-            throw new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS);
         }
+
     }
 
     @Override
@@ -78,7 +76,8 @@ public class NotificationServiceImpl implements NotificationService{
     public void sendNotification(Long memberId, NotificationDto notificationSendRequestBody) {
         Member member = memberRepository.findByMemberId(memberId).orElseThrow(() -> new CustomException(ErrorCode.MISSING_REQUIRED_USER_DATA));
         String notificationKeyName = makeNotificationKeyName(member.getHospital(), member.getWard());
-        DeviceGroup deviceGroup = deviceGroupRepository.findByNotificationKeyName(notificationKeyName);
+        DeviceGroup deviceGroup = deviceGroupRepository.findByNotificationKeyName(notificationKeyName).orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_DEVICE_GROUP));
+
         sendFcmToServer(deviceGroup.getNotificationKey(), notificationSendRequestBody.getTitle(), notificationSendRequestBody.getMessage());
 
         Notification notification = Notification.builder()
@@ -105,16 +104,15 @@ public class NotificationServiceImpl implements NotificationService{
                     .build();
 
             Response response = client.newCall(request).execute();
-            if(response.isSuccessful()) {
-                if(notificationKey.isEmpty()) saveNewDeviceGroup(notificationKeyName, response);
-            }
-            else {
+            if (response.isSuccessful()) {
+                if (notificationKey.isEmpty()) saveNewDeviceGroup(notificationKeyName, response);
+            } else {
                 log.error("notification response not success : {}", response.body().string());
                 throw new Exception(response.body().string());
             }
 
-        }catch (Exception e) {
-            log.error("add manageDeviceGroup error : {}",e.getMessage());
+        } catch (Exception e) {
+            log.error("add manageDeviceGroup error : {}", e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -141,7 +139,7 @@ public class NotificationServiceImpl implements NotificationService{
         try {
             Map<String, String> data = new HashMap<>(); // key - value로 알림 데이터 넣어서 보내기
             data.put("title", title);
-            data.put("content",content);
+            data.put("content", content);
 
             FcmDto fcmDto = FcmDto.builder()
                     .message(FcmDto.Message.builder()
@@ -161,13 +159,13 @@ public class NotificationServiceImpl implements NotificationService{
                     .build();
 
             Response response = client.newCall(request).execute();
-            if(response.isSuccessful() == false) {
+            if (response.isSuccessful() == false) {
                 log.error("notification response not success : {}", response.body().string());
                 throw new Exception(response.body().string());
             }
 
-        }catch (Exception e) {
-            log.error("add sendFcmToServer error : {}",e.getMessage());
+        } catch (Exception e) {
+            log.error("add sendFcmToServer error : {}", e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -182,21 +180,24 @@ public class NotificationServiceImpl implements NotificationService{
         return googleCredentials.getAccessToken().getTokenValue();
     }
 
-    private String makeJsonDeviceGroup(String notificationKey, String notificationKeyName, String registrationId, String operation) throws JsonProcessingException {
+    private String makeJsonDeviceGroup(String notificationKey, String notificationKeyName, String registrationId, String operation){
         Map<String, Object> map = new HashMap<>();
         map.put("operation", operation);
-        if(notificationKey.isEmpty() == false) map.put("notification_key", notificationKey);
+        if (notificationKey.isEmpty() == false) map.put("notification_key", notificationKey);
 
         map.put("notification_key_name", notificationKeyName);
         map.put("registration_ids", Arrays.asList(
                 registrationId
         ));
-
-        return objectMapper.writeValueAsString(map);
+        try{
+            return objectMapper.writeValueAsString(map);
+        }catch (JsonProcessingException e) {
+            throw new CustomException(ErrorCode.SERVER_ERROR);
+        }
     }
 
-    private String makeNotificationKeyName(String hospital, String ward){
-        return KoreanToQwertyConverter.convert(hospital) + "_"+ KoreanToQwertyConverter.convert(ward);
+    private String makeNotificationKeyName(String hospital, String ward) {
+        return KoreanToQwertyConverter.convert(hospital) + "_" + KoreanToQwertyConverter.convert(ward);
     }
 
 }
