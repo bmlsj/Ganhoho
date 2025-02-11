@@ -2,15 +2,15 @@ package com.ssafy.ganhoho.domain.schedule.dto;
 
 import lombok.*;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class PersonalScheduleRequestDto {
-    private Date startDt;
-    private Date endDt;
+    private LocalDateTime startDt;
+    private LocalDateTime endDt;
     private String scheduleTitle;
     private String scheduleColor;
     private Boolean isTimeSet;

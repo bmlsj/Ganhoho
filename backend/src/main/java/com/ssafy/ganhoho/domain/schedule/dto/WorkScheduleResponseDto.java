@@ -2,8 +2,8 @@ package com.ssafy.ganhoho.domain.schedule.dto;
 
 import com.ssafy.ganhoho.domain.schedule.entity.WorkType;
 import lombok.*;
-
-import java.util.Date;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -11,9 +11,10 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 public class WorkScheduleResponseDto {
-    private Long workScheduleId;
-    private Long memberId;
-    private Long groupScheduleDetailId;
+
     private WorkType workType;
-    private Date workDate;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime workDate;
+    //s
 } 
