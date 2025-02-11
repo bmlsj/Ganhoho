@@ -5,14 +5,21 @@ spring:
   application:
     name: Ganhoho
   datasource:
-    url: jdbc:mysql://localhost:3306/ganhoho
-    username: d209
+    url: jdbc:mysql://localhost:3306/ganhoho?serverTimezone=UTC&useSSL=false
+    username: root
     password: d209
+
+
+
   jpa:
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: none
+
   data:
     mongodb:
       uri: mongodb://localhost:27017/ganhoho
