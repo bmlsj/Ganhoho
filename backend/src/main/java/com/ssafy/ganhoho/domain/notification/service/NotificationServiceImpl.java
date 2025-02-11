@@ -47,11 +47,11 @@ public class NotificationServiceImpl implements NotificationService {
         Member member = memberRepository.findByMemberId(memberId).orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
 
         String notificationKeyName = makeNotificationKeyName(member.getHospital(), member.getWard());
-        DeviceGroup deviceGroup = deviceGroupRepository.findByNotificationKeyName(notificationKeyName).orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_DEVICE_GROUP));
+        DeviceGroup deviceGroup = deviceGroupRepository.findByNotificationKeyName(notificationKeyName);
         String message;
 
         if (deviceGroup == null) {
-            if (isSubscribed == false) throw new CustomException(ErrorCode.BAD_REQUEST);
+            if (isSubscribed == false) throw new CustomException(ErrorCode.NOT_EXIST_DEVICE_GROUP);
             message = makeJsonDeviceGroup("", notificationKeyName, member.getAppFcmToken(), "create");
             manageDeviceGroup("", notificationKeyName, message);
         } else {
@@ -76,7 +76,8 @@ public class NotificationServiceImpl implements NotificationService {
     public void sendNotification(Long memberId, NotificationDto notificationSendRequestBody) {
         Member member = memberRepository.findByMemberId(memberId).orElseThrow(() -> new CustomException(ErrorCode.MISSING_REQUIRED_USER_DATA));
         String notificationKeyName = makeNotificationKeyName(member.getHospital(), member.getWard());
-        DeviceGroup deviceGroup = deviceGroupRepository.findByNotificationKeyName(notificationKeyName).orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_DEVICE_GROUP));
+        DeviceGroup deviceGroup = deviceGroupRepository.findByNotificationKeyName(notificationKeyName);
+        if(deviceGroup == null) throw new CustomException(ErrorCode.NOT_EXIST_DEVICE_GROUP);
 
         sendFcmToServer(deviceGroup.getNotificationKey(), notificationSendRequestBody.getTitle(), notificationSendRequestBody.getMessage());
 
