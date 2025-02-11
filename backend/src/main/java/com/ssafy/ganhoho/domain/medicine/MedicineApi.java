@@ -33,7 +33,7 @@ public class MedicineApi {
     private static final String UPLOAD_DIR = System.getProperty("user.dir") + "/uploads/";
 
     private static final String API_URL = "https://apis.data.go.kr/1471000/DrugPrdtPrmsnInfoService06/getDrugPrdtPrmsnInq06";
-    private static final String SERVICE_KEY = "XL9JhLT9v1u5i%2FVtgewWnWuPjSZhTwSPkvPW8Sq9bQsV%2BPB3iTCcrB8FLs%2F%2Fy0bJ6icVJ9f6m4PaMyA8RhcIvw%3D%3D";
+    private static final String SERVICE_KEY = "7hw6itQ0XsLQvJpbmMEBmRnN48OXxRf3SzUE5FpM3zb%2FFY0N2Q45MR5PUMk1PeNNhJJm9omcPNWHShD9Hs%2FG6g%3D%3D";
 
     // 1. 품목일련번호(itemSeq)로 검색
     @GetMapping("/api/medicines/{itemSeq}")
