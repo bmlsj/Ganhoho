@@ -23,6 +23,9 @@ public enum ErrorCode {
     EXPIRED_REFRESH_TOKEN("리프레시 토큰이 만료되었습니다.", HttpStatus.UNAUTHORIZED),
     INVALID_FCM_TOKEN("유효하지 않은 fcm 토큰입니다", HttpStatus.UNAUTHORIZED),
 
+    // 403 FORBIDDEN
+    ACCES_DENIED("접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
+
     // 404 NOT_FOUND
     NOT_FOUND("요청한 자원을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     NOT_EXIST_MEMBER("존재하지 않는 회원입니다.", HttpStatus.NOT_FOUND),
@@ -30,10 +33,13 @@ public enum ErrorCode {
     NO_MATCHING_FRIENDS("요청 조건에 맞는 친구를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     NO_MATCHING_FRIEND_REQUESTS("친구 요청이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
     AUTH_FAILURE("로그인에 실패하였습니다.", HttpStatus.NOT_FOUND),
+    NOT_EXIST_DEVICE_GROUP("존재하지 않는 알림 그룹입니다.", HttpStatus.NOT_FOUND),
+    NOT_EXIST_GROUP("존재하지 않는 그룹입니다.", HttpStatus.NOT_FOUND),
 
     // 409 CONFLICT
     CONFLICT("중복된 요청이 발생했습니다.", HttpStatus.CONFLICT),
     FRIEND_REQUEST_EXISTS("이미 친구 요청이 존재하거나 이미 친구 상태입니다.", HttpStatus.CONFLICT),
+    DUPLICATE_RESOURCE("이미 존재하는 리소스입니다.", HttpStatus.CONFLICT),
 
     // 500 SEVER_ERROR
     SERVER_ERROR("서버 내부 오류가 발생했습니다. 다시 시도해 주세요.", HttpStatus.INTERNAL_SERVER_ERROR);

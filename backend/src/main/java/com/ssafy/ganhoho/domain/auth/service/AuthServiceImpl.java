@@ -10,11 +10,13 @@ import com.ssafy.ganhoho.global.auth.jwt.JWTUtil;
 import com.ssafy.ganhoho.global.constant.ErrorCode;
 import com.ssafy.ganhoho.global.error.CustomException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthServiceImpl implements AuthService {
     private final AuthRepository authRepository;
     private final PasswordEncoder passwordEncoder;
@@ -38,6 +40,7 @@ public class AuthServiceImpl implements AuthService {
                 return true;
             }
         } catch (Exception e){
+            log.debug(e.getMessage());
             return false;
         }
     }
