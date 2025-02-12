@@ -19,7 +19,7 @@ bin/
 !**/src/test/**/bin/
 
 ### OCR ###
-/src/main/resources/application-clova.yml
+/src/main/resources/application-ocr.yml
 
 ### IntelliJ IDEA ###
 .idea
