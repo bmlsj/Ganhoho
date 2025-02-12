@@ -163,7 +163,7 @@ public class OCRScheduleServiceImpl implements OCRScheduleService {
                             .build();
                 })
                 .collect(Collectors.toList());
-        workScheduleService.addWorkSchedules(workSchedules, schedule.getMemberId());
+        workScheduleService.updateOrAddWorkSchedules(workSchedules, schedule.getMemberId());
     }
 
 }
