@@ -385,4 +385,55 @@ public class PersonalScheduleController {
         
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @Operation(summary = "개인 일정 삭제", description = "특정 개인 일정을 삭제")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "일정 삭제 성공",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "success": true
+                        }
+                        """))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "400",
+                            "message": "잘못된 요청 파라미터입니다."
+                        }
+                        """))),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 요청",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "401",
+                            "message": "인증되지 않은 요청입니다."
+                        }
+                        """))),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 일정",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(example = """
+                        {
+                            "status": "404",
+                            "message": "데이터가 존재하지 않습니다."
+                        }
+                        """))),
+    })
+    @DeleteMapping("/personal/{scheduleId}")
+    public ResponseEntity<Map<String, Boolean>> deletePersonalSchedule(
+            @Parameter(description = "삭제할 일정의 ID") @PathVariable Long scheduleId) {
+        CustomUserDetails userDetails = validateToken();
+        
+        if (scheduleId == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST_PARAMETERS);
+        }
+
+        Long memberId = userDetails.getUserId();
+        personalScheduleService.deletePersonalSchedule(scheduleId, memberId);
+        
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("success", true);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }

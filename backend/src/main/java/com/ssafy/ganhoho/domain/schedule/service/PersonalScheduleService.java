@@ -162,13 +162,18 @@ public class PersonalScheduleService {
 
     public void deletePersonalSchedule(Long scheduleId, Long memberId) {
         PersonalSchedule schedule = personalScheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new RuntimeException("Schedule not found"));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_DATA));
 
         if (!schedule.getMemberId().equals(memberId)) {
-            throw new RuntimeException("Unauthorized access");
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
 
-        personalScheduleRepository.delete(schedule);
+        try {
+            personalScheduleRepository.delete(schedule);
+        } catch (Exception e) {
+            log.error("일정 삭제 실패: {}", e.getMessage());
+            throw new CustomException(ErrorCode.SERVER_ERROR);
+        }
     }
 
     public Map<String, List<Map<String, Object>>> getPersonalSchedulesByMemberId(Long memberId) {
