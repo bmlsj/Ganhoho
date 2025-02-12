@@ -1,5 +1,5 @@
 # 1. Node.js 베이스 이미지 사용
-FROM node:22 as builder
+FROM node:lts-alpine as builder
 
 # 2. 작업 디렉토리 설정
 WORKDIR /app
