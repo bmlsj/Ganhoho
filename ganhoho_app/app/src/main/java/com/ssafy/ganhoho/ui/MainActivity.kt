@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -37,7 +38,7 @@ class MainActivity : ComponentActivity() {
     private val authViewModel: AuthViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         // 저장된 토큰 불러오기
         authViewModel.loadTokens(this)
         setContent {

@@ -44,6 +44,7 @@ import com.kizitonwose.calendar.core.OutDateStyle
 import com.kizitonwose.calendar.core.yearMonth
 import com.ssafy.ganhoho.data.model.dto.group.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.dto.schedule.MySchedule
+import com.ssafy.ganhoho.ui.BasicTopAppBar
 import com.ssafy.ganhoho.util.parsedColor
 import com.ssafy.ganhoho.util.toLocalDate
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
@@ -138,14 +139,9 @@ fun HomeScreen(navController: NavController) {
             .padding(10.dp)
             .fillMaxWidth(),
     ) {
-        // 앱 바
-        Text(
-            text = "간호호",
-            fontSize = 36.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF79C7E3)
-        )
 
+        //
+        BasicTopAppBar(navController = navController)
         // 앱바와 헤더 사이 공간
         Spacer(modifier = Modifier.height(30.dp))
 
