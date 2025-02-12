@@ -9,6 +9,7 @@ import com.ssafy.ganhoho.data.model.response.schedule.AddMyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.schedule.ScheduleUpdateResponse
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
@@ -20,8 +21,7 @@ interface ScheduleService {
     // 내 근무 스케쥴 조회
     @GET("api/schedules/work")
     suspend fun getMyWorkSchedule(
-        @Header("Authorization") token: String,
-        @Path("yearMonth") yearMonth: String
+        @Header("Authorization") token: String
     ): Response<List<WorkScheduleDto>>
 
     // 내 근무 스케쥴 수정
@@ -40,12 +40,12 @@ interface ScheduleService {
     ): Response<MyScheduleResponse>
 
     // 개인 스케쥴 수정
-    @PUT("api/schedules/personal")
+    @PUT("api/schedules/personal/{scheduleId}")
     suspend fun updateSchedule(
         @Header("Authorization") token: String,
         @Path("scheduleId") scheduleId: Long,
         @Body request: MySchedule
-    ): Response<Void>
+    ): Response<ScheduleUpdateResponse>
 
     // 개인 스케쥴 추가
     @POST("api/schedules/personal")
@@ -53,6 +53,13 @@ interface ScheduleService {
         @Header("Authorization") token: String,
         @Body request: MyScheduleRequest
     ): Response<AddMyScheduleResponse>
+
+    // 개인 스케줄 삭제
+    @DELETE("api/schedules/personal/{scheduleId}")
+    suspend fun removeMySchedule(
+        @Header("Authorization") token: String,
+        @Path("scheduleId") scheduleId: Long
+    ) : Response<ScheduleUpdateResponse>
 
     // 친구 근무 스케쥴 조회
     @GET("api/schedules/work/{memberId}")

@@ -5,7 +5,6 @@ import com.ssafy.ganhoho.data.model.dto.group.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.dto.schedule.FriendSchedule
 import com.ssafy.ganhoho.data.model.dto.schedule.MySchedule
 import com.ssafy.ganhoho.data.model.dto.schedule.MyScheduleRequest
-import com.ssafy.ganhoho.data.model.response.handleMessageResponse
 import com.ssafy.ganhoho.data.model.response.schedule.AddMyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.handleResponse
 import com.ssafy.ganhoho.data.model.response.schedule.MyScheduleResponse
@@ -16,12 +15,11 @@ class ScheduleRepository {
 
     // 내 근무 스케쥴 조회
     suspend fun getMyWorkSchedule(
-        token: String,
-        yearMonth: String
+        token: String
     ): Result<List<WorkScheduleDto>> {
         return try {
             val response =
-                RetrofitUtil.scheduleService.getMyWorkSchedule("Bearer $token", yearMonth)
+                RetrofitUtil.scheduleService.getMyWorkSchedule("Bearer $token")
             handleResponse(response)
         } catch (e: Exception) {
             Result.failure(e)
@@ -54,18 +52,18 @@ class ScheduleRepository {
                 "Bearer $token"
             )
             Log.d("ScheduleViewModel", "레포지토리 응답: ${response} $token")
-            handleMessageResponse(response)
+            handleResponse(response)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
     // 개인 스케쥴 수정
-    suspend fun updateSchedule(
+    suspend fun updateMySchedule(
         token: String,
         scheduleId: Long,
         request: MySchedule
-    ): Result<Void> {
+    ): Result<ScheduleUpdateResponse> {
         return try {
             val response = RetrofitUtil.scheduleService.updateSchedule(
                 "Bearer $token", scheduleId, request
@@ -75,6 +73,23 @@ class ScheduleRepository {
             Result.failure(e)
         }
     }
+
+    // 개인 스케줄 삭제
+    suspend fun removeMySchedule(
+        token: String,
+        scheduleId: Long
+    ): Result<ScheduleUpdateResponse> {
+        return try {
+            val response = RetrofitUtil.scheduleService.removeMySchedule(
+                "Bearer $token", scheduleId
+            )
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+
 
     // 개인 스케쥴 추가
     suspend fun addMySchedule(

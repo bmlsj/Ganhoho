@@ -44,6 +44,8 @@ import com.kizitonwose.calendar.core.OutDateStyle
 import com.kizitonwose.calendar.core.yearMonth
 import com.ssafy.ganhoho.data.model.dto.group.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.dto.schedule.MySchedule
+import com.ssafy.ganhoho.util.parsedColor
+import com.ssafy.ganhoho.util.toLocalDate
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.ScheduleViewModel
 import java.time.DayOfWeek
@@ -63,7 +65,6 @@ fun HomeScreen(navController: NavController) {
     val startMonth = remember { currentMonth.minusMonths(5) }
     val endMonth = remember { currentMonth.plusMonths(5) }
     val daysOfWeek = DayOfWeek.entries
-    val yearMonth = currentMonth.toString() // 2025-02 형태
 
     // 📌 현재 보이는 월을 상태로 저장 (초기값: 현재 월)
     val currentMonthState = remember { mutableStateOf(YearMonth.now()) }
@@ -92,7 +93,7 @@ fun HomeScreen(navController: NavController) {
     LaunchedEffect(token) {
         if (token != null) {
             // 근무 스케쥴 불러오기
-            scheduleViewModel.getMyWorkSchedule(token, yearMonth)
+            scheduleViewModel.getMyWorkSchedule(token)
             // 개인 스케쥴 불러오기
             scheduleViewModel.getMySchedule(token)
         }
@@ -151,13 +152,13 @@ fun HomeScreen(navController: NavController) {
         HorizontalCalendar(
             state = calendarState,
             dayContent = { day ->
-
                 DayContent(
                     myScheduleList,
                     myWorkSchedule,
-                    day, currentMonthState.value, navController
+                    day,
+                    currentMonthState.value,
+                    navController
                 )
-
             },
             monthHeader = {
                 MonthHeader(daysOfWeek)
@@ -309,19 +310,10 @@ fun DayContent(
                     }
 
                     // 색상 적용 이슈
+                    Log.d("ColorCheck", "event.color: ${event.color}")
+
                     val colorString = event.color.lowercase() // ✅ 소문자로 변환
-                    val parsedColor = try {
-                        // ✅ #AARRGGBB 형식이면 #RRGGBB로 변환
-                        if (colorString.length == 9) {
-                            val rgbColor = "#${colorString.substring(3)}" // ✅ 앞의 #FF 제거
-                            Color(android.graphics.Color.parseColor(rgbColor))
-                        } else {
-                            Color(android.graphics.Color.parseColor(colorString)) // ✅ 기존 #RRGGBB 처리
-                        }
-                    } catch (e: IllegalArgumentException) {
-                        Log.e("ColorError", "색상 코드 변환 실패: ${event.color}", e)
-                        Color.Gray // ✅ 기본 색상 적용
-                    }
+                    val parsedColor = parsedColor(colorString)
 
                     Box(
                         modifier = Modifier
@@ -410,18 +402,4 @@ fun convertWorkScheduleToMySchedule(workSchedules: List<WorkScheduleDto>): List<
 }
 
 
-// ISO-8601 형식의 날짜를 LocalDateTime으로 변환하는 함수
-fun String.toLocalDateTime(): LocalDateTime {
-    return LocalDateTime.parse(this, DateTimeFormatter.ISO_DATE_TIME)
-}
-
-fun String.toLocalDate(): LocalDate {
-    return try {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")  // ISO 8601 형식
-        LocalDateTime.parse(this, formatter).toLocalDate()  // LocalDateTime으로 파싱 후 날짜만 반환
-    } catch (e: Exception) {
-        Log.e("DateError", "날짜 변환 실패: $this", e)
-        LocalDate.MIN  // 기본 값 반환하여 오류 방지
-    }
-}
 

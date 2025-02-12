@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.ui.home
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
@@ -32,8 +33,8 @@ import androidx.navigation.NavController
 import com.ssafy.ganhoho.data.model.dto.schedule.MySchedule
 import com.ssafy.ganhoho.data.model.dto.schedule.TimelineEvent
 import com.ssafy.ganhoho.ui.theme.PrimaryBlue
-import java.time.LocalDate
-import java.time.LocalDateTime
+import com.ssafy.ganhoho.util.parsedColor
+import com.ssafy.ganhoho.util.toLocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,6 +44,7 @@ fun DayBottomSheet(
     navController: NavController
 ) {
 
+    val selectedEventForEdit = remember { mutableStateOf<MySchedule?>(null) }  // 일정 수정을 위한 상태 저장
     val showAddDateBottomSheet = remember { mutableStateOf(false) } // ✅ 일정 추가 모달 상태 추가
 
     if (showBottomSheet.value || showAddDateBottomSheet.value) {
@@ -50,6 +52,7 @@ fun DayBottomSheet(
             onDismissRequest = {
                 showBottomSheet.value = false
                 showAddDateBottomSheet.value = false
+                selectedEventForEdit.value = null  // 수정 모드 초기화
             },
             containerColor = Color.White,
         ) {
@@ -78,38 +81,48 @@ fun DayBottomSheet(
 
                     if (selectedEvents.isNotEmpty()) {  // 일정이 있으면, 타임라인 보여주기
 
-                        TimelineScreen(events = selectedEvents.mapIndexed { index, event ->
-                            val startDt = event.startDt.toLocalDateTime()
-                            val endDt = event.endDt.toLocalDateTime()
-                            TimelineEvent(
-                                startTime = if (event.isTimeSet) {
-                                    "${startDt.hour}:00"
-                                } else {
-                                    "All Day"
-                                },
-                                title = event.title,
-                                dateRange = if (startDt.toLocalDate() == endDt.toLocalDate()) {
-                                    // 당일 일정
-                                    "${startDt.year}.${startDt.monthValue}.${startDt.dayOfMonth}"
-                                } else {
-                                    // 장기 일정
-                                    "${startDt.year}.${startDt.monthValue}.${startDt.dayOfMonth} - " +
-                                            "${endDt.year}.${endDt.monthValue}.${endDt.dayOfMonth}"
-                                },
-                                // TODO: 서버 연동 후 컬러 테스트 필요
-                                color = if (event.color.startsWith("#") && event.color.length == 7) {
-                                    Color(android.graphics.Color.parseColor(event.color))
-                                } else {
-                                    Color.Gray // 기본 색상 적용
-                                },
-                                isLast = index == selectedEvents.size - 1
-                            )
-                        })
+                        TimelineScreen(
+                            events = selectedEvents.mapIndexed { index, event ->
+
+                                val startDt = event.startDt.toLocalDateTime()
+                                val endDt = event.endDt.toLocalDateTime()
+
+                                // 색상 적용
+                                val colorString = event.color.lowercase() // ✅ 소문자로 변환
+                                val parsedColor = parsedColor(colorString)
+
+                                TimelineEvent(
+                                    startTime = if (event.isTimeSet) {
+                                        "${startDt.hour}:00"
+                                    } else {
+                                        "All Day"
+                                    },
+                                    title = event.title,
+                                    dateRange = if (startDt.toLocalDate() == endDt.toLocalDate()) {
+                                        // 당일 일정
+                                        "${startDt.year}.${startDt.monthValue}.${startDt.dayOfMonth}"
+                                    } else {
+                                        // 장기 일정
+                                        "${startDt.year}.${startDt.monthValue}.${startDt.dayOfMonth} - " +
+                                                "${endDt.year}.${endDt.monthValue}.${endDt.dayOfMonth}"
+                                    },
+                                    // 서버 연동 후 컬러 테스트 필요 -> 완료
+                                    color = parsedColor,
+                                    isLast = index == selectedEvents.size - 1,
+                                    mySchedule = event // 원본 이벤트 저장
+                                )
+                            },
+                            onEventClick = { event ->
+                                Log.d("edit", event.toString())
+                                selectedEventForEdit.value = event.mySchedule // ✅ 클릭한 이벤트 저장
+                                showAddDateBottomSheet.value = true  // ✅ 일정 수정 모달 열기
+                            }
+                        )
 
                     } else {  // 일정이 없는 경우, 일정 추가 모달 보여주기
                         AddDateBottomSheet(
                             showBottomSheet = showBottomSheet,
-                            navController = navController
+                            navController = navController,
                         )
                     }
 
@@ -117,6 +130,7 @@ fun DayBottomSheet(
                     Button(
                         onClick = {
                             showAddDateBottomSheet.value = true // ✅ 슬라이드 전환
+                            selectedEventForEdit.value = null   // 추가 모드로 초기화
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -143,7 +157,8 @@ fun DayBottomSheet(
             ) {
                 AddDateBottomSheet(
                     showBottomSheet = showAddDateBottomSheet,
-                    navController = navController
+                    navController = navController,
+                    eventToEdit = selectedEventForEdit.value  // 수정 모드
                 )
             }
         }

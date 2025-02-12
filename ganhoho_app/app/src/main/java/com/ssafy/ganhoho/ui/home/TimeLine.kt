@@ -2,6 +2,7 @@ package com.ssafy.ganhoho.ui.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -30,24 +31,27 @@ import com.ssafy.ganhoho.data.model.dto.schedule.TimelineEvent
 
 
 @Composable
-fun TimelineScreen(events: List<TimelineEvent>) {
+fun TimelineScreen(events: List<TimelineEvent>, onEventClick: (TimelineEvent) -> Unit) {
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
     ) {
         items(events) { event ->
-            TimelineItem(event = event)
+            TimelineItem(event = event, onClick = { onEventClick(event) })
         }
     }
 }
 
 @Composable
-fun TimelineItem(event: TimelineEvent) {
+fun TimelineItem(event: TimelineEvent, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp), // 항목 간 간격
+            .padding(vertical = 8.dp)
+            .clickable {
+                onClick()
+            }, // 항목 간 간격
         verticalAlignment = Alignment.Top // 위쪽 정렬
     ) {
         // 1. 시간 표시
@@ -118,65 +122,66 @@ fun TimelineItem(event: TimelineEvent) {
     }
 }
 
-@Composable
-fun TimelineExample() {
-    val events = listOf(
-        // ✅ 1. 근무 일정 (항상 "All Day", 우선순위 가장 높음)
-        TimelineEvent(
-            startTime = "All Day",
-            title = "오전 근무",
-            dateRange = "2025.01.01",
-            color = Color(0xffD1EEF2), // 근무 일정 색상
-            isLast = false
-        ),
-
-        // ✅ 2. 장기 일정 (우선순위 두 번째)
-        TimelineEvent(
-            startTime = "19:00",
-            title = "동기 회식 🎉",
-            dateRange = "2025.01.01 - 2025.01.04",
-            color = Color(0xffD1EEF2),
-            isLast = false
-        ),
-
-        TimelineEvent(
-            startTime = "20:00",
-            title = "북 스터디 📖",
-            dateRange = "2025.01.01 - 2025.01.10",
-            color = Color(0xffFFCAE6),
-            isLast = false
-        ),
-
-        // ✅ 3. 당일 일정 (우선순위 가장 낮음)
-        TimelineEvent(
-            startTime = "09:00",
-            title = "병원 예약 🏥",
-            dateRange = "2025.01.05",
-            color = Color(0xffFFD700), // 노란색
-            isLast = false
-        ),
-        TimelineEvent(
-            startTime = "14:00",
-            title = "스터디 그룹 회의 📚",
-            dateRange = "2025.01.06",
-            color = Color(0xff98FB98), // 연한 초록색
-            isLast = true // 마지막 일정
-        )
-    )
-
-
-    TimelineScreen(events = events)
-}
-
-@Preview(
-    name = "Timeline Preview", // Preview 이름
-    showBackground = true,     // 배경 표시 여부
-    backgroundColor = 0xFFFFFFFF, // 배경색 (Hex 값)
-    widthDp = 360,             // 미리보기 창 너비 (dp)
-    heightDp = 640             // 미리보기 창 높이 (dp)
-)
-@Composable
-fun PreviewTimelineScreen() {
-    // 샘플 데이터를 만들어서 미리보기로 전달
-    TimelineExample()
-}
+//@Composable
+//fun TimelineExample() {
+//    val events = listOf(
+//        // ✅ 1. 근무 일정 (항상 "All Day", 우선순위 가장 높음)
+//        TimelineEvent(
+//            startTime = "All Day",
+//            title = "오전 근무",
+//            dateRange = "2025.01.01",
+//            color = Color(0xffD1EEF2), // 근무 일정 색상
+//            isLast = false,
+//            mySchedule = null
+//        ),
+//
+//        // ✅ 2. 장기 일정 (우선순위 두 번째)
+//        TimelineEvent(
+//            startTime = "19:00",
+//            title = "동기 회식 🎉",
+//            dateRange = "2025.01.01 - 2025.01.04",
+//            color = Color(0xffD1EEF2),
+//            isLast = false
+//        ),
+//
+//        TimelineEvent(
+//            startTime = "20:00",
+//            title = "북 스터디 📖",
+//            dateRange = "2025.01.01 - 2025.01.10",
+//            color = Color(0xffFFCAE6),
+//            isLast = false
+//        ),
+//
+//        // ✅ 3. 당일 일정 (우선순위 가장 낮음)
+//        TimelineEvent(
+//            startTime = "09:00",
+//            title = "병원 예약 🏥",
+//            dateRange = "2025.01.05",
+//            color = Color(0xffFFD700), // 노란색
+//            isLast = false
+//        ),
+//        TimelineEvent(
+//            startTime = "14:00",
+//            title = "스터디 그룹 회의 📚",
+//            dateRange = "2025.01.06",
+//            color = Color(0xff98FB98), // 연한 초록색
+//            isLast = true, // 마지막 일정
+//        )
+//    )
+//
+//
+//    TimelineScreen(events = events, onEventClick = {})
+//}
+//
+//@Preview(
+//    name = "Timeline Preview", // Preview 이름
+//    showBackground = true,     // 배경 표시 여부
+//    backgroundColor = 0xFFFFFFFF, // 배경색 (Hex 값)
+//    widthDp = 360,             // 미리보기 창 너비 (dp)
+//    heightDp = 640             // 미리보기 창 높이 (dp)
+//)
+//@Composable
+//fun PreviewTimelineScreen() {
+//    // 샘플 데이터를 만들어서 미리보기로 전달
+//    TimelineExample()
+//}

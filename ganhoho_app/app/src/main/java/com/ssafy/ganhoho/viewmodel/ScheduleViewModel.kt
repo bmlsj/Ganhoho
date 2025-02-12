@@ -9,6 +9,7 @@ import com.ssafy.ganhoho.data.model.dto.schedule.MySchedule
 import com.ssafy.ganhoho.data.model.dto.schedule.MyScheduleRequest
 import com.ssafy.ganhoho.data.model.response.schedule.MyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.schedule.AddMyScheduleResponse
+import com.ssafy.ganhoho.data.model.response.schedule.ScheduleUpdateResponse
 import com.ssafy.ganhoho.repository.ScheduleRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +23,10 @@ class ScheduleViewModel() : ViewModel() {
     private val _myWorkSchedule = MutableStateFlow<Result<List<WorkScheduleDto>>?>(null)
     val myWorkSchedule: StateFlow<Result<List<WorkScheduleDto>>?> = _myWorkSchedule
 
+    // 개인 스케쥴 다시 불러오기
+    private val _mySchedules = MutableStateFlow<List<MySchedule>>(emptyList())
+    val mySchedules: StateFlow<List<MySchedule>> = _mySchedules
+
     // 개인 스케줄 조회
     private val _mySchedule = MutableStateFlow<Result<MyScheduleResponse>?>(null)
     val mySchedule: StateFlow<Result<MyScheduleResponse>?> = _mySchedule
@@ -29,6 +34,10 @@ class ScheduleViewModel() : ViewModel() {
     // 개인 스케쥴 추가 결과
     private val _addMyScheduleResult = MutableStateFlow<Result<AddMyScheduleResponse>?>(null)
     val addMyScheduleResult: StateFlow<Result<AddMyScheduleResponse>?> = _addMyScheduleResult
+
+    // 개인 스케쥴 수정 결과
+    private val _editMyScheduleResult = MutableStateFlow<Result<ScheduleUpdateResponse>?>(null)
+    val editMyScheduleResult: StateFlow<Result<ScheduleUpdateResponse>?> = _editMyScheduleResult
 
     // 친구 스케줄 조회
     private val _friendSchedule = MutableStateFlow<Result<List<WorkScheduleDto>>?>(null)
@@ -39,9 +48,9 @@ class ScheduleViewModel() : ViewModel() {
     val publicSchedule: StateFlow<Result<List<FriendSchedule>>?> = _publicSchedule
 
     // 내 근무 스케줄 조회
-    fun getMyWorkSchedule(token: String, yearMonth: String) {
+    fun getMyWorkSchedule(token: String) {
         viewModelScope.launch {
-            _myWorkSchedule.value = repository.getMyWorkSchedule(token, yearMonth)
+            _myWorkSchedule.value = repository.getMyWorkSchedule(token)
         }
     }
 
@@ -56,15 +65,52 @@ class ScheduleViewModel() : ViewModel() {
     fun getMySchedule(token: String) {
         viewModelScope.launch {
             val response = repository.getMySchedule(token)
-            Log.d("ScheduleViewModel", "📌 개인 스케줄 API 응답: ${response} $token")
+            Log.d("ScheduleViewModel", "📌 개인 스케줄 API 응답: $response $token")
             _mySchedule.value = response
         }
     }
 
+    // 개인 스케줄 및 근무 스케줄 다시 로드
+    fun fetchMySchedules(token: String) {
+        viewModelScope.launch {
+            val result = try {
+                val response = repository.getMySchedule(token)
+                Log.d("ScheduleViewModel", "📌 API 응답: $response")
+                Result.success(response)
+            } catch (e: Exception) {
+                Log.e("ScheduleViewModel", "❌ 일정 불러오기 실패: ${e.message}")
+                Result.failure(e)
+            }
+
+            result.onSuccess { response ->
+                val scheduleResponse = response.getOrNull()
+                _mySchedules.value = scheduleResponse?.data ?: emptyList()
+            }
+
+            // 🔥 추가: 개인 일정 불러온 후, 근무 스케줄도 업데이트
+            getMyWorkSchedule(token)
+        }
+    }
+
+    // 일정 추가 결과 초기화 및 새로고침
+    fun resetScheduleResult(token: String) {
+        _addMyScheduleResult.value = null
+        fetchMySchedules(token)  // 추가/수정 후, 데이터를 새로고침
+    }
+
+
     // 개인 스케줄 수정
     fun updateSchedule(token: String, scheduleId: Long, request: MySchedule) {
         viewModelScope.launch {
-            repository.updateSchedule(token, scheduleId, request)
+            val response = repository.updateMySchedule(token, scheduleId, request)
+            Log.d("update", "$response $token $request")
+            _editMyScheduleResult.value = response
+
+            if (response.isSuccess) {
+                fetchMySchedules(token) // 일정 추가 후 자동 새로고침
+            } else {
+                Log.e("ScheduleViewModel", "❌ 일정 추가 실패: ${response.exceptionOrNull()?.message}")
+            }
         }
     }
 

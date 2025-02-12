@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.data.model.response
 
 data class ErrorResponse(
-    val error: String
+    val status: String,
+    val message: String
 )

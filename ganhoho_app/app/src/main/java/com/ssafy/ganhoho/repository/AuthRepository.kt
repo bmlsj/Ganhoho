@@ -4,7 +4,6 @@ import android.util.Log
 import com.ssafy.ganhoho.data.model.dto.auth.LoginRequest
 import com.ssafy.ganhoho.data.model.dto.auth.SignUpRequest
 import com.ssafy.ganhoho.data.model.response.auth.LoginResponse
-import com.ssafy.ganhoho.data.model.response.handleMessageResponse
 import com.ssafy.ganhoho.data.model.response.handleResponse
 import com.ssafy.ganhoho.data.remote.RetrofitUtil
 
@@ -24,7 +23,7 @@ class AuthRepository {
                 Log.e("AuthRepository", "❌ 로그인 실패")
                 Log.e("AuthRepository", "🔹 에러 바디: ${response.errorBody()?.string()}")
             }
-            handleMessageResponse(response)
+            handleResponse(response)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -34,7 +33,7 @@ class AuthRepository {
     suspend fun signUp(signUpRequest: SignUpRequest): Result<Boolean> {
         return try {
             val response = RetrofitUtil.authService.signUp(signUpRequest)
-            handleMessageResponse(response)
+            handleResponse(response)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -44,7 +43,7 @@ class AuthRepository {
     suspend fun isUsedId(loginId: String): Result<Boolean> {
         return try {
             val response = RetrofitUtil.authService.isUsedId(loginId)
-            handleMessageResponse(response)
+            handleResponse(response)
         } catch (e: Exception) {
             Result.failure(e)
         }
