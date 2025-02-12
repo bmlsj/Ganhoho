@@ -6,6 +6,7 @@ import com.ssafy.ganhoho.global.auth.SecurityUtil;
 import com.ssafy.ganhoho.global.constant.ErrorCode;
 import com.ssafy.ganhoho.global.error.CustomException;
 import com.ssafy.ganhoho.global.error.ErrorResponse;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,7 @@ public class OCRScheduleController {
     private final OCRScheduleService ocrScheduleService;
 
     // 이미지 처리 api
+    @Hidden
     @PostMapping("/ocr")
     public ResponseEntity<?> processOCRSchedule(
             @RequestParam("ocrImg") MultipartFile ocrImg
@@ -44,6 +46,7 @@ public class OCRScheduleController {
     }
 
     // OCR 스케줄 조회
+    @Hidden
     @GetMapping("/ocr")
     public ResponseEntity<?> getOCRSchedule() {
         try {
