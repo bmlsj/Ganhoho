@@ -3,6 +3,8 @@ package com.ssafy.ganhoho.domain.schedule.entity;
 import jakarta.persistence.Id;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.domain.Persistable;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -14,7 +16,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class OCRSchedule {
+public class OCRSchedule implements Persistable<String> {
     @Id
     private String id; // 몽고db 문서 식별자
 
@@ -33,6 +35,7 @@ public class OCRSchedule {
 
     @CreatedDate
     @Field(name = "created_at")
+    @Indexed(expireAfter = "30d") // 30일 후 자동 삭제
     private LocalDateTime createdAt;
 
     @Getter

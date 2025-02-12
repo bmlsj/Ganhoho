@@ -121,9 +121,9 @@ public class WorkScheduleService {
         if (requestDto.getWorkDate() == null) {
             throw new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS);
         }
-        if (requestDto.getWorkScheduleDetailId() == null) {
-            throw new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS);
-        }
+//        if (requestDto.getWorkScheduleDetailId() == null) {
+//            throw new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS);
+//        }
     }
 
     public WorkSchedule saveWorkSchedule(WorkSchedule workSchedule) {

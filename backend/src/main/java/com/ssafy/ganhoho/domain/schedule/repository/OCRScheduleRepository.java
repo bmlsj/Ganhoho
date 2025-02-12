@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface OCRScheduleRepository  extends MongoRepository<OCRSchedule, String> {
     // 회원 ID로 OCR 스케줄 조회
-    @Query("('memberId': ?0, 'name': ?1)")
-    List<OCRSchedule> findByMemberIdAndName(String memberId, String name);
+    @Query("{'memberId': ?0}")
+    List<OCRSchedule> findByMemberId(Long memberId);
 
 }
