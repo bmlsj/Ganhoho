@@ -2,7 +2,7 @@
 import yaml
 
 def load_yml_config():
-    with open('../../../backend/src/main/resources/application.yml', 'r') as file:
+    with open('../backend/src/main/resources/application-ocr.yml', 'r') as file:
         config = yaml.safe_load(file)
     return config.get('ocr', {}).get('clova', {})
 

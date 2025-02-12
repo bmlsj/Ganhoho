@@ -2,17 +2,15 @@ package com.ssafy.ganhoho.domain.schedule.repository;
 
 import com.ssafy.ganhoho.domain.schedule.entity.OCRSchedule;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface OCRScheduleRepository {
-    @Query(value = "{'memberId': ?0}")
-    List<OCRSchedule> findAllByMemberId(Long memberId);
-
-    @Query(value = "{'memberId': ?0, 'year': ?1, 'month': ?2}")
-    List<OCRSchedule> findByMemberIdAndYearAndMonth(Long memberId, int year, int month);
-
+public interface OCRScheduleRepository  extends MongoRepository<OCRSchedule, String> {
+    // 회원 ID로 OCR 스케줄 조회
+    @Query("('memberId': ?0, 'name': ?1)")
+    List<OCRSchedule> findByMemberIdAndName(String memberId, String name);
 
 }

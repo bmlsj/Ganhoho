@@ -1,6 +1,5 @@
 import requests
 import json
-from ..config.settings import settings
 from fastapi import HTTPException
 from ..config.yml_config import CLOVA_API_URL, CLOVA_SECRET_KEY
 

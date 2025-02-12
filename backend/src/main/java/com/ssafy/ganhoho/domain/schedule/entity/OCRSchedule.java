@@ -16,27 +16,38 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OCRSchedule {
     @Id
-    private String id; // MongoDB _id 필드와 매핑
+    private String id; // 몽고db 문서 식별자
+
+    // 해당 스케줄 소유자
+    private Long memberId;
 
     private String name;
+
     private int year;
+
     private int month;
 
+    //상세 데이터
     @Field(name = "schedule_data")
     private List<ScheduleDay> scheduleData;
 
-    private Long memberId;
-
-    // 생성시간 생성해놓기
     @CreatedDate
     @Field(name = "created_at")
-    private LocalDateTime createdAt; //생성시점에 필요
+    private LocalDateTime createdAt;
 
-    @Data
+    @Getter
     @Builder
     public static class ScheduleDay {
+        //근무 일자
         private int day;
+
+        //근무타입 (D,E,N,OF)
         private String type;
+    }
+
+    @Override
+    public String getId() {
+        return id;
     }
 
     @Override
