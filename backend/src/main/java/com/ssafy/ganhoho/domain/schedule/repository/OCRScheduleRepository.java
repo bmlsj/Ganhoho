@@ -11,4 +11,8 @@ public interface OCRScheduleRepository {
     @Query(value = "{'memberId': ?0}")
     List<OCRSchedule> findAllByMemberId(Long memberId);
 
+    @Query(value = "{'memberId': ?0, 'year': ?1, 'month': ?2}")
+    List<OCRSchedule> findByMemberIdAndYearAndMonth(Long memberId, int year, int month);
+
+
 }
