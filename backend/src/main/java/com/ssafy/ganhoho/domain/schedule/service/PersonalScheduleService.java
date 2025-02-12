@@ -104,6 +104,7 @@ public class PersonalScheduleService {
 
             // 4. 기존 ScheduleDetail 업데이트
             if (!schedule.getScheduleDetails().isEmpty()) {
+                log.warn("schedule is not empty : {}",schedule.getScheduleDetails());
                 ScheduleDetail existingDetail = schedule.getScheduleDetails().get(0);
                 existingDetail.setStartDt(requestDto.getStartDt());
                 existingDetail.setEndDt(requestDto.getEndDt());
@@ -123,6 +124,7 @@ public class PersonalScheduleService {
                     .build();
                 schedule.getScheduleDetails().add(newDetail);
             }
+
             personalScheduleRepository.save(schedule);
 
             // 5. 응답 생성
