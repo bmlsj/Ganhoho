@@ -110,6 +110,7 @@ public class PersonalScheduleService {
                 existingDetail.setScheduleTitle(requestDto.getScheduleTitle());
                 existingDetail.setScheduleColor(requestDto.getScheduleColor());
                 existingDetail.setIsTimeSet(requestDto.getIsTimeSet());
+
             } else {
                 // 만약 ScheduleDetail이 없다면 새로 생성
                 ScheduleDetail newDetail = ScheduleDetail.builder()
@@ -122,7 +123,6 @@ public class PersonalScheduleService {
                     .build();
                 schedule.getScheduleDetails().add(newDetail);
             }
-
             personalScheduleRepository.save(schedule);
 
             // 5. 응답 생성
@@ -188,8 +188,8 @@ public class PersonalScheduleService {
                             map.put("scheduleId", schedule.getScheduleId());
                             map.put("startDt", detail.getStartDt());
                             map.put("endDt", detail.getEndDt() != null ? detail.getEndDt() : null);
-                            map.put("title", detail.getScheduleTitle());
-                            map.put("color", detail.getScheduleColor());
+                            map.put("scheduleTitle", detail.getScheduleTitle());
+                            map.put("scheduleColor", detail.getScheduleColor());
                             return map;
                         }))
                 .collect(Collectors.toList());
@@ -212,8 +212,8 @@ public class PersonalScheduleService {
                             map.put("scheduleId", schedule.getScheduleId());
                             map.put("startDt", detail.getStartDt());
                             map.put("endDt", detail.getEndDt() != null ? detail.getEndDt() : null);
-                            map.put("title", detail.getScheduleTitle());
-                            map.put("color", detail.getScheduleColor());
+                            map.put("scheduleTitle", detail.getScheduleTitle());
+                            map.put("scheduleColor", detail.getScheduleColor());
                             map.put("isPublic", detail.getIsPublic());
                             map.put("isTimeSet", detail.getIsTimeSet());
                             return map;
