@@ -88,7 +88,7 @@ fun DayBottomSheet(
                                 val endDt = event.endDt.toLocalDateTime()
 
                                 // 색상 적용
-                                val colorString = event.color.lowercase() // ✅ 소문자로 변환
+                                val colorString = event.scheduleColor.lowercase() // ✅ 소문자로 변환
                                 val parsedColor = parsedColor(colorString)
 
                                 TimelineEvent(
@@ -97,7 +97,7 @@ fun DayBottomSheet(
                                     } else {
                                         "All Day"
                                     },
-                                    title = event.title,
+                                    title = event.scheduleTitle,
                                     dateRange = if (startDt.toLocalDate() == endDt.toLocalDate()) {
                                         // 당일 일정
                                         "${startDt.year}.${startDt.monthValue}.${startDt.dayOfMonth}"

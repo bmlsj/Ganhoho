@@ -2,7 +2,6 @@ package com.ssafy.ganhoho.ui.home
 
 import android.annotation.SuppressLint
 import android.util.Log
-import android.widget.ImageButton
 import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -25,8 +24,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
@@ -98,8 +95,16 @@ fun AddDateBottomSheet(
 
     val startDate = remember { mutableStateOf<LocalDate?>(null) } // ✅ 날짜 기본값 설정
     val endDate = remember { mutableStateOf<LocalDate?>(null) }
-    val title = remember { mutableStateOf("") }  // 일정 제목 입력
-    val selectedColor = remember { mutableStateOf(Color.White) }
+    val title = remember(eventToEdit) { mutableStateOf(eventToEdit?.scheduleTitle ?: "") }
+    // 일정 제목 입력
+    val selectedColor =
+        remember(eventToEdit) {
+            mutableStateOf(
+                parsedColor(
+                    eventToEdit?.scheduleColor ?: "#FFFFFF"
+                )
+            )
+        }
     var isTimeSet by remember { mutableStateOf(false) } // ✅ 시간 설정 Switch 상태 저장
     val isPublic = remember { mutableStateOf(false) }
 
@@ -107,14 +112,14 @@ fun AddDateBottomSheet(
     val endTime = remember { mutableStateOf("00:00") }
 
     LaunchedEffect(eventToEdit) {
-        eventToEdit?.let {
-            Log.d("edit", "Editing Event: $it") // ✅ 이벤트가 올바르게 전달되는지 확인
-            startDate.value = it.startDt.toLocalDate()
-            endDate.value = it.endDt.toLocalDate()
-            title.value = it.title
-            selectedColor.value = parsedColor(it.color)
-            isPublic.value = it.isPublic
-            isTimeSet = it.isTimeSet
+        if (isEditing && eventToEdit != null) {
+            Log.d("edit", "Editing Event: $eventToEdit") // ✅ 이벤트가 올바르게 전달되는지 확인
+            startDate.value = eventToEdit.startDt.toLocalDate()
+            endDate.value = eventToEdit.endDt.toLocalDate()
+            title.value = eventToEdit.scheduleTitle
+            selectedColor.value = parsedColor(eventToEdit.scheduleColor)
+            isPublic.value = eventToEdit.isPublic
+            isTimeSet = eventToEdit.isTimeSet
         }
     }
 
@@ -130,6 +135,27 @@ fun AddDateBottomSheet(
     // 일정 추가 결과
     val addScheduleResult by scheduleViewModel.addMyScheduleResult.collectAsState()
 
+    // 일정 수정 결과
+    val editMyScheduleResult by scheduleViewModel.editMyScheduleResult.collectAsState()
+    LaunchedEffect(editMyScheduleResult) {
+        editMyScheduleResult?.let { result ->
+            if (result.isSuccess) {
+                Log.d("edit", "✅ modify success : ${result.getOrNull()}")
+                // ✅ 현재 수정 중인 데이터를 최신 데이터로 업데이트
+                eventToEdit?.scheduleTitle = title.value
+                eventToEdit?.scheduleColor =
+                    "#${Integer.toHexString(selectedColor.value.hashCode())}"
+
+                // ✅ 모달 닫기 전에 즉시 UI 업데이트
+                showBottomSheet.value = false
+
+            } else {
+                Log.e("edit", "🚨 modify failed: ${result.exceptionOrNull()?.message}")
+
+            }
+        }
+    }
+
     LaunchedEffect(token) {
         if (token.isNullOrEmpty()) {
             authViewModel.loadTokens(context)
@@ -139,7 +165,7 @@ fun AddDateBottomSheet(
     // 기존 색상 불러오기
     LaunchedEffect(eventToEdit) {
         eventToEdit?.let {
-            selectedColor.value = parsedColor(it.color)
+            selectedColor.value = parsedColor(it.scheduleColor)
         }
     }
 
@@ -163,11 +189,12 @@ fun AddDateBottomSheet(
         val result = scheduleViewModel.editMyScheduleResult.value
         if (result?.isSuccess == true) {
             Log.d("AddDateBottomSheet", "✅ 일정 수정 성공 -> 모달 닫기 및 데이터 새로고침")
-            scheduleViewModel.fetchMySchedules(token!!)  // ✅ 일정 다시 불러오기
+            if (token != null) {
+                scheduleViewModel.fetchMySchedules(token)
+            }
             showBottomSheet.value = false  // ✅ 바텀시트 닫기
         }
     }
-
 
     Column(
         modifier = Modifier
@@ -180,7 +207,10 @@ fun AddDateBottomSheet(
         // 일정 추가
         TextField(
             value = title.value,
-            onValueChange = { title.value = it },
+            onValueChange = {
+                Log.d("edit", "new data: $it")
+                title.value = it
+            },
             placeholder = {
                 if (title.value.isEmpty()) {
                     Text(
@@ -275,6 +305,10 @@ fun AddDateBottomSheet(
             onClick = {
                 // 📌 스케줄 추가 기능
                 try {
+                    Log.d(
+                        "edit",
+                        "수정 버튼 클릭됨 - title: ${title.value}, color: ${selectedColor.value}"
+                    )
 
                     // 입력 항목이 비었다면
                     if (title.value.isBlank()) {
@@ -299,15 +333,14 @@ fun AddDateBottomSheet(
                         endDate.value!!.atTime(23, 59, 59)  // 23:59:59
                     }
 
-                    Log.d("addTime", "${startDate.value} $startTime ${endDate.value} $endTime")
 
                     // 일정 수정 정보
                     val newEditSchedule = MySchedule(
                         scheduleId = eventToEdit?.scheduleId ?: -1, // 수정 시 ID 유지
                         startDt = startDateTime.toString(),
                         endDt = endDateTime.toString(),
-                        title = title.value,
-                        color = "#${Integer.toHexString(selectedColor.value.hashCode())}", // 색상을 HEX 코드로 변환
+                        scheduleTitle = title.value,
+                        scheduleColor = "#${Integer.toHexString(selectedColor.value.hashCode())}", // 색상을 HEX 코드로 변환
                         isPublic = isPublic.value,
                         isTimeSet = isTimeSet
                     )
@@ -322,7 +355,12 @@ fun AddDateBottomSheet(
                         isTimeSet = isTimeSet
                     )
 
+                    if (eventToEdit != null) {
+                        Log.d("edit", eventToEdit.scheduleId.toString())
+                    }
+
                     Log.d("addSchedule", newSchedule.toString())
+                    Log.d("edit", newEditSchedule.toString())
 
                     Log.d("edit", "$isEditing")
                     // 개인 스케쥴 수정
@@ -357,7 +395,8 @@ fun AddDateBottomSheet(
             Button(
                 onClick = {
                     eventToEdit?.scheduleId?.let {
-                        //  scheduleViewModel.deleteMySchedule(token!!, it)
+                        // 삭제 기능
+                        scheduleViewModel.deleteMySchedule(token!!, it)
                         showBottomSheet.value = false
                         navController.navigate("home") {
                             popUpTo("home") { inclusive = true }

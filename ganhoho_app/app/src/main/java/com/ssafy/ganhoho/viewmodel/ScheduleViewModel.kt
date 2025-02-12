@@ -39,6 +39,10 @@ class ScheduleViewModel() : ViewModel() {
     private val _editMyScheduleResult = MutableStateFlow<Result<ScheduleUpdateResponse>?>(null)
     val editMyScheduleResult: StateFlow<Result<ScheduleUpdateResponse>?> = _editMyScheduleResult
 
+    // 개인 일정 삭제
+    private val _deleteMyScheduleResult = MutableStateFlow<Result<ScheduleUpdateResponse>?>(null)
+    val deleteMyScheduleResult: StateFlow<Result<ScheduleUpdateResponse>?> = _deleteMyScheduleResult
+
     // 친구 스케줄 조회
     private val _friendSchedule = MutableStateFlow<Result<List<WorkScheduleDto>>?>(null)
     val friendSchedule: StateFlow<Result<List<WorkScheduleDto>>?> = _friendSchedule
@@ -46,6 +50,7 @@ class ScheduleViewModel() : ViewModel() {
     // 공개된 개인 스케줄 조회
     private val _publicSchedule = MutableStateFlow<Result<List<FriendSchedule>>?>(null)
     val publicSchedule: StateFlow<Result<List<FriendSchedule>>?> = _publicSchedule
+
 
     // 내 근무 스케줄 조회
     fun getMyWorkSchedule(token: String) {
@@ -73,46 +78,51 @@ class ScheduleViewModel() : ViewModel() {
     // 개인 스케줄 및 근무 스케줄 다시 로드
     fun fetchMySchedules(token: String) {
         viewModelScope.launch {
-            val result = try {
-                val response = repository.getMySchedule(token)
-                Log.d("ScheduleViewModel", "📌 API 응답: $response")
-                Result.success(response)
-            } catch (e: Exception) {
-                Log.e("ScheduleViewModel", "❌ 일정 불러오기 실패: ${e.message}")
-                Result.failure(e)
+            val response = repository.getMySchedule(token) // API 호출
+            response.onSuccess { scheduleResponse ->
+                Log.d("ScheduleViewModel", "📌 새로 불러온 일정: $scheduleResponse")
+
+                val existingData = _mySchedules.value.associateBy { it.scheduleId }
+
+                _mySchedules.value = scheduleResponse.data.map { newItem ->
+                    existingData[newItem.scheduleId]?.copy(
+                        scheduleTitle = newItem.scheduleTitle,
+                        scheduleColor = newItem.scheduleColor
+                    ) ?: newItem
+                } ?: emptyList()
+            }.onFailure {
+                Log.e("ScheduleViewModel", "❌ 일정 불러오기 실패: ${it.message}")
             }
 
-            result.onSuccess { response ->
-                val scheduleResponse = response.getOrNull()
-                _mySchedules.value = scheduleResponse?.data ?: emptyList()
-            }
-
-            // 🔥 추가: 개인 일정 불러온 후, 근무 스케줄도 업데이트
-            getMyWorkSchedule(token)
+            getMyWorkSchedule(token) // 🔥 근무 일정도 같이 불러오기
         }
     }
-
-    // 일정 추가 결과 초기화 및 새로고침
-    fun resetScheduleResult(token: String) {
-        _addMyScheduleResult.value = null
-        fetchMySchedules(token)  // 추가/수정 후, 데이터를 새로고침
-    }
-
 
     // 개인 스케줄 수정
     fun updateSchedule(token: String, scheduleId: Long, request: MySchedule) {
         viewModelScope.launch {
             val response = repository.updateMySchedule(token, scheduleId, request)
-            Log.d("update", "$response $token $request")
-            _editMyScheduleResult.value = response
+            Log.d("update", "📌 서버 응답: $response, 요청 데이터: $request")
 
+            _editMyScheduleResult.value = response
             if (response.isSuccess) {
-                fetchMySchedules(token) // 일정 추가 후 자동 새로고침
+                Log.d("update", "✅ 수정 성공! fetchMySchedules() 호출")
+
+                // ✅ 기존 스케줄 리스트에서 해당 일정 찾아서 업데이트
+                _mySchedules.value = _mySchedules.value.map { schedule ->
+                    if (schedule.scheduleId == scheduleId) {
+                        request // 업데이트된 데이터로 변경
+                    } else {
+                        schedule
+                    }
+                }
+                fetchMySchedules(token) // 🔥 일정 다시 불러오기
             } else {
-                Log.e("ScheduleViewModel", "❌ 일정 추가 실패: ${response.exceptionOrNull()?.message}")
+                Log.e("update", "❌ 수정 실패: ${response.exceptionOrNull()?.message}")
             }
         }
     }
+
 
     // 개인 스케줄 추가
     fun addMySchedule(token: String, request: MyScheduleRequest) {
@@ -138,6 +148,14 @@ class ScheduleViewModel() : ViewModel() {
     fun getPublicSchedule(token: String, memberId: Long) {
         viewModelScope.launch {
             _publicSchedule.value = repository.getPublicSchedule(token, memberId)
+        }
+    }
+
+    // 개인 일정 삭제
+    fun deleteMySchedule(token: String, scheduleId: Long) {
+        viewModelScope.launch {
+            val response = repository.removeMySchedule(token, scheduleId)
+            _deleteMyScheduleResult.value = response
         }
     }
 }

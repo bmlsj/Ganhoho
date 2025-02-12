@@ -74,7 +74,9 @@ fun HomeScreen(navController: NavController) {
 
     // 개인 스케쥴 조회 리스트
     val myScheduleState = scheduleViewModel.mySchedule.collectAsState().value
-    val myScheduleList = myScheduleState?.getOrNull()?.data ?: emptyList()
+    val myScheduleList = remember(myScheduleState) {
+        myScheduleState?.getOrNull()?.data ?: emptyList()
+    }
 
     // 근무 스케쥴 조회
     val myWorkScheduleState = scheduleViewModel.myWorkSchedule.collectAsState().value
@@ -99,6 +101,7 @@ fun HomeScreen(navController: NavController) {
         }
     }
 
+
     // ✅ 달력이 바뀌어도 다시 불러오기
     LaunchedEffect(token, currentMonthState.value) {
         if (token != null) {
@@ -115,12 +118,20 @@ fun HomeScreen(navController: NavController) {
     )
 
     // 📌 캘린더의 현재 보이는 달이 변경될 때 상태 업데이트
-    LaunchedEffect(calendarState.firstVisibleMonth) {
+    LaunchedEffect(calendarState.firstVisibleMonth, myScheduleList) {
         currentMonthState.value = calendarState.firstVisibleMonth.yearMonth
         if (token != null) {
-            scheduleViewModel.getMySchedule(token)
+            scheduleViewModel.fetchMySchedules(token)
         }  // 월이 바뀔때마다 일정 다시 로드
     }
+
+//    // 📌 캘린더의 현재 보이는 달이 변경될 때 상태 업데이트
+//    LaunchedEffect(calendarState.firstVisibleMonth) {
+//        currentMonthState.value = calendarState.firstVisibleMonth.yearMonth
+//        if (token != null) {
+//            scheduleViewModel.getMySchedule(token)
+//        }  // 월이 바뀔때마다 일정 다시 로드
+//    }
 
     Column(
         modifier = Modifier
@@ -218,7 +229,6 @@ fun DayContent(
     navController: NavController
 ) {
 
-    /// Log.d("homeScreen", myScheduleList.toString())
     val date = day.date
     val isOutDate = date.yearMonth != currentMonth  // ✅ outDate 여부 확인
 
@@ -310,9 +320,9 @@ fun DayContent(
                     }
 
                     // 색상 적용 이슈
-                    Log.d("ColorCheck", "event.color: ${event.color}")
+                    Log.d("ColorCheck", "event.color: ${event.scheduleColor}")
 
-                    val colorString = event.color.lowercase() // ✅ 소문자로 변환
+                    val colorString = event.scheduleColor.lowercase() // ✅ 소문자로 변환
                     val parsedColor = parsedColor(colorString)
 
                     Box(
@@ -326,7 +336,7 @@ fun DayContent(
                         if (date == startDate) {
                             // 첫날일 경우 제목 표시
                             Text(
-                                text = event.title,
+                                text = event.scheduleTitle,
                                 fontSize = 9.sp,
                                 color = Color.Black,
                                 maxLines = 2,
@@ -353,7 +363,7 @@ fun DayContent(
                             ) {
                                 // 이후 날짜는 빈 텍스트로 유지 (배경만 표시)
                                 Text(
-                                    text = event.title,
+                                    text = event.scheduleTitle,
                                     fontSize = 8.sp,
                                     maxLines = 2,
                                     lineHeight = 3.sp,
@@ -393,8 +403,8 @@ fun convertWorkScheduleToMySchedule(workSchedules: List<WorkScheduleDto>): List<
             scheduleId = -1,  // 근무 일정은 임시 ID 사용
             startDt = work.workDate.toString(),
             endDt = work.workDate.toString(),  // 근무 일정은 당일 일정
-            title = work.workType,
-            color = "#D1EEF2",  // 근무 일정 색 => 아직 결정..? 못함
+            scheduleTitle = work.workType,
+            scheduleColor = "#D1EEF2",  // 근무 일정 색 => 아직 결정..? 못함
             isPublic = true,
             isTimeSet = false
         )
