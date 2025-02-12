@@ -2,6 +2,7 @@ package com.ssafy.ganhoho.ui.home
 
 import android.annotation.SuppressLint
 import android.util.Log
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -54,6 +55,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -230,7 +232,7 @@ fun AddDateBottomSheet(
         ) {
             Text(
                 text = "시간 설정",
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(start = 8.dp)
             )
@@ -309,7 +311,7 @@ fun AddDateBottomSheet(
                         isPublic = isPublic.value,
                         isTimeSet = isTimeSet
                     )
-                    
+
                     // 일정 추가 정보
                     val newSchedule = MyScheduleRequest(  // 새 일정 추가
                         startDt = startDateTime.toString(),
@@ -341,7 +343,6 @@ fun AddDateBottomSheet(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 10.dp)
                 .height(50.dp),
             colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
             shape = RoundedCornerShape(20.dp)
@@ -388,7 +389,7 @@ fun ToggleButton(isPublic: MutableState<Boolean>) {
     Box(
         modifier = Modifier
             .fillMaxWidth(0.4f)
-            .height(35.dp)
+            .height(40.dp)
             .padding(1.dp)
             .clip(RoundedCornerShape(25.dp))
             .background(Color(0xffDADADA)) // 배경색
@@ -419,7 +420,8 @@ fun ToggleButton(isPublic: MutableState<Boolean>) {
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f),
-                color = if (isPublic.value) Color.White else Color.Black
+                color = if (isPublic.value) Color.White else Color.Black,
+                textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.weight(0.5f))
@@ -544,7 +546,10 @@ fun DateRangePicker(
             showDatePicker.value = true
         }) {
             Icon(
-                imageVector = Icons.Default.DateRange, contentDescription = "Date Range Picker"
+                painter = painterResource(id = R.drawable.calendar),
+                contentDescription = "모달 달력 버튼",
+                tint = Color.Unspecified,
+                modifier = Modifier.size(55.dp)
             )
         }
     }
