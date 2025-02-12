@@ -6,7 +6,7 @@ from ...schemas.schedule import ScheduleResponse
 
 router = APIRouter()
 
-@router.post("/schedules/ocr", response_model=ScheduleResponse)
+@router.post("/ocr", response_model=ScheduleResponse)
 async def process_schedule(ocrImg: UploadFile = File(...)):
     try:
         # OCR 처리

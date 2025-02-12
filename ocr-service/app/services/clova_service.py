@@ -2,11 +2,15 @@ import requests
 import json
 from ..config.settings import settings
 from fastapi import HTTPException
+from ..config.yml_config import CLOVA_API_URL, CLOVA_SECRET_KEY
 
 class ClovaOCRService:
     @staticmethod
     async def process_image(ocrImg) -> dict :
-        headers = {"X-OCR-SECRET": settings.SECRET_KEY}
+        if not CLOVA_API_URL or not CLOVA_SECRET_KEY:
+            raise HTTPException(status_code=500, detail="OCR 설정값이 없습니다.")
+        
+        headers = {"X-OCR-SECRET": CLOVA_SECRET_KEY}
         file_content = await ocrImg.read()
 
         files = {"file": ("image.png", file_content, "image/png")}
@@ -19,7 +23,7 @@ class ClovaOCRService:
 
         try: 
             response = requests.post(
-                settings.API_URL,
+                CLOVA_API_URL,
                 headers=headers,
                 data={"message": json.dumps(payload)},
                 files=files
