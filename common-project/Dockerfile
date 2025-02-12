@@ -14,8 +14,6 @@ RUN npm run build
 
 # 5. Nginx를 사용하여 빌드된 파일을 제공
 FROM nginx:alpine
-RUN rm -rf /etc/nginx/conf.d/default.conf
-COPY --from=builder /app/nginx/default.conf /etc/nginx/conf.d/default.conf
 
 RUN rm -rf /usr/share/nginx/html/*
 COPY --from=builder /app/dist /usr/share/nginx/html
