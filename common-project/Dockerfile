@@ -15,8 +15,8 @@ RUN npm run build
 # 5. Nginx를 사용하여 빌드된 파일을 제공
 FROM nginx:alpine AS production-stage
 
-RUN rm -rf /usr/share/nginx/html/*
 COPY --from=build-stage /app/dist /usr/share/nginx/html
+
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # 6. Nginx 포트 노출
