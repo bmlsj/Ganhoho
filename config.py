@@ -5,14 +5,14 @@ DB_PATHS = {
     "devices": "devices.db"   # 기기 정보를 저장하는 DB
 }
 
-SERVER_URL = "http://server-endpoint/alerts"  # 서버 URL
+SERVER_URL = "http://i12d209.p.ssafy.io/api/notifications/button-pattens"  # 서버 URL
 
 # 블루투스 리모컨 버튼 데이터 매핑
-BUTTON_MAPPING = {
-    "011880": "기본",      # 상 (Up)
-    "01f87f": "의료",  # 하 (Down)
-    "288011": "긴급",  # 좌 (Left)
-    "ff1780": "기타"   # 우 (Right)
+BUTTON_MAPPING= {
+    "KEY_NEXTSONG": "기본",       # 상 (Up)
+    "KEY_PREVIOUSSONG": "긴급",   # 좌 (Left)
+    "KEY_VOLUMEUP": "의료",        # 우 (Right)
+    "KEY_VOLUMEDOWN": "기타"       # 하 (Down)
 }
 
 QUEUE_CHECK_INTERVAL = 0.01  # 큐 확인 주기 (초)
