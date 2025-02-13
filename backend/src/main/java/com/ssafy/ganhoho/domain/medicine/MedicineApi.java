@@ -28,8 +28,9 @@ public class MedicineApi {
     private static final String BASE_URL = "https://apis.data.go.kr/1471000/DrugPrdtPrmsnInfoService06/getDrugPrdtPrmsnDtlInq05";
     private static final String SERVICE_KEY = "7hw6itQ0XsLQvJpbmMEBmRnN48OXxRf3SzUE5FpM3zb/FY0N2Q45MR5PUMk1PeNNhJJm9omcPNWHShD9Hs/G6g==";
 
-    @Value("${fastapi.server.url}")
-    private String fastApiServerUrl;
+    // FastAPI 서버 URL 주석 처리
+    // @Value("${fastapi.server.url}")
+    // private String fastApiServerUrl;
 
     @GetMapping("/api/medicines/{itemSeq}")
     public ResponseEntity<Object> getMedicineById(@PathVariable String itemSeq) {
@@ -156,6 +157,15 @@ public class MedicineApi {
             return ResponseEntity.badRequest().body(Map.of("error", "파일이 업로드되지 않았습니다."));
         }
 
+        // FastAPI 서버 기능 비활성화 상태 응답
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+            .body(Map.of(
+                "success", false,
+                "message", "이미지 분석 서비스가 현재 비활성화되어 있습니다.",
+                "status", "MAINTENANCE"
+            ));
+
+        /* 기존 FastAPI 관련 코드 주석 처리
         try {
             log.info("1. FastAPI 이미지 분석 시작");
             
@@ -163,109 +173,98 @@ public class MedicineApi {
             String fastApiUrl = fastApiServerUrl + "/predict/";
             log.info("2. FastAPI URL: {}", fastApiUrl);
             
-            // FastAPI 서버 연결 시도
-            try {
-                ByteArrayResource imageResource = new ByteArrayResource(imageFile.getBytes()) {
-                    @Override
-                    public String getFilename() {
-                        return imageFile.getOriginalFilename();
-                    }
-                };
-                
-                MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-                body.add("image", imageResource);
-                
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-                
-                HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-                
-                log.info("3. FastAPI 서버로 이미지 전송 시작");
-                ResponseEntity<Map> aiResponse = restTemplate.postForEntity(fastApiUrl, requestEntity, Map.class);
-                log.info("4. FastAPI 서버 응답 수신: {}", aiResponse.getBody());
-                
-                Map<String, Object> responseBody = aiResponse.getBody();
-                
-                if (responseBody == null || 
-                    !Boolean.TRUE.equals(responseBody.get("success")) || 
-                    responseBody.get("detections") == null) {
-                    return ResponseEntity.ok(Map.of(
-                        "success", false,
-                        "message", "의약품을 인식하지 못했습니다. 다시 시도해주세요.",
-                        "aiResult", responseBody
-                    ));
+            ByteArrayResource imageResource = new ByteArrayResource(imageFile.getBytes()) {
+                @Override
+                public String getFilename() {
+                    return imageFile.getOriginalFilename();
                 }
-                
-                Map<String, String> detections = (Map<String, String>) responseBody.get("detections");
-                String itemName = detections.get("name");
-                
-                if (itemName == null || itemName.isEmpty()) {
-                    return ResponseEntity.ok(Map.of(
-                        "success", false,
-                        "message", "의약품 이름을 추출하지 못했습니다.",
-                        "aiResult", responseBody
-                    ));
-                }
-                
-                log.info("5. 의약품 정보 검색 시작. 의약품 이름: {}", itemName);
-                
-                String encodedItemName = URLEncoder.encode(itemName, StandardCharsets.UTF_8);
-                String urlStr = BASE_URL + "?"
-                        + "serviceKey=" + SERVICE_KEY
-                        + "&pageNo=1"
-                        + "&numOfRows=10"
-                        + "&type=json"
-                        + "&item_name=" + encodedItemName;
-
-                log.info("의약품 API 요청 URL: {}", urlStr);
-                
-                restTemplate = new RestTemplate();
-                restTemplate.getMessageConverters()
-                        .add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
-                
-                ResponseEntity<String> medicineResponse = restTemplate.getForEntity(urlStr, String.class);
-                
-                // JSON 파싱 및 데이터 추출
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode rootNode = mapper.readTree(medicineResponse.getBody());
-                JsonNode items = rootNode.path("body").path("items");
-                
-                List<Map<String, Object>> medicineList = new ArrayList<>();
-                if (items.isArray() && items.size() > 0) {
-                    for (JsonNode item : items) {
-                        Map<String, Object> medicineInfo = new HashMap<>();
-                        medicineInfo.put("ITEM_SEQ", item.path("ITEM_SEQ").asText());
-                        medicineInfo.put("ITEM_NAME", item.path("ITEM_NAME").asText());
-                        medicineInfo.put("ENTP_NAME", item.path("ENTP_NAME").asText());
-                        medicineInfo.put("ETC_OTC_CODE", item.path("ETC_OTC_CODE").asText());
-                        medicineInfo.put("CHART", item.path("CHART").asText());
-                        medicineInfo.put("STORAGE_METHOD", item.path("STORAGE_METHOD").asText());
-                        medicineInfo.put("VALID_TERM", item.path("VALID_TERM").asText());
-                        medicineInfo.put("NEWDRUG_CLASS_NAME", item.path("NEWDRUG_CLASS_NAME").asText());
-                        medicineInfo.put("EE_DOC_DATA", item.path("EE_DOC_DATA").asText());
-                        medicineInfo.put("UD_DOC_DATA", item.path("UD_DOC_DATA").asText());
-                        medicineInfo.put("NB_DOC_DATA", item.path("NB_DOC_DATA").asText());
-                        medicineInfo.put("PN_DOC_DATA", item.path("PN_DOC_DATA").asText());
-                        medicineList.add(medicineInfo);
-                    }
-                }
-                
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", true);
-                response.put("aiResult", responseBody);
-                response.put("medicineInfo", medicineList);
-                response.put("detectedName", itemName);
-                
-                return ResponseEntity.ok(response);
-            } catch (Exception e) {
-                log.error("FastAPI 서버 연결 실패: {}", e.getMessage());
-                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                    .body(Map.of(
-                        "success", false,
-                        "error", "이미지 분석 서버가 현재 사용 불가능합니다. 잠시 후 다시 시도해주세요.",
-                        "details", e.getMessage()
-                    ));
+            };
+            
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("image", imageResource);
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+            
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+            
+            log.info("3. FastAPI 서버로 이미지 전송 시작");
+            ResponseEntity<Map> aiResponse = restTemplate.postForEntity(fastApiUrl, requestEntity, Map.class);
+            log.info("4. FastAPI 서버 응답 수신: {}", aiResponse.getBody());
+            
+            Map<String, Object> responseBody = aiResponse.getBody();
+            
+            if (responseBody == null || 
+                !Boolean.TRUE.equals(responseBody.get("success")) || 
+                responseBody.get("detections") == null) {
+                return ResponseEntity.ok(Map.of(
+                    "success", false,
+                    "message", "의약품을 인식하지 못했습니다. 다시 시도해주세요.",
+                    "aiResult", responseBody
+                ));
             }
+            
+            Map<String, String> detections = (Map<String, String>) responseBody.get("detections");
+            String itemName = detections.get("name");
+            
+            if (itemName == null || itemName.isEmpty()) {
+                return ResponseEntity.ok(Map.of(
+                    "success", false,
+                    "message", "의약품 이름을 추출하지 못했습니다.",
+                    "aiResult", responseBody
+                ));
+            }
+            
+            log.info("5. 의약품 정보 검색 시작. 의약품 이름: {}", itemName);
+            
+            String encodedItemName = URLEncoder.encode(itemName, StandardCharsets.UTF_8);
+            String urlStr = BASE_URL + "?"
+                    + "serviceKey=" + SERVICE_KEY
+                    + "&pageNo=1"
+                    + "&numOfRows=10"
+                    + "&type=json"
+                    + "&item_name=" + encodedItemName;
+
+            log.info("의약품 API 요청 URL: {}", urlStr);
+            
+            restTemplate = new RestTemplate();
+            restTemplate.getMessageConverters()
+                    .add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
+            
+            ResponseEntity<String> medicineResponse = restTemplate.getForEntity(urlStr, String.class);
+            
+            // JSON 파싱 및 데이터 추출
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(medicineResponse.getBody());
+            JsonNode items = rootNode.path("body").path("items");
+            
+            List<Map<String, Object>> medicineList = new ArrayList<>();
+            if (items.isArray() && items.size() > 0) {
+                for (JsonNode item : items) {
+                    Map<String, Object> medicineInfo = new HashMap<>();
+                    medicineInfo.put("ITEM_SEQ", item.path("ITEM_SEQ").asText());
+                    medicineInfo.put("ITEM_NAME", item.path("ITEM_NAME").asText());
+                    medicineInfo.put("ENTP_NAME", item.path("ENTP_NAME").asText());
+                    medicineInfo.put("ETC_OTC_CODE", item.path("ETC_OTC_CODE").asText());
+                    medicineInfo.put("CHART", item.path("CHART").asText());
+                    medicineInfo.put("STORAGE_METHOD", item.path("STORAGE_METHOD").asText());
+                    medicineInfo.put("VALID_TERM", item.path("VALID_TERM").asText());
+                    medicineInfo.put("NEWDRUG_CLASS_NAME", item.path("NEWDRUG_CLASS_NAME").asText());
+                    medicineInfo.put("EE_DOC_DATA", item.path("EE_DOC_DATA").asText());
+                    medicineInfo.put("UD_DOC_DATA", item.path("UD_DOC_DATA").asText());
+                    medicineInfo.put("NB_DOC_DATA", item.path("NB_DOC_DATA").asText());
+                    medicineInfo.put("PN_DOC_DATA", item.path("PN_DOC_DATA").asText());
+                    medicineList.add(medicineInfo);
+                }
+            }
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("aiResult", responseBody);
+            response.put("medicineInfo", medicineList);
+            response.put("detectedName", itemName);
+            
+            return ResponseEntity.ok(response);
             
         } catch (Exception e) {
             log.error("이미지 처리 중 오류 발생: {}", e.getMessage(), e);
@@ -275,5 +274,6 @@ public class MedicineApi {
                     "error", "이미지 처리 중 오류 발생: " + e.getMessage()
                 ));
         }
+        */
     }
 }
