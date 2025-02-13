@@ -7,6 +7,8 @@ DB_PATHS = {
 
 SERVER_URL = "http://i12d209.p.ssafy.io/api/notifications/button-pattens"  # 서버 URL
 
+JWT_TOKEN = "액세스 키나 공개 키를 사용해보자! "
+
 # 블루투스 리모컨 버튼 데이터 매핑
 BUTTON_MAPPING= {
     "KEY_NEXTSONG": "기본",       # 상 (Up)

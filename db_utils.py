@@ -17,7 +17,8 @@ def init_db():
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS Bed (
                 mac_address TEXT PRIMARY KEY,
-                bed_name TEXT NOT NULL
+                bed_id TEXT NOT NULL,
+                device_name TEXT NOT NULL
             );
         """)
         conn.commit()
