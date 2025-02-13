@@ -7,14 +7,18 @@ export const useApiStore = defineStore('api', () => {
   const calendar = ref([]);
   const currentYear = ref(null); // API에서 받아온 년도
   const currentMonth = ref(null); // API에서 받아온 월
-  const API_URL = ""; // .env에서 관리
+  const API_URL = import.meta.env.VITE_API_URL; // .env에서 관리
   const medicineList = ref([]);
   const medicineDetail = ref({}); // 의약품 상세 정보 저장
   const isDataLoaded = ref(false);
-  const token=ref(null);
+  const token = ref(null);
+
   if (window.AndroidInterface) {
-    token.value = window.AndroidInterface.getToken()
-    localStorage.setItem("token",token)
+    token.value = window.AndroidInterface.getToken();
+    console.log("안드로이드 토큰:", token.value);
+  } else {
+    token.value = localStorage.getItem("token");
+    console.log("localStorage 토큰:", token.value);
   }
   
   const fetchData = async () => { //전체 근무 페이지 ocr 데이터 받아오기.
@@ -41,10 +45,10 @@ export const useApiStore = defineStore('api', () => {
           currentYear.value = firstPerson.year;
           currentMonth.value = firstPerson.month;
 
-          const typeMapping = { O: "Off", E: "Eve", D: "Day", N: "Nig" };
+          const typeMapping = { OF: "Off", E: "Eve", D: "Day", N: "Nig" };
           people.value = responseData.map((person) => ({
             name: person.name,
-            schedule: person.schedule.reduce((acc, day) => {
+            schedule: person.scheduleData.reduce((acc, day) => {
               acc[day.day] = typeMapping[day.type] || day.type
               return acc;
             }, {}),
@@ -88,25 +92,28 @@ export const useApiStore = defineStore('api', () => {
   };
 
   const sendImageToAPI = async (file) => {
+    console.log("API 요청 전 토큰 확인:", token.value);
+  
     const formData = new FormData();
     formData.append('ocrImg', file);
   
     try {
+      const headers = {
+        Authorization: `Bearer ${token.value}`,
+        'Content-Type': 'multipart/form-data'
+      };
+      console.log("요청 헤더:", headers);
+
       const response = await axios.post(`${API_URL}/api/schedules/ocr`, formData, {
-        headers: {
-          Authorization: `Bearer ${token.value}`,
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: headers
       });
   
       if (response.status === 200) {
         console.log('✅ 이미지 업로드 성공:', response.data);
         alert('이미지 업로드 성공!');
   
-        // ✅ POST 요청 성공 후 GET 요청 실행
         await fetchData();
   
-        // ✅ 데이터 로드 완료 상태 저장 (GET 요청 이후)
         isDataLoaded.value = true;
       } else {
         console.error('업로드 실패:', response.data);
@@ -114,6 +121,8 @@ export const useApiStore = defineStore('api', () => {
       }
     } catch (error) {
       console.error('API 요청 오류:', error);
+      console.error('에러 응답:', error.response);
+      console.error('요청 설정:', error.config);
       alert('서버 오류로 업로드 실패');
     }
   };
