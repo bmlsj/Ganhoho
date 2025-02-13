@@ -54,6 +54,9 @@ public class OCRScheduleServiceImpl implements OCRScheduleService {
             Member member = authRepository.findById(memberId)
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
 
+            // 기존 OCR 스케줄 삭제
+            ocrScheduleRepository.deleteByMemberId(memberId);
+
             //FastAPI 서버로 이미지 전송
             RestTemplate restTemplate = new RestTemplate();
             String url = fastApiUrl + "/api/schedules/ocr";
