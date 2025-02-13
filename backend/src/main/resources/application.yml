@@ -5,15 +5,25 @@ spring:
   application:
     name: Ganhoho
   datasource:
-    url: jdbc:mysql://localhost:3306/ganhoho
+    url: jdbc:mysql://localhost:3306/ganhoho?serverTimezone=UTC&useSSL=false
     username: d209
     password: d209
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+
+
   jpa:
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.MySQLDialect
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: none
+
   data:
     mongodb:
       uri: mongodb://localhost:27017/ganhoho
@@ -41,11 +51,19 @@ server:
 logging:
   pattern:
     console: "%green(%d{HH:mm:ss.SSS}) %blue(%-5level) %red([%thread]) %yellow(%logger{15}) - %msg%n"
-  level:
-    root: debug
+
 
 jwt:
   secret: lcCoZ5lvEmT7BNFMCz9TGgw0zy2lqTSv
   expiration:
     access: 86400000
     refresh: 604800000
+
+
+fastapi:
+  server:
+    url: http://localhost:8000
+
+ocr:
+  fastapi:
+    url: http://localhost:8000  # FastAPI 서버 URL 설정
