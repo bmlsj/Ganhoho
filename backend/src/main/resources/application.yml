@@ -66,4 +66,4 @@ fastapi:
 
 ocr:
   fastapi:
-    url: http://localhost:8000  # FastAPI 서버 URL 설정
+    url: http://localhost:8000  
