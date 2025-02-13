@@ -32,6 +32,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.ssafy.ganhoho.R
 import com.ssafy.ganhoho.base.SecureDataStore
 import com.ssafy.ganhoho.data.model.response.member.MyPageResponse
@@ -42,7 +44,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
-fun MyPageScreen() {
+fun MyPageScreen(navController: NavController) {
 
     val memberViewModel: MemberViewModel = viewModel()
     val authViewModel: AuthViewModel = viewModel()
@@ -162,7 +164,10 @@ fun MyPageScreen() {
             MenuItem(
                 icon = R.drawable.modify, // 회원정보 수정 아이콘
                 text = "회원정보 수정",
-                {}
+                onClick = {
+                    // 회원 수정 화면으로 이동
+                    navController.navigate("update")
+                }
             )
             Spacer(modifier = Modifier.height(16.dp))
             MenuItem(
@@ -235,5 +240,6 @@ fun MenuItem(icon: Int, text: String, onClick: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun MyPageScreenPrevier() {
-    MyPageScreen()
+    val navController = rememberNavController()
+    MyPageScreen(navController)
 }

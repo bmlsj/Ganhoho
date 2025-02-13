@@ -51,7 +51,7 @@ class ScheduleRepository {
             val response = RetrofitUtil.scheduleService.getMySchedule(
                 "Bearer $token"
             )
-            Log.d("ScheduleViewModel", "레포지토리 응답: ${response} $token")
+            Log.d("ScheduleViewModel", "레포지토리 응답: $response $token ${response.errorBody()?.string()}")
             handleResponse(response)
         } catch (e: Exception) {
             Result.failure(e)

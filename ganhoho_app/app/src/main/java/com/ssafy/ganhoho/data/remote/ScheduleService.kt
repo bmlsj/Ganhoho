@@ -47,6 +47,7 @@ interface ScheduleService {
         @Body request: MySchedule
     ): Response<ScheduleUpdateResponse>
 
+
     // 개인 스케쥴 추가
     @POST("api/schedules/personal")
     suspend fun addMySchedule(
