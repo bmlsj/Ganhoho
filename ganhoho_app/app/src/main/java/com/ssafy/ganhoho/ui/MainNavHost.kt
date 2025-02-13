@@ -5,13 +5,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.ssafy.ganhoho.ui.auth.AuthDataStore
 import com.ssafy.ganhoho.ui.auth.HospitalInfoScreen
 import com.ssafy.ganhoho.ui.auth.JoinScreen
 import com.ssafy.ganhoho.ui.auth.LoginScreen
 import com.ssafy.ganhoho.ui.theme.GANHOHOTheme
 
 @Composable
-fun MainNavHost() {
+fun MainNavHost(authDataStore: AuthDataStore) {
 
     val navController = rememberNavController()
 
@@ -22,12 +23,12 @@ fun MainNavHost() {
 
         // 로그인 화면
         composable("login") {
-            LoginScreen(navController)
+            LoginScreen(navController, authDataStore)
         }
 
         // 메인 화면
         composable("main") {
-            MainScreen()
+            MainScreen(navController, authDataStore)
         }
 
         // 회원 가입 화면
@@ -45,7 +46,10 @@ fun MainNavHost() {
 @Preview(showBackground = true)
 @Composable
 fun AppPreview() {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val authDataStore = AuthDataStore(context) // Preview에서도 authDataStore 생성
+
     GANHOHOTheme {
-        MainNavHost()
+        MainNavHost(authDataStore)
     }
 }

@@ -27,8 +27,10 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -54,7 +56,7 @@ import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import kotlin.math.log
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(navController: NavController, authDataStore : AuthDataStore) {
 
     // 입력 필드 상태
     val id = remember { mutableStateOf("") }
@@ -63,6 +65,21 @@ fun LoginScreen(navController: NavController) {
 
     val authViewModel: AuthViewModel = viewModel()
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    
+    // 자동 로그인 관련
+    // 자동 로그인 여부 확인
+    val isLoggedIn by authDataStore.isLoggedIn.collectAsState(initial = false)
+
+    // 로그인 여부 감지 -> 자동 메인화면 이동
+    LaunchedEffect(isLoggedIn) {
+        if(isLoggedIn){
+            navController.navigate("main"){
+                popUpTo("login") {inclusive = true}
+            }
+        }
+    }
+
 
     // 로그인 결과 상태 감지
     val loginResult = authViewModel.loginResult.collectAsState().value
@@ -265,5 +282,8 @@ fun LoginScreen(navController: NavController) {
 @Composable
 fun LoginPreview() {
     val navController = rememberNavController()
-    LoginScreen(navController)
+    val context = LocalContext.current
+    val authDataStore = AuthDataStore(context)
+
+    LoginScreen(navController, authDataStore)
 }

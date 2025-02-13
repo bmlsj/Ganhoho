@@ -1,9 +1,7 @@
 package com.ssafy.ganhoho.data.model.dto.group
 
-import kotlinx.datetime.LocalDateTime
-
-data class WorkScheduleDto (
-    val workDate: LocalDateTime,
+data class WorkScheduleDto(
+    val workDate: java.time.LocalDateTime,
     val workType: String
 )
 

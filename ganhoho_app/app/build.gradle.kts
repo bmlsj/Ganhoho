@@ -78,6 +78,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.gms.play.services.wearable)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.testing)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -109,5 +111,8 @@ dependencies {
     // datastore
     implementation ("androidx.datastore:datastore-preferences:1.1.2")
     implementation ("androidx.datastore:datastore-core:1.1.2")  // 코어 의존성 (필요 시)
+
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+    implementation ("androidx.navigation:navigation-compose:2.4.0-alpha10") //네비게이션
 
 }

@@ -17,16 +17,24 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.ssafy.ganhoho.R
+import com.ssafy.ganhoho.ui.auth.AuthDataStore
+import com.ssafy.ganhoho.ui.auth.LoginScreen
 import com.ssafy.ganhoho.ui.bottom_navigation.AppNavHost
 import com.ssafy.ganhoho.ui.bottom_navigation.CustomBottomNavigation
 import com.ssafy.ganhoho.ui.theme.GANHOHOTheme
@@ -37,25 +45,53 @@ class MainActivity : ComponentActivity() {
     private val authViewModel: AuthViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+        val authDataStore = AuthDataStore(applicationContext) //DataStore 생성
+
         // 저장된 토큰 불러오기
         authViewModel.loadTokens(this)
         setContent {
+            val navController = rememberNavController()
+            val isLoggedIn by authDataStore.isLoggedIn.collectAsState(initial = false) // ✅ 자동 로그인 상태 확인
+
             GANHOHOTheme {
                 Surface(
                     color = MaterialTheme.colorScheme.background
                 ) {
-                   // MainScreen()
-                    MainNavHost()
+                    NavHost(
+                        navController = navController,
+                        //startDestination = if (isLoggedIn) "main" else "login" // ✅ 자동 로그인 여부에 따라 시작 화면 결정
+                        startDestination = "main"
+                    ) {
+                        composable("login") { LoginScreen(navController, authDataStore) }
+                        composable("main") { MainScreen(navController, authDataStore) }
+                    }
                 }
             }
+
+            // 로그인 여부가 결정될 때까지 로딩 화면을 표시
+//            if (isLoggedIn == null) {
+//                // 로딩 UI를 보여줄 수 있음 (예: 스플래시 화면)
+//                return@setContent
+//            }
+//
+//            GANHOHOTheme {
+//                Surface(color = MaterialTheme.colorScheme.background) {
+//                    NavHost(
+//                        navController = navController,
+//                        startDestination = if (isLoggedIn == true) "main" else "login" // ✅ 자동 로그인 여부에 따라 시작 화면 결정
+//                    ) {
+//                        composable("login") { LoginScreen(navController, authDataStore) }
+//                        composable("main") { MainScreen(navController, authDataStore) }
+//                    }
+//                }
+//            }
         }
     }
 }
 
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
-fun MainScreen() {
+fun MainScreen(navController: NavHostController, authDataStore: AuthDataStore) {
 
     val navController = rememberNavController()
 
@@ -82,7 +118,7 @@ fun MainScreen() {
                     containerColor = Color(0xFF79C7E3),
                     shape = CircleShape,
                     modifier = Modifier
-                        .offset(x = fabOffsetX, y = (-10).dp) // FAB 이동
+                        .offset(x = fabOffsetX, y = (-13).dp) // FAB 이동
                         .size(70.dp)
                 ) {
                     Icon(
@@ -175,5 +211,9 @@ fun calculateFabOffset(currentRoute: String, itemWidth: Dp): Dp {
 @Preview(showBackground = true)
 @Composable
 fun MainActivityPreview() {
-    MainScreen()
+    val navController = rememberNavController()
+    val context = LocalContext.current
+    val authDataStore = AuthDataStore(context)
+
+    MainScreen(navController, authDataStore)
 }

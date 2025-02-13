@@ -14,25 +14,23 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.ssafy.ganhoho.R
 
 @Composable
-fun CustomBottomNavigation(navController: NavController) {
+fun CustomBottomNavigation(navController: NavController, modifier: Modifier = Modifier) {
+    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
-    // 리소스를 명확히 선언하여 수정
     val items = listOf(
         Pair("work", R.drawable.nav_work),
         Pair("pill", R.drawable.nav_pill),
@@ -41,27 +39,16 @@ fun CustomBottomNavigation(navController: NavController) {
         Pair("friend", R.drawable.nav_friend)
     )
 
-    val currentRoute = navController.currentBackStackEntryAsState().value
-
     Row(
-        modifier = Modifier
+        modifier = modifier
+            .fillMaxWidth()
             .background(Color.White)
-            .fillMaxWidth(),
+            .padding(vertical = 8.dp),  // 간격 추가
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
         items.forEach { (route, icon) ->
-
-            when (route) {
-                "work" -> stringResource(id = R.string.nav_work)
-                "pill" -> stringResource(id = R.string.nav_pill)
-                "home" -> stringResource(id = R.string.nav_home)
-                "group" -> stringResource(id = R.string.nav_group)
-                "friend" -> stringResource(id = R.string.nav_friend)
-                else -> route
-            }
-
-            val isSelected = currentRoute?.destination?.route == route
+            val isSelected = currentRoute?.startsWith(route) == true  // 동적 라우트 고려
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -70,14 +57,9 @@ fun CustomBottomNavigation(navController: NavController) {
                     .padding(horizontal = 8.dp)
                     .weight(1f)
                     .clickable {
-                        if (!isSelected) {  // 클릭된 목적지가 현재 경로와 다를때만 실행(중복 클릭 방지)
+                        if (!isSelected) {
                             navController.navigate(route) {
-                                // 시작 화면으로 돌아가는 경로 저장
-                                // 시작 화면 자체는 제거하지 않고, 그위의 스택만 제거
                                 popUpTo(navController.graph.startDestinationId) { inclusive = false }
-                                
-                                // 스택의 맨 위에 현재 화면이 있는 경우, 재생성 하지 않음
-                                // 중복된 화면 인스턴스 방지
                                 launchSingleTop = true
                             }
                         }
@@ -86,21 +68,27 @@ fun CustomBottomNavigation(navController: NavController) {
                 Icon(
                     painter = painterResource(id = icon),
                     contentDescription = route,
-                    tint = if (isSelected) Color.White else Color.Gray,
+                    tint = Color.Gray,  // 선택된 아이콘 색상 수정
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = route.uppercase(),
                     fontSize = 12.sp,
-                    color = if (isSelected) Color.White else Color.Gray
+                    color =  Color.Gray  // 가독성 향상
                 )
             }
-
         }
-
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+fun BottomNavPreview() {
+    val navController = rememberNavController()
+    CustomBottomNavigation(navController, Modifier)
+}
+
 
 
 @SuppressLint("UnrememberedMutableState")
@@ -108,5 +96,5 @@ fun CustomBottomNavigation(navController: NavController) {
 @Composable
 fun BottomNav() {
     val navController = rememberNavController()
-    CustomBottomNavigation(navController)
+    CustomBottomNavigation(navController, Modifier.zIndex(0f))
 }
