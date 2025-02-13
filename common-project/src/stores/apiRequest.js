@@ -229,4 +229,15 @@ export const useApiStore = defineStore('api', () => {
     acceptInvitation,
     token,
   }
-},{ strict: false });// ✅ Pinia Persist 추가 (새로고침해도 데이터 유지)
+}, { // ✅ Pinia Persist 추가 (새로고침해도 데이터 유지)
+  persist: {
+    enabled: true,
+    strategies: [
+      {
+        key: 'schedule-store',
+        storage: localStorage,
+        paths: ['people', 'currentYear', 'currentMonth', 'isDataLoaded'] // 유지할꺼 있으믄 여기에 넣으십셔 
+      }
+    ]
+  }
+});
