@@ -26,19 +26,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.ssafy.ganhoho.BuildConfig
 import com.ssafy.ganhoho.data.model.dto.friend.FriendApproveRequest
 import com.ssafy.ganhoho.data.model.dto.friend.FriendInviteDto
+import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.FriendViewModel
 
 @Composable
@@ -46,10 +48,21 @@ fun FriendRequestList(
     friend: FriendInviteDto
 ) {
 
+    val viewModel: FriendViewModel = viewModel()
+    val authViewModel: AuthViewModel = viewModel()
+    val friendViewModel: FriendViewModel = viewModel()
+
+    // 토큰 로드하기
+    val token = authViewModel.accessToken.collectAsState().value
+    val context = LocalContext.current
+
+    LaunchedEffect(token) {
+        if (token.isNullOrEmpty()) {  // token null 일경우, load
+            authViewModel.loadTokens(context)
+        }
+    }
     var successDialog by remember { mutableStateOf(false) }
 
-    val friendViewModel: FriendViewModel = viewModel()
-    val token = BuildConfig.TOKEN
 
     // 수락 성공 시
     val friendInviteResponse = friendViewModel.friendResponse.collectAsState().value
@@ -155,11 +168,13 @@ fun FriendRequestList(
                             .padding(horizontal = 16.dp, vertical = 4.dp) // 내부 여백
                             .clickable {
                                 // 친구 요청 수락 API 호출
-                                friendViewModel.respondToFriendInvite(
-                                    token,
-                                    friend.friendRequestId,
-                                    FriendApproveRequest("ACCEPTED")
-                                )
+                                if (token != null) {
+                                    viewModel.respondToFriendInvite(
+                                        token,
+                                        friend.friendRequestId,
+                                        FriendApproveRequest("ACCEPTED")
+                                    )
+                                }
                             }
                     ) {
                         Text(
