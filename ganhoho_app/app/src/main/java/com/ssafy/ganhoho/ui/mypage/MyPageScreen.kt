@@ -18,21 +18,54 @@ import androidx.compose.material.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ssafy.ganhoho.R
+import com.ssafy.ganhoho.base.SecureDataStore
+import com.ssafy.ganhoho.data.model.response.member.MyPageResponse
+import com.ssafy.ganhoho.viewmodel.AuthViewModel
+import com.ssafy.ganhoho.viewmodel.MemberViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
-fun MyPageScreen(navController: NavController) {
+fun MyPageScreen() {
+
+    val memberViewModel: MemberViewModel = viewModel()
+    val authViewModel: AuthViewModel = viewModel()
+
+    val token = authViewModel.accessToken.collectAsState().value
+    val context = LocalContext.current
+
+
+    LaunchedEffect(token) {
+        if (token.isNullOrEmpty()) {
+            authViewModel.loadTokens(context)
+        }
+    }
+
+    LaunchedEffect(token) {
+        if (token != null) {
+            // 마이페이지 정보 불러오기
+            memberViewModel.getMyPageInfo(token)
+        }
+    }
+
+    val memberInfoState = memberViewModel.mypageInfo.collectAsState().value
+    val memberInfo = memberInfoState?.getOrNull() ?: MyPageResponse(-1, "", "", "", "")
 
     Column(
         modifier = Modifier
@@ -67,14 +100,14 @@ fun MyPageScreen(navController: NavController) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "서정후",
+                        text = memberInfo.name,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
 
                     Text(
-                        text = "@jeonghu1010",
+                        text = "@${memberInfo.loginId}",
                         fontSize = 14.sp,
                         color = Color.White,
                         modifier = Modifier.padding(top = 4.dp)
@@ -90,12 +123,14 @@ fun MyPageScreen(navController: NavController) {
                         fontSize = 14.sp,
                         color = Color.White
                     )
-                    Text(
-                        text = "싸피병원",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
+                    memberInfo.hospital?.let {
+                        Text(
+                            text = it,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
                 }
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -104,12 +139,14 @@ fun MyPageScreen(navController: NavController) {
                         fontSize = 14.sp,
                         color = Color.White
                     )
-                    Text(
-                        text = "일반병동",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
+                    memberInfo.ward?.let {
+                        Text(
+                            text = it,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
                 }
             }
         }
@@ -131,13 +168,17 @@ fun MyPageScreen(navController: NavController) {
             MenuItem(
                 icon = R.drawable.logout, // 로그아웃 아이콘
                 text = "로그아웃",
-                {}
+                onClick = { // 로그아웃 기능
+                    authViewModel.logout(context)
+                }
             )
             Spacer(modifier = Modifier.height(16.dp))
             MenuItem(
                 icon = R.drawable.unsubscribe, // 회원탈퇴 아이콘
                 text = "회원탈퇴",
-                {}
+                onClick = {
+                    // 토큰 날리기
+                }
             )
 
         }
@@ -194,6 +235,5 @@ fun MenuItem(icon: Int, text: String, onClick: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun MyPageScreenPrevier() {
-    val navController = rememberNavController()
-    MyPageScreen(navController)
+    MyPageScreen()
 }

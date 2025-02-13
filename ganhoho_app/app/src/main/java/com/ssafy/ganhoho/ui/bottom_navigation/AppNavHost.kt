@@ -24,6 +24,6 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         composable("home") { HomeScreen(navController) }
         composable("group") { GroupScreen(navController) }
         composable("friend") { FriendScreen(navController) }
-        composable("mypage") { MyPageScreen(navController) }
+        composable("mypage") { MyPageScreen() }
     }
 }
