@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import com.ssafy.ganhoho.ui.friend.FriendScreen
 import com.ssafy.ganhoho.ui.group.GroupScreen
 import com.ssafy.ganhoho.ui.home.HomeScreen
+import com.ssafy.ganhoho.ui.mypage.MyPageScreen
 import com.ssafy.ganhoho.ui.pill.PillScreen
 import com.ssafy.ganhoho.ui.work_schedule.WorkScreen
 
@@ -23,5 +24,6 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         composable("home") { HomeScreen(navController) }
         composable("group") { GroupScreen(navController) }
         composable("friend") { FriendScreen(navController) }
+        composable("mypage") { MyPageScreen(navController) }
     }
 }
