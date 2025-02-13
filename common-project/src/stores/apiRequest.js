@@ -24,11 +24,11 @@ export const useApiStore = defineStore('api', () => {
         console.log("다운됨?",isDataLoaded.value)
         return;
       }
-      const response = await axios.get(`${API_URL}/api/schedules/ocr`, {
-        //const response = await axios.get(`http://localhost:5000/schedules`, { 목데이터 api
-        headers: {
-          Authorization: `Bearer ${token.value}`,
-        },
+       const response = await axios.get(`${API_URL}/api/schedules/ocr`, {
+        //const response = await axios.get(`http://localhost:5000/schedules`, { //목데이터 api
+         headers: {
+           Authorization: `Bearer ${token.value}`,
+         },
       });
 
       if (response.status === 200) {

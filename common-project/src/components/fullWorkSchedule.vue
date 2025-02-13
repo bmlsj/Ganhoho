@@ -5,19 +5,22 @@
         <div class="year-month">
           {{ store.currentYear || defaultYear }}년 {{ store.currentMonth || defaultMonth }}월
         </div>
-        <div :class="{'overlay': tutorialStep === 1 && isFirstVisit}"></div> <!--블러처리리-->
+        <div :class="{'overlay': tutorialStep === 1 && isFirstVisit}"></div> <!-- 블러처리 -->
 
-        <p v-if="tutorialStep === 1 && isFirstVisit" class="add-schedule-text target">
-          버튼을 눌러 스케줄을<br> 추가하세요.
-        </p>
-
-        <button ref="addButton" 
-          :class="{
-            'add-button': true,
-            'tuto-button': tutorialStep === 1 && isFirstVisit,
-            'target-circle': tutorialStep === 1}"
-          @click="openGallery">+</button>
+        <div class="button-wrapper ">
+          <p v-if="tutorialStep === 1 && isFirstVisit" class="add-schedule-text target tuto-text">
+            버튼을 눌러 스케줄을<br> 추가하세요.
+          </p>
+          <button ref="addButton" 
+                  :class="{
+                    'add-button': true,
+                    'tuto-button': tutorialStep === 1 && isFirstVisit,
+                    'target-circle': tutorialStep === 1
+                  }"
+                  @click="openGallery">+</button>
+        </div>
       </div>
+
       <div class="weekdays">
         <span v-for="(day, index) in [''].concat(weekDays)" :key="index" :class="{ sunday: index === 1 }">
           {{ day }}
@@ -28,7 +31,7 @@
     <!-- 데이터가 없을 경우 -->
     <div v-if="store.people.length === 0" class="empty-state">
       <p>현재 등록된 일정이 없습니다.</p>
-      <!-- <button class="reset-button" @click="resetTutorial">튜토리얼 다시 보기</button> --><!--튜토리얼 잘 되는지 확인하기.-->
+      <!-- <button class="reset-button" @click="resetTutorial">튜토리얼 다시 보기</button> -->
     </div>
 
     <!-- 캘린더 UI -->
@@ -57,7 +60,6 @@
       </div>
     </div>
 
-
     <input
       type="file"
       ref="galleryInput"
@@ -70,7 +72,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick,onUnmounted,watchEffect } from 'vue'
+import { ref, onMounted, nextTick, onUnmounted, watchEffect } from 'vue'
 import { useApiStore } from '@/stores/apiRequest'
 
 const store = useApiStore()
@@ -86,8 +88,8 @@ const isFirstVisit = ref(localStorage.getItem('visitedFullWorkSchedule') !== 'tr
 
 const nextTutorialStep = async () => {
   if (tutorialStep.value === 1) {
-   tutorialStep.value = 2
-    localStorage.setItem('visitedFullWorkSchedule', 'true') // ✅ 화면 터치하는 순간 저장됨
+    tutorialStep.value = 2
+    localStorage.setItem('visitedFullWorkSchedule', 'true') // ✅ 화면 터치하는 순간 저장
     isFirstVisit.value = false
     await nextTick()
     document.removeEventListener('click', nextTutorialStep)
@@ -95,34 +97,19 @@ const nextTutorialStep = async () => {
 }
 
 const openGallery = () => {
-    galleryInput.value.click() // 파일 선택 대화 상자 열기
-  }
+  galleryInput.value.click() // 파일 선택 대화 상자 열기
+}
 
 // 파일 선택 처리 함수
 const handleFileSelection = async (event) => {
   const files = event.target.files
   if (files.length > 0) {
-    await store.sendImageToAPI(files[0]) // ✅ 첫 번째 선택한 파일을 API로 전송
+    await store.sendImageToAPI(files[0]) // 첫 번째 선택한 파일을 API로 전송
   }
 }
 
-// const resetTutorial = () => {튜토리얼 개발할 때 필요했음 나중에 삭제하기.
-//   // ✅ 기존 이벤트 제거 (중복 방지)
-//   document.removeEventListener('click', nextTutorialStep)
-
-//   localStorage.setItem('visitedFullWorkSchedule', 'false') // ✅ 튜토리얼 다시 시작
-//   isFirstVisit.value = true
-//   tutorialStep.value = 1
-
-//   // ✅ 튜토리얼 시작 시 이벤트 다시 등록
-//   setTimeout(() => {
-//     document.addEventListener('click', nextTutorialStep)
-//   }, 100) // **잠시 대기 후 등록 → 버튼 클릭 이벤트 무효화 방지**
-// }
-
 onMounted(async () => {
-  console.log("📢 캘린더 업데이트 실행!");
-
+  console.log("📢 캘린더 업데이트 실행!")
   // ✅ 처음 로드 시 GET 요청을 실행하지 않음
   if (store.isDataLoaded) {
     console.log("📢 기존 데이터 유지됨 → GET 요청 생략")
@@ -130,7 +117,7 @@ onMounted(async () => {
     console.log("📢 POST 요청이 먼저 실행되어야 합니다. (GET 요청 대기 중)")
   }
 
-  await nextTick(); // DOM 업데이트 후 캘린더 생성
+  await nextTick() // DOM 업데이트 후 캘린더 생성
   store.generateCalendar()
   console.log("📢 불러온 일정 데이터:", store.people)
 
@@ -140,18 +127,22 @@ onMounted(async () => {
   if (tutorialStep.value === 1 && isFirstVisit.value) {
     document.addEventListener('click', nextTutorialStep)
   }
-});
+})
 
-// ✅ Pinia store가 변경될 때마다 `isDataLoaded` 체크
+// Pinia store가 변경될 때마다 `isDataLoaded` 체크
 watchEffect(() => {
-  console.log("📢 데이터 상태 변경 감지:", store.isDataLoaded);
-});
+  console.log("📢 데이터 상태 변경 감지:", store.isDataLoaded)
+})
+
 onUnmounted(() => {
   document.removeEventListener('click', nextTutorialStep)
 })
 </script>
 
 <style scoped>
+/* ------------------------------------------- */
+/* 기본 스타일 */
+/* ------------------------------------------- */
 .calendar-wrapper {
   font-family: Arial, sans-serif;
   max-width: 100%;
@@ -181,6 +172,11 @@ onUnmounted(() => {
   font-size: 18px;
   font-weight: bold;
   margin-left: 18px;
+}
+
+.button-wrapper {
+  position: relative; 
+  display: flex; 
 }
 
 .weekdays {
@@ -249,7 +245,7 @@ onUnmounted(() => {
   line-height: 1;
 }
 
-/* Nig 일정 스타일일*/
+/* Nig 일정 스타일 */
 .schedule-box.nig {
   background-color: #DDD4cD;
 }
@@ -257,27 +253,27 @@ onUnmounted(() => {
 .schedule-box.day {
   background-color: #fff8bf;
 }
-
 /* Eve 일정 스타일 */
 .schedule-box.eve {
   background-color: #e4c7f1;
 }
-
 /* Off 일정 스타일 */
 .schedule-box.off {
   background-color: #fcd6c8;
 }
 
-.add-button {
+.add-button { 
   background-color: #dceaf7;
   font-family: 'PlusJakartaSans-SemiBold', sans-serif;
-  font-size: 14px;
+  font-size: 18px;
   border: none;
   cursor: pointer;
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  line-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-right: 10px;
 }
 
@@ -287,6 +283,8 @@ onUnmounted(() => {
   color: gray;
   margin-top: 190px;
 }
+
+/* 튜토리얼 버튼 애니메이션 */
 .tuto-button {
   width: 30px;
   height: 30px;
@@ -295,38 +293,48 @@ onUnmounted(() => {
   background-color: #dceaf7;
   padding: 10px;
   border-radius: 50%;
-  animation: dungdung 1.0s linear alternate infinite; /* 여기가 핵심 저기 1.0s에 둥둥 거리는 효과 시간? 설정이 가능해 */
+  animation: dungdung 1.0s linear alternate infinite;
+}
+.tuto-text {
+  z-index: 200;
+  animation: dungdung 1.0s linear alternate infinite;
 }
 @keyframes dungdung {
   from {
-    transform: translateY(-5px); /* 여기서 어느정도 둥둥 거릴지 조정 가능 */
+    transform: translateY(-5px);
   }
-  
   to {
-    transform: translateY(5px); /* 여기서 어느정도 둥둥 거릴지 조정 가능 */
+    transform: translateY(5px);
   }
 }
+
+/* 말풍선 텍스트 */
 .add-schedule-text {
   font-size: 12px;
   font-weight: bold;
   color: #007bff;
   background: white;
-  padding: 6px 10px;
+  
   border-radius: 8px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-  white-space: nowrap; /* ✅ 한 줄 유지 */
+  white-space: nowrap;
+  position: relative;
+  margin-right: 20px;
 }
 
 .add-schedule-text::after {
   content: "";
   position: absolute;
-  top: 50%;
-  right: -15px; /* 오른쪽 꼬리 위치 */
-  transform: translateY(-50%);
-  border-width: 8px;
-  border-style: solid;
-  border-color: transparent transparent transparent white; /* 삼각형 만들기 */
+  top: 30%;              /* 말풍선 높이의 40% 위치 (원하는 위치로 조정) */
+  right: -20px;          /* 말풍선 바깥쪽에 위치 */
+  width: 40px;
+  height: 40px;
+  background: white;     /* 말풍선 배경색과 동일 */
+  /* 아래 clip-path 경로는 예시입니다. 디자인에 따라 경로 값을 조정하세요. */
+  clip-path: path('M0,20 Q30,0 40,0 Q20,20 0,20 Z');
 }
+
+/* 튜토리얼 시 배경 블러 */
 .overlay {
   position: fixed;
   top: 0;
@@ -338,12 +346,123 @@ onUnmounted(() => {
   z-index: 100;
 }
 
+/* target 클래스 */
 .target {
   position: relative;
   z-index: 200;
   background: white;
   padding: 10px;
   border-radius: 10px;
+  margin-right: 12px;
 }
 
+.target-circle {
+  position: relative;
+  z-index: 200;
+  background: #dceaf7;
+  padding: 10px;
+  border-radius: 50%;
+}
+
+/* ------------------------------------------- */
+/* 1) 600px 이하: 글자/버튼 크기, 간격 등 축소 */
+/* ------------------------------------------- */
+@media (max-width: 600px) {
+  .calendar-wrapper {
+    padding: 8px;
+  }
+
+  .year-month {
+    font-size: 16px;
+    margin-left: 8px;
+  }
+
+  .weekdays {
+    grid-template-columns: 45px repeat(7, 1fr); /* 첫 열(이름) 폭 축소 */
+  }
+
+  .date {
+    font-size: 12px;
+  }
+
+  .person-name {
+    width: 45px;
+    font-size: 12px;
+  }
+
+  .schedule-box {
+    font-size: 11px;
+    padding: 3px 5px;
+    margin: 0 1px;
+  }
+
+  .add-button {
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+    margin-right: 6px;
+  }
+
+  .add-schedule-text {
+    font-size: 11px;
+    padding: 4px 6px;
+    margin-right: 8px;
+  }
+
+  .add-schedule-text::after {
+    right: -12px;
+    border-width: 6px;
+  }
+}
+
+/* ------------------------------------------- */
+/* 2) 400px 이하: 더 작은 해상도용 세부 조정 */
+/* ------------------------------------------- */
+@media (max-width: 400px) {
+  .calendar-wrapper {
+    padding: 6px;
+  }
+
+  .year-month {
+    font-size: 14px;
+    margin-left: 4px;
+  }
+
+  .weekdays {
+    grid-template-columns: 40px repeat(7, 1fr);
+  }
+
+  .date {
+    font-size: 11px;
+  }
+
+  .person-name {
+    width: 40px;
+    font-size: 11px;
+  }
+
+  .schedule-box {
+    font-size: 10px;
+    padding: 2px 3px;
+    margin: 0 1px;
+  }
+
+  .add-button {
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    margin-right: 4px;
+  }
+
+  .add-schedule-text {
+    font-size: 10px;
+    padding: 3px 5px;
+    margin-right: 6px;
+  }
+
+  .add-schedule-text::after {
+    right: -10px;
+    border-width: 5px;
+  }
+}
 </style>
