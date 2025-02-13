@@ -11,15 +11,26 @@ export const useApiStore = defineStore('api', () => {
   const medicineList = ref([]);
   const medicineDetail = ref({}); // 의약품 상세 정보 저장
   const isDataLoaded = ref(false);
-  const token = ref(null);
-
+  const token=ref(null);
+  // 안드로이드 환경 체크
   if (window.AndroidInterface) {
-    token.value = window.AndroidInterface.getToken();
-    console.log("안드로이드 토큰:", token.value);
-  } else {
-    token.value = localStorage.getItem("token");
-    console.log("localStorage 토큰:", token.value);
+    // 안드로이드 웹뷰 
+    try {
+      token.value = window.AndroidInterface.getToken();
+      if (token.value) {
+        localStorage.setItem("token",token.value);
+      }
+      console.log("안드로이드 토큰:",token.value);
+  } catch (e) {
+    console.error("토큰 가져오기 실패::",e);
   }
+} else if (import.meta.env.DEV) {
+  // 개발환경 일때만
+  token.value = localStorage.getItem("token");
+  console.log("개발환경 토큰:",token.value);
+} else {
+  console.warn("인증되지 않은 환경")
+}
   
   const fetchData = async () => { //전체 근무 페이지 ocr 데이터 받아오기.
     try {
@@ -92,28 +103,25 @@ export const useApiStore = defineStore('api', () => {
   };
 
   const sendImageToAPI = async (file) => {
-    console.log("API 요청 전 토큰 확인:", token.value);
-  
     const formData = new FormData();
     formData.append('ocrImg', file);
   
     try {
-      const headers = {
-        Authorization: `Bearer ${token.value}`,
-        'Content-Type': 'multipart/form-data'
-      };
-      console.log("요청 헤더:", headers);
-
       const response = await axios.post(`${API_URL}/api/schedules/ocr`, formData, {
-        headers: headers
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+          'Content-Type': 'multipart/form-data',
+        },
       });
   
       if (response.status === 200) {
         console.log('✅ 이미지 업로드 성공:', response.data);
         alert('이미지 업로드 성공!');
   
+        // ✅ POST 요청 성공 후 GET 요청 실행
         await fetchData();
   
+        // ✅ 데이터 로드 완료 상태 저장 (GET 요청 이후)
         isDataLoaded.value = true;
       } else {
         console.error('업로드 실패:', response.data);
@@ -121,8 +129,6 @@ export const useApiStore = defineStore('api', () => {
       }
     } catch (error) {
       console.error('API 요청 오류:', error);
-      console.error('에러 응답:', error.response);
-      console.error('요청 설정:', error.config);
       alert('서버 오류로 업로드 실패');
     }
   };
