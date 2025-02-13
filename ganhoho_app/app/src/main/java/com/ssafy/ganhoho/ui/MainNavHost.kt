@@ -17,7 +17,7 @@ fun MainNavHost() {
 
     NavHost(
         navController = navController,
-        startDestination = "main"
+        startDestination = "login"
     ) {
 
         // 로그인 화면
