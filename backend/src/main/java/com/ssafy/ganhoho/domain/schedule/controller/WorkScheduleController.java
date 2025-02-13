@@ -60,8 +60,8 @@ public class WorkScheduleController {
                                     "scheduleId": 1,
                                     "startDt": "2024-03-21T09:00:00",
                                     "endDt": "2024-03-21T18:00:00",
-                                    "title": "주간근무",
-                                    "color": "#FF5733",
+                                    "scheduleTitle": "주간근무",
+                                    "scheduleColor": "#FF5733",
                                     "isTimeSet": true
                                 }
                             ]
@@ -131,8 +131,8 @@ public class WorkScheduleController {
                                     "scheduleId": 1,
                                     "startDt": "2024-03-21T09:00:00",
                                     "endDt": "2024-03-21T18:00:00",
-                                    "title": "주간근무",
-                                    "color": "#FF5733",
+                                    "scheduleTitle": "주간근무",
+                                    "scheduleColor": "#FF5733",
                                     "isTimeSet": true
                                 }
                             ]
@@ -251,10 +251,10 @@ public class WorkScheduleController {
             @Parameter(description = "수정할 일정 정보", required = true,
                 schema = @Schema(example = """
                     {
-                        "title": "수정된 근무",
+                        "scheduleTitle": "수정된 근무",
                         "startDt": "2024-03-21T09:00:00",
                         "endDt": "2024-03-21T18:00:00",
-                        "color": "#FF5733",
+                        "scheduleColor": "#FF5733",
                         "isTimeSet": true
                     }
                     """))
