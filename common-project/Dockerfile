@@ -1,5 +1,5 @@
 # 1. Node.js 베이스 이미지 사용
-FROM node:lts-alpine as builder
+FROM node:lts-alpine AS build-stage
 
 # 2. 작업 디렉토리 설정
 WORKDIR /app
@@ -13,12 +13,11 @@ COPY . .
 RUN npm run build
 
 # 5. Nginx를 사용하여 빌드된 파일을 제공
-FROM nginx:alpine
-RUN rm -rf /etc/nginx/conf.d/default.conf
-COPY --from=builder /app/nginx/default.conf /etc/nginx/conf.d/default.conf
+FROM nginx:alpine AS production-stage
 
-RUN rm -rf /usr/share/nginx/html/*
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=build-stage /app/dist /usr/share/nginx/html
+
+COPY nginx.conf /etc/nginx/nginx.conf
 
 # 6. Nginx 포트 노출
 EXPOSE 80
