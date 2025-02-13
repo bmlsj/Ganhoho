@@ -3,10 +3,10 @@ package com.ssafy.ganhoho.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssafy.ganhoho.data.model.dto.group.WorkScheduleDto
-import com.ssafy.ganhoho.data.model.dto.schedule.FriendSchedule
+import com.ssafy.ganhoho.data.model.dto.schedule.FriendPublicSchedule
 import com.ssafy.ganhoho.data.model.dto.schedule.MySchedule
 import com.ssafy.ganhoho.data.model.dto.schedule.MyScheduleRequest
+import com.ssafy.ganhoho.data.model.dto.schedule.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.response.schedule.MyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.schedule.AddMyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.schedule.ScheduleUpdateResponse
@@ -43,13 +43,13 @@ class ScheduleViewModel() : ViewModel() {
     private val _deleteMyScheduleResult = MutableStateFlow<Result<ScheduleUpdateResponse>?>(null)
     val deleteMyScheduleResult: StateFlow<Result<ScheduleUpdateResponse>?> = _deleteMyScheduleResult
 
-    // 친구 스케줄 조회
-    private val _friendSchedule = MutableStateFlow<Result<List<WorkScheduleDto>>?>(null)
-    val friendSchedule: StateFlow<Result<List<WorkScheduleDto>>?> = _friendSchedule
+    // 친구 근무 스케줄 조회
+    private val _friendWorkSchedule = MutableStateFlow<Result<List<WorkScheduleDto>>?>(null)
+    val friendWorkSchedule: StateFlow<Result<List<WorkScheduleDto>>?> = _friendWorkSchedule
 
-    // 공개된 개인 스케줄 조회
-    private val _publicSchedule = MutableStateFlow<Result<List<FriendSchedule>>?>(null)
-    val publicSchedule: StateFlow<Result<List<FriendSchedule>>?> = _publicSchedule
+    // 공개된 친구 스케줄 조회
+    private val _friendPublicSchedule = MutableStateFlow<Result<List<FriendPublicSchedule>>?>(null)
+    val friendPublicSchedule: StateFlow<Result<List<FriendPublicSchedule>>?> = _friendPublicSchedule
 
 
     // 내 근무 스케줄 조회
@@ -138,16 +138,16 @@ class ScheduleViewModel() : ViewModel() {
     }
 
     // 친구 근무 스케줄 조회
-    fun getFriendSchedule(token: String, memberId: Long) {
+    fun getFriendWorkSchedule(token: String, memberId: Long) {
         viewModelScope.launch {
-            _friendSchedule.value = repository.getFriendSchedule(token, memberId)
+            _friendWorkSchedule.value = repository.getFriendSchedule(token, memberId)
         }
     }
 
     // 공개된 개인 스케줄 조회
-    fun getPublicSchedule(token: String, memberId: Long) {
+    fun getFriendPublicSchedule(token: String, memberId: Long) {
         viewModelScope.launch {
-            _publicSchedule.value = repository.getPublicSchedule(token, memberId)
+            _friendPublicSchedule.value = repository.getPublicSchedule(token, memberId)
         }
     }
 

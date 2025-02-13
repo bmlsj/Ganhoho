@@ -1,10 +1,10 @@
 package com.ssafy.ganhoho.repository
 
 import android.util.Log
-import com.ssafy.ganhoho.data.model.dto.group.WorkScheduleDto
-import com.ssafy.ganhoho.data.model.dto.schedule.FriendSchedule
+import com.ssafy.ganhoho.data.model.dto.schedule.FriendPublicSchedule
 import com.ssafy.ganhoho.data.model.dto.schedule.MySchedule
 import com.ssafy.ganhoho.data.model.dto.schedule.MyScheduleRequest
+import com.ssafy.ganhoho.data.model.dto.schedule.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.response.schedule.AddMyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.handleResponse
 import com.ssafy.ganhoho.data.model.response.schedule.MyScheduleResponse
@@ -125,7 +125,7 @@ class ScheduleRepository {
     suspend fun getPublicSchedule(
         token: String,
         memberId: Long
-    ): Result<List<FriendSchedule>> {
+    ): Result<List<FriendPublicSchedule>> {
         return try {
             val response = RetrofitUtil.scheduleService.getPublicSchedule(
                 "Bearer $token", memberId

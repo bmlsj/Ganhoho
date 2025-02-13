@@ -7,8 +7,8 @@ import com.ssafy.ganhoho.data.model.dto.friend.FriendDto
 import com.ssafy.ganhoho.data.model.dto.friend.FriendFavoriteRequest
 import com.ssafy.ganhoho.data.model.dto.friend.FriendInviteDto
 import com.ssafy.ganhoho.data.model.response.friend.FriendAddResponse
-import com.ssafy.ganhoho.data.model.response.friend.FriendPersonalResponse
-import com.ssafy.ganhoho.data.model.response.friend.FriendWorkResponse
+import com.ssafy.ganhoho.data.model.response.schedule.FriendPersonalResponse
+import com.ssafy.ganhoho.data.model.response.schedule.FriendWorkResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE

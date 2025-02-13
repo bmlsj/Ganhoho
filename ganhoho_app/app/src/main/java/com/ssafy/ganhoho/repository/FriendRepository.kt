@@ -8,11 +8,10 @@ import com.ssafy.ganhoho.data.model.dto.friend.FriendFavoriteRequest
 import com.ssafy.ganhoho.data.model.dto.friend.FriendInviteDto
 import com.ssafy.ganhoho.data.model.response.friend.FriendAddResponse
 import com.ssafy.ganhoho.data.model.response.friend.FriendApproveResponse
-import com.ssafy.ganhoho.data.model.response.friend.FriendPersonalResponse
-import com.ssafy.ganhoho.data.model.response.friend.FriendWorkResponse
+import com.ssafy.ganhoho.data.model.response.schedule.FriendPersonalResponse
+import com.ssafy.ganhoho.data.model.response.schedule.FriendWorkResponse
 import com.ssafy.ganhoho.data.model.response.handleResponse
 import com.ssafy.ganhoho.data.remote.RetrofitUtil
-import retrofit2.Response
 
 class FriendRepository {
 

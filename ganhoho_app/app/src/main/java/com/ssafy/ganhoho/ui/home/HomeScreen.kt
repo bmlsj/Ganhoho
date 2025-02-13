@@ -42,9 +42,10 @@ import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.core.CalendarDay
 import com.kizitonwose.calendar.core.OutDateStyle
 import com.kizitonwose.calendar.core.yearMonth
-import com.ssafy.ganhoho.data.model.dto.group.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.dto.schedule.MySchedule
+import com.ssafy.ganhoho.data.model.dto.schedule.WorkScheduleDto
 import com.ssafy.ganhoho.ui.BasicTopAppBar
+import com.ssafy.ganhoho.util.convertWorkScheduleToMySchedule
 import com.ssafy.ganhoho.util.parsedColor
 import com.ssafy.ganhoho.util.toLocalDate
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
@@ -391,21 +392,6 @@ fun DayContent(
 // ✅ YearMonth 확장 함수 추가 (YearMonth 비교를 쉽게 하기 위함)
 val LocalDateTime.yearMonth: YearMonth
     get() = YearMonth.of(this.year, this.month)
-
-// ✅ WorkScheduleDto를 MySchedule로 변환하여 캘린더에 표시
-fun convertWorkScheduleToMySchedule(workSchedules: List<WorkScheduleDto>): List<MySchedule> {
-    return workSchedules.map { work ->
-        MySchedule(
-            scheduleId = -1,  // 근무 일정은 임시 ID 사용
-            startDt = work.workDate.toString(),
-            endDt = work.workDate.toString(),  // 근무 일정은 당일 일정
-            scheduleTitle = work.workType,
-            scheduleColor = "#D1EEF2",  // 근무 일정 색 => 아직 결정..? 못함
-            isPublic = true,
-            isTimeSet = false
-        )
-    }
-}
 
 
 

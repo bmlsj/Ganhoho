@@ -1,9 +1,9 @@
 package com.ssafy.ganhoho.data.remote
 
-import com.ssafy.ganhoho.data.model.dto.group.WorkScheduleDto
-import com.ssafy.ganhoho.data.model.dto.schedule.FriendSchedule
+import com.ssafy.ganhoho.data.model.dto.schedule.FriendPublicSchedule
 import com.ssafy.ganhoho.data.model.dto.schedule.MySchedule
 import com.ssafy.ganhoho.data.model.dto.schedule.MyScheduleRequest
+import com.ssafy.ganhoho.data.model.dto.schedule.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.response.schedule.MyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.schedule.AddMyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.schedule.ScheduleUpdateResponse
@@ -73,6 +73,6 @@ interface ScheduleService {
     suspend fun getPublicSchedule(
         @Header("Authorization") token: String,
         @Path("memberId") memberId: Long
-    ): Response<List<FriendSchedule>>
+    ): Response<List<FriendPublicSchedule>>
 
 }

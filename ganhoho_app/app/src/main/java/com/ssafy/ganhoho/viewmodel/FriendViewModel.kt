@@ -3,7 +3,6 @@ package com.ssafy.ganhoho.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
 import com.ssafy.ganhoho.data.model.dto.friend.FriendAddRequest
 import com.ssafy.ganhoho.data.model.dto.friend.FriendApproveRequest
 import com.ssafy.ganhoho.data.model.dto.friend.FriendDto
@@ -11,8 +10,8 @@ import com.ssafy.ganhoho.data.model.dto.friend.FriendFavoriteRequest
 import com.ssafy.ganhoho.data.model.dto.friend.FriendInviteDto
 import com.ssafy.ganhoho.data.model.response.friend.FriendAddResponse
 import com.ssafy.ganhoho.data.model.response.friend.FriendApproveResponse
-import com.ssafy.ganhoho.data.model.response.friend.FriendPersonalResponse
-import com.ssafy.ganhoho.data.model.response.friend.FriendWorkResponse
+import com.ssafy.ganhoho.data.model.response.schedule.FriendPersonalResponse
+import com.ssafy.ganhoho.data.model.response.schedule.FriendWorkResponse
 import com.ssafy.ganhoho.repository.FriendRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
