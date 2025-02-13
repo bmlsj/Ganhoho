@@ -1,6 +1,7 @@
 package com.ssafy.ganhoho.repository
 
 import com.ssafy.ganhoho.data.model.dto.member.MemberDto
+import com.ssafy.ganhoho.data.model.dto.member.UpdateHospitalWardRequest
 import com.ssafy.ganhoho.data.model.response.handleResponse
 import com.ssafy.ganhoho.data.model.response.member.MyPageResponse
 import com.ssafy.ganhoho.data.remote.RetrofitUtil
@@ -23,6 +24,19 @@ class MemberRepository {
 
         return try {
             val response = RetrofitUtil.memberService.getMyPageInfo("Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // 회원 병원/병동 정보 수정
+    suspend fun updateHospitalAndWardInfo(
+        token: String,
+        request: UpdateHospitalWardRequest
+    ): Result<MyPageResponse> {
+        return try {
+            val response = RetrofitUtil.memberService.updateHospitalAndWardInfo(token, request)
             handleResponse(response)
         } catch (e: Exception) {
             Result.failure(e)
