@@ -11,6 +11,8 @@ import com.ssafy.ganhoho.data.model.dto.friend.FriendFavoriteRequest
 import com.ssafy.ganhoho.data.model.dto.friend.FriendInviteDto
 import com.ssafy.ganhoho.data.model.response.friend.FriendAddResponse
 import com.ssafy.ganhoho.data.model.response.friend.FriendApproveResponse
+import com.ssafy.ganhoho.data.model.response.friend.FriendPersonalResponse
+import com.ssafy.ganhoho.data.model.response.friend.FriendWorkResponse
 import com.ssafy.ganhoho.repository.FriendRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -53,6 +55,14 @@ class FriendViewModel() : ViewModel() {
     private val _updateFavoriteResult = MutableStateFlow<Result<Boolean>?>(null)
     val updateFavoriteResult: StateFlow<Result<Boolean>?> = _updateFavoriteResult
 
+    // 친구 근무 일정 조회
+    private val _friendWorkSchedule = MutableStateFlow<Result<FriendWorkResponse>?>(null)
+    val friendWorkSchedule: StateFlow<Result<FriendWorkResponse>?> = _friendWorkSchedule
+
+    // 친구 개인 일정 조회
+    private val _friendPersonalSchedule = MutableStateFlow<Result<FriendPersonalResponse>?>(null)
+    val friendPersonalResponse: StateFlow<Result<FriendPersonalResponse>?> = _friendPersonalSchedule
+
     // 친구 목록 조회
     fun getFriendList(token: String) {
         viewModelScope.launch {
@@ -81,7 +91,7 @@ class FriendViewModel() : ViewModel() {
     // 친구 요청 승인 및 거절
     fun respondToFriendInvite(token: String, friendId: Long, request: FriendApproveRequest) {
         viewModelScope.launch {
-           // val request = FriendApproveRequest(requestStatus = "ACCEPTED")
+            // val request = FriendApproveRequest(requestStatus = "ACCEPTED")
             val result = friendRepository.respondToFriendInvite(token, friendId, request)
 
             result.onSuccess { response ->
@@ -111,6 +121,22 @@ class FriendViewModel() : ViewModel() {
             val request = FriendFavoriteRequest(friendMemberId, isFavorite)
             val result = friendRepository.updateFriendFavorite(token, request)
             _updateFavoriteResult.value = result
+        }
+    }
+
+    // 친구 근무 일정 조회
+    fun getFriendWorkSchedule(token: String, memberId: Long) {
+        viewModelScope.launch {
+            val result = friendRepository.getFriendWorkSchedule(token, memberId)
+            _friendWorkSchedule.value = result
+        }
+    }
+
+    // 친구 개인 일정 조회
+    fun getFriendPersonalSchedule(token: String, memberId: Long) {
+        viewModelScope.launch {
+            val result = friendRepository.getFriendPersonalShedule(token, memberId)
+            _friendPersonalSchedule.value = result
         }
     }
 }
