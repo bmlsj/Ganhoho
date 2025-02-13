@@ -117,12 +117,20 @@ export const useApiStore = defineStore('api', () => {
       if (response.status === 200) {
         console.log('✅ 이미지 업로드 성공:', response.data);
         alert('이미지 업로드 성공!');
-  
+        
+        // store 리셋 및 데이터 새로고침(ocr 새로고침)
+        people.value = [];
+        calendar.value = [];
+        currentYear.value = null;
+        currentMonth.value = null;
+        isDataLoaded.value = false;
+        
+          
+        // // ✅ 데이터 로드 완료 상태 저장 (GET 요청 이후)
+        // isDataLoaded.value = true;
+        // 새 데이터 불러오기
         // ✅ POST 요청 성공 후 GET 요청 실행
         await fetchData();
-  
-        // ✅ 데이터 로드 완료 상태 저장 (GET 요청 이후)
-        isDataLoaded.value = true;
       } else {
         console.error('업로드 실패:', response.data);
         alert('업로드 실패');
@@ -241,3 +249,4 @@ export const useApiStore = defineStore('api', () => {
     ]
   }
 });
+// { strict: false });// ✅ Pinia Persist 추가 (새로고침해도 데이터 유지) (기존 코드)
