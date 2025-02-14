@@ -46,6 +46,7 @@ import com.ssafy.ganhoho.ui.theme.GANHOHOTheme
 import com.ssafy.ganhoho.util.PermissionChecker
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 class MainActivity : ComponentActivity() {
 
     private val authViewModel: AuthViewModel by viewModels()
