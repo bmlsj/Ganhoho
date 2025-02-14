@@ -1,6 +1,5 @@
 package com.ssafy.ganhoho.global.config;
 
-import java.util.Arrays;
 import java.util.Collections;
 
 import org.springframework.context.annotation.Bean;
@@ -42,7 +41,7 @@ public class ProjectSecurityConfig {
                     @Override
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                         CorsConfiguration config = new CorsConfiguration();
-                        config.setAllowedOriginPatterns(Arrays.asList("http://127.0.0.1:5173", "http://localhost:5173", "https://i12d209.p.ssafy.io"));
+                        config.setAllowedOriginPatterns(Collections.singletonList("http://127.0.0.1:5173,http://localhost:5173,https://i12d209.p.ssafy.io"));
                         config.setAllowedMethods(Collections.singletonList("*"));
                         config.setAllowedHeaders(Collections.singletonList("*"));
                         config.setMaxAge(3600L);
@@ -57,7 +56,7 @@ public class ProjectSecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs","/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(new JWTFilter(jwtUtil), BasicAuthenticationFilter.class)
-//                .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure())
+                .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure())
                 .exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler())
                         .authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
         return http.build();
