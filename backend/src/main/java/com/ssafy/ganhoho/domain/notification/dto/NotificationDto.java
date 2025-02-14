@@ -10,4 +10,6 @@ public class NotificationDto {
     private String message;
     private String title;
     private int type;
+    private String hospital;
+    private String ward;
 }

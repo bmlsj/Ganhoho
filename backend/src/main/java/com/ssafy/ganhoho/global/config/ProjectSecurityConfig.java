@@ -24,6 +24,8 @@ import com.ssafy.ganhoho.global.error.CustomBasicAuthenticationEntryPoint;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.List;
+
 @Configuration
 public class ProjectSecurityConfig {
 
@@ -35,14 +37,17 @@ public class ProjectSecurityConfig {
 
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
         http.sessionManagement(sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .cors(corsConfig -> corsConfig.configurationSource(new CorsConfigurationSource() {
                     @Override
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                         CorsConfiguration config = new CorsConfiguration();
-                        config.setAllowedOriginPatterns(Collections.singletonList("http://127.0.0.1:5173"));
-                        config.setAllowedOriginPatterns(Collections.singletonList("http://localhost:5173"));
+                        config.setAllowedOriginPatterns(List.of(
+                                "http://127.0.0.1:5173",
+                                "http://localhost:5173",
+                                "http://i12d209.p.ssafy.io",
+                                "https://i12d209.p.ssafy.io"
+                        ));
                         config.setAllowedMethods(Collections.singletonList("*"));
                         config.setAllowedHeaders(Collections.singletonList("*"));
                         config.setMaxAge(3600L);
@@ -53,7 +58,7 @@ public class ProjectSecurityConfig {
                 }))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/api/auth/**", "/error").permitAll()
+                        .requestMatchers("/api/auth/**", "/error", "/api/notifications/button-patterns").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs","/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(new JWTFilter(jwtUtil), BasicAuthenticationFilter.class)
