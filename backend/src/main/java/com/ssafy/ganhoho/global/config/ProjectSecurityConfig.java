@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.global.config;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.springframework.context.annotation.Bean;
@@ -41,7 +42,7 @@ public class ProjectSecurityConfig {
                     @Override
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                         CorsConfiguration config = new CorsConfiguration();
-                        config.setAllowedOriginPatterns(Collections.singletonList("http://127.0.0.1:5173,http://localhost:5173,https://i12d209.p.ssafy.io"));
+                        config.setAllowedOriginPatterns(Arrays.asList("http://127.0.0.1:5173", "http://localhost:5173", "https://i12d209.p.ssafy.io"));
                         config.setAllowedMethods(Collections.singletonList("*"));
                         config.setAllowedHeaders(Collections.singletonList("*"));
                         config.setMaxAge(3600L);
