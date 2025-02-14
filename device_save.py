@@ -55,7 +55,7 @@ def get_mac_address_from_bluetoothctl(device_name):
     bluetoothctl devices 명령을 실행하여, device_name의 일부(예: 첫 번째 단어)가 포함된
     장치의 MAC 주소를 파싱합니다.
     """
-    search_term = device_name.split()[0].lower()  # 예: "elecom" (첫 단어)
+    search_term = device_name.split()[0].lower()  # 예: "elecom"
     try:
         output = subprocess.check_output(["bluetoothctl", "devices"], universal_newlines=True)
         print(f"[DEBUG] bluetoothctl output:\n{output}", flush=True)
@@ -71,19 +71,24 @@ def get_mac_address_from_bluetoothctl(device_name):
         print(f"[ERROR] bluetoothctl 명령 실행 실패: {e}", flush=True)
     return None
 
-
 async def monitor_registration(device_path):
     """
     evdev를 사용하여 KEY_PLAYPAUSE 이벤트를 모니터링합니다.
     KEY_PLAYPAUSE가 2초 이상 눌리면, 자동으로 bluetoothctl을 사용하여 MAC 주소를 획득하고,
     DB에 등록합니다.
+    
+    장치가 연결되지 않은 경우, 연결될 때까지 대기합니다.
     """
     print(f"[DEBUG] monitor_registration() called with device_path: {device_path}", flush=True)
-    try:
-        dev = InputDevice(device_path)
-    except Exception as e:
-        print(f"[ERROR] 장치 열기 실패: {e}", flush=True)
-        return
+    dev = None
+    while True:
+        try:
+            dev = InputDevice(device_path)
+            print(f"[DEBUG] Registration device 열림: {device_path}", flush=True)
+            break
+        except Exception as e:
+            print(f"[ERROR] 장치 열기 실패: {e}. 등록 모드 대기 중...", flush=True)
+            await asyncio.sleep(1)
 
     print(f"🔵 등록 모드 시작: {dev.name} at {dev.path}", flush=True)
     identifier = dev.name  # evdev의 장치 이름을 identifier로 사용
@@ -117,8 +122,3 @@ async def monitor_registration(device_path):
                         else:
                             print(f"[INFO] {KEY_REGISTRATION}이 {HOLD_THRESHOLD}초 미만 눌렸으므로 등록하지 않습니다.", flush=True)
                         key_down_time.pop(key_code)
-
-if __name__ == "__main__":
-    # 실제 등록 모드로 사용할 evdev 장치 경로 (예: /dev/input/event4)
-    device_path = "/dev/input/event3"  # 환경에 맞게 수정하세요.
-    asyncio.run(monitor_registration(device_path))

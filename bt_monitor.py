@@ -27,16 +27,21 @@ RELEASE_TIMEOUT = 1.0    # 버튼 해제 타임아웃 (예: 1초 후 자동 초�
 async def monitor_btmon(alert_queue, device_path):
     """
     evdev를 사용하여 이벤트 장치에서 버튼 이벤트를 읽어오고,
-    BUTTON_MAPPING의 튜플 값에 따라 매핑된 이벤트를 처리합니다.
+    BUTTON_MAPPING의 튜플 값에 따라 매핑된 이벤트를 처리하여,
+    DB에서 등록된 기기(여기서는 device_name 기반 bed_id)를 기준으로 alert_queue에 (bed_id, text, type_value)를 전달합니다.
     
-    매 루프마다 DB에서 등록된 기기(여기서는 device_name으로 등록된 bed_id)를 조회합니다.
-    버튼 이벤트가 발생하면, (bed_id, text, type_value) 형태로 alert_queue에 전달합니다.
+    만약 device_path에 해당하는 장치가 없으면, 연결될 때까지 대기합니다.
     """
-    try:
-        dev = InputDevice(device_path)
-    except Exception as e:
-        print(f"[ERROR] 장치 열기 실패: {e}", flush=True)
-        return
+    dev = None
+    # 장치가 연결될 때까지 계속 시도합니다.
+    while True:
+        try:
+            dev = InputDevice(device_path)
+            print(f"[DEBUG] Device 열림: {device_path}", flush=True)
+            break
+        except Exception as e:
+            print(f"[ERROR] 장치 열기 실패: {e}. 리모컨 연결 대기 중...", flush=True)
+            await asyncio.sleep(1)
 
     print(f"🔵 EVDEV 모니터링 시작: {dev.name} at {dev.path}", flush=True)
     identifier = dev.name  # evdev에서는 device name을 고유 식별자로 사용
@@ -46,7 +51,7 @@ async def monitor_btmon(alert_queue, device_path):
         bed_id = get_bed_name(identifier)
         if not bed_id:
             print(f"[DEBUG] '{identifier}' 장치가 아직 DB에 등록되어 있지 않습니다. 이벤트 처리 대기...", flush=True)
-            await asyncio.sleep(1)  # 1초 대기 후 재확인
+            await asyncio.sleep(1)
             continue
         else:
             print(f"[DEBUG] 기기 등록 확인: {bed_id}", flush=True)
@@ -76,7 +81,7 @@ async def monitor_btmon(alert_queue, device_path):
                 last_event_time[key_code] = now
 
                 if key_code in BUTTON_MAPPING:
-                    # BUTTON_MAPPING의 값은 (텍스트, type_value) 튜플입니다.
+                    # BUTTON_MAPPING 값은 (텍스트, type_value) 튜플입니다.
                     text, type_value = BUTTON_MAPPING[key_code]
                     print(f"[DEBUG] 매핑된 버튼: {key_code} -> {text}, type: {type_value}", flush=True)
                     print(f"🎯 버튼 감지: {bed_id} - {text}", flush=True)

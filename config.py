@@ -5,9 +5,9 @@ DB_PATHS = {
     "devices": "devices.db"   # 기기 정보를 저장하는 DB
 }
 
-SERVER_URL = "http://i12d209.p.ssafy.io/api/notifications/button-pattens"  # 서버 URL
+SERVER_URL = "https://i12d209.p.ssafy.io/api/notifications/button-pattens"  # 서버 URL
 
-JWT_TOKEN = "액세스 키나 공개 키를 사용해보자! "
+JWT_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJtZW1iZXJJZCI6MTAsImlhdCI6MTczOTQ5Mzg2NiwiZXhwIjoxNzM5NTgwMjY2fQ.TWRoaJVitki2pbLSJ67KabiGrz1TGb1ZTNBeSgAzFuY"
 
 # evdev 리모컨 버튼 데이터 매핑: (메시지, type)
 BUTTON_MAPPING = {
@@ -17,6 +17,8 @@ BUTTON_MAPPING = {
     "KEY_VOLUMEDOWN": ("기타", 4)        # 하 (Down)
 }
 
+HOSPITAL_NAME = "보라매병원"
+WARD_NAME = "간호병동"
 
 QUEUE_CHECK_INTERVAL = 0.01  # 큐 확인 주기 (초)
 RESEND_INTERVAL = 10         # 실패 알림 재전송 주기 (초)

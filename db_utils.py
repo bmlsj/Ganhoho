@@ -24,7 +24,7 @@ def init_db():
         conn.commit()
 
     # 전송 실패 알림을 저장하는 alerts.db (FailedAlerts 테이블)
-    # 변경 사항: attempt_count (재전송 횟수)와 sent_status (Boolean, 기본값 false)
+    # alert_type 컬럼 추가 (정수형, 기본값 0)
     with get_db_connection("alerts") as conn:
         cursor = conn.cursor()
         cursor.execute("""
@@ -34,6 +34,7 @@ def init_db():
                 content TEXT NOT NULL,
                 received_time DATETIME NOT NULL,
                 attempt_count INTEGER DEFAULT 0,
+                alert_type INTEGER DEFAULT 0,
                 sent_status BOOLEAN DEFAULT 0
             );
         """)
