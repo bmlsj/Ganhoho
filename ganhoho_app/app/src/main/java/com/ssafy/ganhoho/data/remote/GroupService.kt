@@ -35,14 +35,14 @@ interface GroupService {
     ): Response<GroupInviteLinkResponse>
 
     // 그룹원 정보 전체 조회
-    @GET("api/groups/members/{groupId}")
+    @GET("groups/members/{groupId}")
     suspend fun getGroupMemberInfo(
         @Header("Authorization") token: String,
         @Path("groupId") groupId: Long
     ): Response<List<GroupMemberResponse>>
 
     // 그룹원 월별 스케쥴 조회
-    @GET("api/groups/schedules/{groupId}")
+    @GET("groups/schedules/{groupId}")
     suspend fun getEachMemberMonthlySchedule(
         @Header("Authorization") token: String,
         @Path("groupId") groupId: Long,
@@ -53,7 +53,7 @@ interface GroupService {
     @DELETE("api/groups/{groupId}")
     suspend fun leaveGroup(
         @Header("Authorization") token: String,
-        @Path("groupId") groupId: Long
+        @Path("groupId") groupId: Int
     ): Response<Boolean>
 
 

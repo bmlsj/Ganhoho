@@ -18,7 +18,7 @@ class AuthInterceptor(private val context: Context) : Interceptor {
             return chain.proceed(originalRequest)
         }
 
-        // ✅ 로그인 요청이 아닌 경우, 토큰을 가져와서 헤더에 추가
+        // 로그인 요청이 아닌 경우, 토큰을 가져와서 헤더에 추가
         val token = runBlocking { SecureDataStore.getAccessToken(context).first() }
 
         if (!token.isNullOrEmpty()) {
@@ -27,7 +27,6 @@ class AuthInterceptor(private val context: Context) : Interceptor {
             Log.d("AuthInterceptor", "Access Token is NULL!!")
         }
 
-        //url 바꾸면서 수정함
         val request = chain.request().newBuilder()
             .addHeader("Authorization", "Bearer $token")
             .addHeader("Content-Type", "application/json")

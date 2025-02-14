@@ -77,7 +77,7 @@ class GroupRepository {
     }
 
     // 그룹 탈퇴
-    suspend fun leaveGroup(token: String, groupId: Long): Result<Boolean>{
+    suspend fun leaveGroup(token: String, groupId: Int): Result<Boolean>{
         return try{
             val response = RetrofitUtil.groupService.leaveGroup("Bearer $token", groupId)
             handleResponse(response)

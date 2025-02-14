@@ -1,18 +1,20 @@
 package com.ssafy.ganhoho.ui.bottom_navigation
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.google.gson.Gson
 import com.ssafy.ganhoho.base.TokenManager
+import com.ssafy.ganhoho.data.model.dto.group.GroupDto
 import com.ssafy.ganhoho.data.repository.GroupRepository
 import com.ssafy.ganhoho.ui.friend.FriendScreen
 import com.ssafy.ganhoho.ui.group.EachGroupScreen
 import com.ssafy.ganhoho.ui.group.GroupMemberScheduleScreen
 import com.ssafy.ganhoho.ui.group.GroupScreen
-import com.ssafy.ganhoho.ui.group.getSampleGroup
 import com.ssafy.ganhoho.ui.group.getSampleMembers
 import com.ssafy.ganhoho.ui.group.getSampleSchedules
 import com.ssafy.ganhoho.ui.home.HomeScreen
@@ -20,6 +22,8 @@ import com.ssafy.ganhoho.ui.pill.PillScreen
 import com.ssafy.ganhoho.ui.work_schedule.WorkScreen
 import com.ssafy.ganhoho.viewmodel.BottomNavViewModel
 import com.ssafy.ganhoho.viewmodel.GroupViewModel
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 @Composable
 fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
@@ -55,17 +59,32 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
             )
         }
 
-        composable("EachGroupScreen/{groupId}") { backStackEntry ->
-            val groupId = backStackEntry.arguments?.getString("groupId")?.toIntOrNull()
-            if (groupId != null) {
+        composable("EachGroupScreen/{groupJson}") { backStackEntry ->
+            val groupJson = backStackEntry.arguments?.getString("groupJson")
+            val group = groupJson?.let {
+                try {
+                    val decodedJson = URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
+                    Gson().fromJson(decodedJson, GroupDto::class.java)
+                } catch (e: Exception) {
+                    Log.e("Navigation", "JSON 변환 실패: ${e.message}")
+                    null
+                }
+            }
+
+            if (group != null) {
                 EachGroupScreen(
                     navController = navController,
-                    group = getSampleGroup(groupId), // todo: 실제 데이터 연동 필요
+                    group = group,
                     groupMember = getSampleMembers(),
-                    memberSchedule = getSampleSchedules()
+                    memberSchedule = getSampleSchedules(),
+                    repository = GroupRepository(),
+                    tokenManager = TokenManager
                 )
+            } else {
+                Log.e("Navigation", "group이 null이므로 EachGroupScreen을 열 수 없음")
             }
         }
+
 
         composable("GroupMemberSchedule/{memberName}") { backStackEntry ->
             val memberName = backStackEntry.arguments?.getString("memberName") ?: "이름 없음"

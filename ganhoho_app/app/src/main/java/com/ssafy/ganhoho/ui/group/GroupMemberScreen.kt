@@ -33,16 +33,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
-import androidx.navigation.testing.TestNavHostController
+import com.ssafy.ganhoho.base.TokenManager
+import com.ssafy.ganhoho.data.model.dto.group.GroupDto
 import com.ssafy.ganhoho.data.model.response.group.GroupMemberResponse
+import com.ssafy.ganhoho.data.repository.GroupRepository
 
 @Composable
 fun GroupMemberScreen(
@@ -50,7 +50,8 @@ fun GroupMemberScreen(
     isVisible: Boolean, // 화면 표시 여부
     onClose: () -> Unit, // 사이드 메뉴 닫기
     navController: NavController,
-    onNavigateToSchedule: () -> Unit
+    onNavigateToSchedule: () -> Unit,
+    groupId: Int
 
 ) {
     var isDialogVisible by rememberSaveable { mutableStateOf(false) } // rememberSaveable로 상태 유지
@@ -149,13 +150,19 @@ fun GroupMemberScreen(
 
     // 그룹 탈퇴 다이얼로그 표시
     if (isDialogVisible) {
+        val repository = GroupRepository()
+        val tokenManager = TokenManager
+
         GroupLeaveDialog(
             isVisible = isDialogVisible,
             onConfirm = {
                 isDialogVisible = false // 확인 버튼 클릭 시 다이얼로그 닫기
             },
             onDismiss = { /* 확인을 눌러야 닫히도록 변경 (onDismiss 비활성화) */ },
-            navController = navController
+            navController = navController,
+            repository = repository,
+            tokenManager = tokenManager,
+            group = GroupDto(groupId, "그룹명", 0, 0)
         )
     }
 }
@@ -210,21 +217,22 @@ fun MemberCard(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewGroupMemberScreen() {
-    var isVisible by remember { mutableStateOf(true) } // 초기에는 보이도록 설정
-    var isDialogVisible by remember { mutableStateOf(false) }
-    val navController = TestNavHostController(LocalContext.current) // 테스트용 네비게이션 컨트롤러
-
-    Column {
-        GroupMemberScreen(
-            members = getSampleMembers(), // 샘플 데이터 사용
-            isVisible = isVisible,
-            onClose = { isVisible = false }, // 닫기 버튼 클릭 시 숨김
-            navController = navController, // 네비게이션 컨트롤러 전달
-            onNavigateToSchedule = {} // (필요에 따라 동작 추가 가능)
-        )
-
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun PreviewGroupMemberScreen() {
+//    var isVisible by remember { mutableStateOf(true) } // 초기에는 보이도록 설정
+//    var isDialogVisible by remember { mutableStateOf(false) }
+//    val navController = TestNavHostController(LocalContext.current) // 테스트용 네비게이션 컨트롤러
+//
+//    Column {
+//        GroupMemberScreen(
+//            members = getSampleMembers(), // 샘플 데이터 사용
+//            isVisible = isVisible,
+//            onClose = { isVisible = false }, // 닫기 버튼 클릭 시 숨김
+//            navController = navController, // 네비게이션 컨트롤러 전달
+//            onNavigateToSchedule = {} // (필요에 따라 동작 추가 가능),
+//
+//        )
+//
+//    }
+//}

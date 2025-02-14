@@ -34,22 +34,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
-import androidx.navigation.testing.TestNavHostController
 import com.ssafy.ganhoho.R
+import com.ssafy.ganhoho.base.TokenManager
 import com.ssafy.ganhoho.data.model.dto.group.GroupDto
 import com.ssafy.ganhoho.data.model.dto.group.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.response.group.GroupMemberResponse
 import com.ssafy.ganhoho.data.model.response.group.MemberMonthlyScheduleResponse
-import com.ssafy.ganhoho.ui.bottom_navigation.CustomBottomNavigation
+import com.ssafy.ganhoho.data.repository.GroupRepository
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.TextStyle
@@ -61,6 +59,8 @@ fun EachGroupScreen(
     group: GroupDto,
     groupMember: List<GroupMemberResponse>,
     memberSchedule: List<MemberMonthlyScheduleResponse>,
+    repository:GroupRepository,
+    tokenManager:TokenManager
 ) {
     val currentDate = LocalDate.now()
     val currentYear = currentDate.year
@@ -75,11 +75,6 @@ fun EachGroupScreen(
 
     Box(modifier = Modifier.fillMaxSize()){
         Scaffold(
-            bottomBar = {
-                if(!isMemberScreenVisible){ // 멤버 목록 표시되면 네비게이션 바 숨김
-                    CustomBottomNavigation(navController)
-                }
-            }
         ) { paddingValues ->
             Box(modifier = Modifier.fillMaxSize()) {
                 Column(
@@ -115,11 +110,12 @@ fun EachGroupScreen(
                                     modifier = Modifier
                                         .padding(bottom = 2.dp)
                                         .clickable {
-                                        if (!isMemberScreenVisible) { // ✅ 이미 열려 있으면 다시 변경하지 않음
-                                            Log.d("EachGroupScreen", "🔄 그룹원 목록 열기")
-                                            isMemberScreenVisible = true
+                                            if (!isMemberScreenVisible) { // ✅ 이미 열려 있으면 다시 변경하지 않음
+                                                Log.d("EachGroupScreen", "🔄 그룹원 목록 열기")
+                                                isMemberScreenVisible = true
+                                            }
                                         }
-                                    }
+
                                 ) {
                                     Image(
                                         painter = painterResource(R.drawable.icon_group_person),
@@ -199,7 +195,9 @@ fun EachGroupScreen(
                             adjustedSchedules.forEach { schedule ->
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.fillMaxWidth().height(32.dp)
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(32.dp)
                                 ) {
                                     Text(
                                         text = schedule.name,
@@ -282,7 +280,8 @@ fun EachGroupScreen(
                         },
 
                         navController = navController,
-                        onNavigateToSchedule = {}
+                        onNavigateToSchedule = {},
+                        groupId = group.groupId
                     )
 
                     // 다이얼로그 (그룹 탈퇴)
@@ -290,12 +289,14 @@ fun EachGroupScreen(
                         isVisible = isDialogVisible,
                         onConfirm = {
                             isDialogVisible = false // 다이얼로그 닫기
-                            // TODO: 그룹 탈퇴 로직 추가
                         },
                         onDismiss = {
                             isDialogVisible = false
                         },
-                        navController = navController
+                        navController = navController,
+                        repository = repository,
+                        tokenManager = tokenManager,
+                        group = group
                     )
                 }
             }
@@ -435,15 +436,15 @@ fun getSampleSchedules(): List<MemberMonthlyScheduleResponse> {
 }
 
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewEachGroupScreen() {
-    val navController = TestNavHostController(LocalContext.current)
-
-    EachGroupScreen(
-        navController = navController,
-        group = getSampleGroup(2),
-        groupMember = getSampleMembers(),
-        memberSchedule = getSampleSchedules(),
-    )
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun PreviewEachGroupScreen() {
+//    val navController = TestNavHostController(LocalContext.current)
+//
+//    EachGroupScreen(
+//        navController = navController,
+//        group = getSampleGroup(2),
+//        groupMember = getSampleMembers(),
+//        memberSchedule = getSampleSchedules(),
+//    )
+//}

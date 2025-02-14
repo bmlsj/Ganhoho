@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.ui.group
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.google.gson.Gson
 import com.ssafy.ganhoho.base.TokenManager
 import com.ssafy.ganhoho.data.model.response.group.GroupViewModelFactory
 import com.ssafy.ganhoho.data.repository.GroupRepository
@@ -50,18 +52,18 @@ fun GroupScreen(
     tokenManager: TokenManager
 
 ) {
+    //그룹 추가 용도
     val groupViewModel: GroupViewModel = viewModel(
         factory = GroupViewModelFactory(repository, tokenManager)
     )
 
+
     val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val coroutineScope = rememberCoroutineScope()
 
-    val friendViewModel: GroupViewModel = viewModel()
-
     // viewGroup에서 상태 가져오기
-    val groupList by friendViewModel.groupList.collectAsState()
-    val errorMessage by friendViewModel.errorMessage.collectAsState()
+    val groupList by groupViewModel.groupList.collectAsState()
+    val errorMessage by groupViewModel.errorMessage.collectAsState()
 
     // bottom sheet 관련
     var isSheetOpen by remember { mutableStateOf(false) }
@@ -69,7 +71,7 @@ fun GroupScreen(
 
     // 화면 진입 시 자동으로 그룹 목록 불러오도록 설정
     LaunchedEffect(Unit) {
-        friendViewModel.fetchGroupList()
+        groupViewModel.fetchGroupList()
     }
 
 
@@ -110,10 +112,11 @@ fun GroupScreen(
                 )
             }
 
+            // 나의 그룹 리스트 목록 출력
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 contentPadding = PaddingValues(vertical = 8.dp),
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             ) {
                 items(groupList) { group ->
                     GroupItem(
@@ -121,7 +124,12 @@ fun GroupScreen(
                         navController = navController,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(109.dp)
+                            .height(50.dp),
+                        onClick = {
+                            // 그룹 객체를 JSON 문자열로 변환 후 네비게이션 인자로 전달
+                            val groupJson = Uri.encode(Gson().toJson(group))
+                            navController.navigate("EachGroupScreen/$groupJson")
+                        }
                     )
                 }
             }

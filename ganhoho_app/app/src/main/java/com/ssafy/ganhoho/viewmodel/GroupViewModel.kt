@@ -61,6 +61,31 @@ class GroupViewModel(
     }
 
 
+    //그룹 탈퇴
+    fun leaveGroup(groupId: Int, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val token = tokenManager.getAccessToken() ?: run {
+                Log.e("GroupViewModel", "❌ No token available!")
+                onResult(false)
+                return@launch
+            }
+
+            Log.d("GroupViewModel", "🔍 그룹 탈퇴 요청: groupId=$groupId, token=$token")
+
+            val result = repository.leaveGroup(token, groupId)
+
+            result.onSuccess {
+                Log.d("GroupViewModel", "✅ 그룹 탈퇴 성공!")
+                onResult(true)
+            }.onFailure { error ->
+                Log.e("GroupViewModel", "❌ 그룹 탈퇴 실패: ${error.message}")
+                onResult(false)
+            }
+        }
+    }
+
+
+
 
 
 }

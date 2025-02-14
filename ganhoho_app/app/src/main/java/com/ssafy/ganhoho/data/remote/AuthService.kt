@@ -23,5 +23,4 @@ interface AuthService {
     // true일 때 중복, false일때 사용 가능
     @GET("api/auth/duplicate-check")
     suspend fun isUsedId(@Query("loginId") id: String): Response<Boolean>
-
 }

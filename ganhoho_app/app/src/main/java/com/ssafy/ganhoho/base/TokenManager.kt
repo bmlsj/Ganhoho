@@ -35,8 +35,6 @@ object TokenManager {
     }
 
 
-
-
     // 토큰 반환
     fun getAccessToken(): String? {
         if (!::sharedPreferences.isInitialized) {
