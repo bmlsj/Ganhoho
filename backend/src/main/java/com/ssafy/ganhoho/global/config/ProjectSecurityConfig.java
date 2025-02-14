@@ -1,7 +1,7 @@
 package com.ssafy.ganhoho.global.config;
 
 import java.util.Collections;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.password.CompromisedPasswordChecker;
@@ -31,6 +31,12 @@ public class ProjectSecurityConfig {
 
     private final JWTUtil jwtUtil;
 
+    @Value("url.https")
+    private String httpsServerUrl;
+
+    @Value("url.http")
+    private String httpServerUrl;
+
     public ProjectSecurityConfig(JWTUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
@@ -45,8 +51,8 @@ public class ProjectSecurityConfig {
                         config.setAllowedOriginPatterns(List.of(
                                 "http://127.0.0.1:5173",
                                 "http://localhost:5173",
-                                "http://i12d209.p.ssafy.io",
-                                "https://i12d209.p.ssafy.io"
+                                httpServerUrl,
+                                httpsServerUrl
                         ));
                         config.setAllowedMethods(Collections.singletonList("*"));
                         config.setAllowedHeaders(Collections.singletonList("*"));

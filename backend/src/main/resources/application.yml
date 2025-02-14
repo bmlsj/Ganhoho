@@ -50,6 +50,8 @@ server:
     session:
       timeout: 2m
 
+
+
 logging:
   pattern:
     console: "%green(%d{HH:mm:ss.SSS}) %blue(%-5level) %red([%thread]) %yellow(%logger{15}) - %msg%n"
@@ -69,3 +71,10 @@ fastapi:
 ocr:
   fastapi:
     url: http://localhost:8000  
+
+iot:
+  token: 9
+
+url:
+  https: https_address
+  http: http_address
