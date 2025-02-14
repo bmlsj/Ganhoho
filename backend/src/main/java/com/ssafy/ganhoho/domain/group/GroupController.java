@@ -5,6 +5,13 @@ import com.ssafy.ganhoho.global.auth.SecurityUtil;
 import com.ssafy.ganhoho.global.constant.ErrorCode;
 import com.ssafy.ganhoho.global.error.CustomException;
 import com.ssafy.ganhoho.global.error.ErrorResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.Response;
@@ -15,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Slf4j
+@Tag(name = "Group", description = "그룹 API")
+@SecurityRequirement(name = "bearer-jwt")
 @RestController
 @RequestMapping("/api/groups")
 @RequiredArgsConstructor
@@ -22,6 +31,14 @@ public class GroupController {
 
     private final GroupService groupService;
 
+    @Operation(summary = "그룹 생성", description = "새로운 그룹을 생성하고 생성자를 멤버로 추가")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "그룹 생성 성공",
+            content = @Content(schema = @Schema(implementation = GroupCreateResponse.class))),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 요청입니다. (JWT 토큰 누락 또는 유효하지 않을 시)"),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 회원입니다. (회원 ID가 존재하지 않을 시)"),
+            @ApiResponse(responseCode = "500", description = "서버 내부 오류가 발생했습니다. 다시 시도해주세요. (서버 오류 발생시)")
+    })
     @PostMapping
     public ResponseEntity<?> createGroup(@RequestBody GroupCreatRequest request) {
         try {
@@ -46,7 +63,14 @@ public class GroupController {
                     .body(new ErrorResponse(ErrorCode.UNAUTHORIZED));
         }
     }
-
+    @Operation(summary = "그룹 목록 조회", description = "인증된 사용자의 전체 그룹 목록 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "그룹 목록 조회 성공",
+                content = @Content(schema = @Schema(implementation = GroupListResponse.class))),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 요청입니다. (JWT 토큰 누락 또는 유효하지 않을 시)"),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 회원입니다. (회원 ID가 존재하지 않을 시)"),
+            @ApiResponse(responseCode = "500", description = "서버 내부 오류가 발생했습니다. 다시 시도해주세요. (서버 오류 발생시)")
+    })
     @GetMapping
     public ResponseEntity<?> getGroupList() {
         try {
@@ -62,6 +86,14 @@ public class GroupController {
         }
     }
 
+    @Operation(summary = "그룹 초대 링크 조회", description = "특정 그룹의 초대 링크를 조회 ( 해당 그룹 멤버만 조회 가능)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "초대 링크 조회 성공",
+            content = @Content(schema = @Schema(implementation = GroupInviteLinkResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 요청입니다. (JWT 토큰 누락 또는 유효하지 않을 시)"),
+        @ApiResponse(responseCode = "404", description = "존재하지 않는 그룹이거나 접근 권한이 없습니다. (그룹이 존재하지 않거나 해당 그룹의 멤버가 아닐 시)")
+
+    })
     @GetMapping("/link/{groupId}")
     public ResponseEntity<?> getGroupInvite(@PathVariable Long groupId) {
         try {
@@ -77,7 +109,13 @@ public class GroupController {
         }
 
     }
-
+    @Operation(summary = "그룹원 정보 전체 조회", description = "특정 그룹의 모든 멤버 정보를 조회")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "그룹원 목록 조회 성공",
+            content = @Content(schema = @Schema(implementation = GroupMemberResponse.class))),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 요청입니다. (JWT 토큰 누락 또는 유효하지 않을 시)"),
+        @ApiResponse(responseCode = "404", description = "존재하지 않는 회원이거나 그룹입니다. (회원이나 그룹을 찾을 수 없을 시)")
+    })
     @GetMapping("/members/{groupId}")
     public ResponseEntity<?> getGroupMembers(@PathVariable Long groupId) {
         try {
@@ -96,7 +134,14 @@ public class GroupController {
                     .body(new ErrorResponse(ErrorCode.UNAUTHORIZED));
         }
     }
-
+    //잘되어라!
+    @Operation(summary = "그룹 탈퇴", description = "특정 그룹에서 탈퇴")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "그룹 탈퇴 성공",
+                content = @Content(schema = @Schema(implementation = GroupLeaveResponse.class))),
+            @ApiResponse(responseCode = "401", description = "인증 되지 않은 요청입니다. (JWT 토큰 누락 또는 유효하지 않음)"),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 그룹이거나 접근 권한이 없음. (그룹이 없거나 해당 그룹의 멤버가 아닐 시)")
+    })
     @DeleteMapping("/{groupId}")
     public ResponseEntity<?> leaveGroup(@PathVariable Long groupId) {
         try {
