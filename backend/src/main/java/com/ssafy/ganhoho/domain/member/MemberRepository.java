@@ -23,5 +23,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("DELETE FROM Member member WHERE member.memberId = :memberId")
     Optional<Integer> deleteMemberByMemberId(@Param("memberId") Long memberId);
 
+    List<Member> findMembersByHospitalAndWard(String hospital, String ward);
 
 }
