@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.ui.auth
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -44,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.messaging.FirebaseMessaging
 import com.ssafy.ganhoho.R
 import com.ssafy.ganhoho.data.model.dto.member.LoginRequest
 import com.ssafy.ganhoho.ui.theme.BackgroundBlue40
@@ -78,6 +80,20 @@ fun LoginScreen(navController: NavController) {
             Toast.makeText(context, "로그인 실패: ${error.message}", Toast.LENGTH_SHORT).show()
         }
     }
+
+    // fcm 토큰 로그인 요청에 넣기
+    val fcmToken = remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                fcmToken.value = task.result
+            } else {
+                fcmToken.value = null
+            }
+        }
+    }
+
 
     Column(
         modifier = Modifier
@@ -216,8 +232,11 @@ fun LoginScreen(navController: NavController) {
                 // Sign In 버튼
                 Button(
                     onClick = {
+
                         // ✅ 로그인 완료 후 MainScreen으로 이동
-                        val loginResult = LoginRequest(id.value, password.value)
+                        val fcmTokenCheck = fcmToken.value ?: ""  // 토큰이 빈 값일 때
+                        val loginResult = LoginRequest(id.value, password.value, fcmTokenCheck)
+                        Log.d("fcmToken", "LoginScreen: $loginResult")
                         authViewModel.login(loginResult, context)
 
                     },
