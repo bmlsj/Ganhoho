@@ -1,10 +1,7 @@
 package com.ssafy.ganhoho.global.config;
 
-import com.ssafy.ganhoho.global.auth.jwt.JWTFilter;
-import com.ssafy.ganhoho.global.auth.jwt.JWTUtil;
-import com.ssafy.ganhoho.global.error.CustomAccessDeniedHandler;
-import com.ssafy.ganhoho.global.error.CustomBasicAuthenticationEntryPoint;
-import jakarta.servlet.http.HttpServletRequest;
+import java.util.Collections;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.password.CompromisedPasswordChecker;
@@ -20,7 +17,12 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-import java.util.Collections;
+import com.ssafy.ganhoho.global.auth.jwt.JWTFilter;
+import com.ssafy.ganhoho.global.auth.jwt.JWTUtil;
+import com.ssafy.ganhoho.global.error.CustomAccessDeniedHandler;
+import com.ssafy.ganhoho.global.error.CustomBasicAuthenticationEntryPoint;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @Configuration
 public class ProjectSecurityConfig {
@@ -40,6 +42,7 @@ public class ProjectSecurityConfig {
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                         CorsConfiguration config = new CorsConfiguration();
                         config.setAllowedOriginPatterns(Collections.singletonList("http://127.0.0.1:5173"));
+                        config.setAllowedOriginPatterns(Collections.singletonList("http://localhost:5173"));
                         config.setAllowedMethods(Collections.singletonList("*"));
                         config.setAllowedHeaders(Collections.singletonList("*"));
                         config.setMaxAge(3600L);

@@ -1,20 +1,26 @@
 package com.ssafy.ganhoho.domain.schedule.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.ssafy.ganhoho.domain.schedule.entity.OCRSchedule;
 import com.ssafy.ganhoho.domain.schedule.service.OCRScheduleService;
 import com.ssafy.ganhoho.global.auth.SecurityUtil;
 import com.ssafy.ganhoho.global.constant.ErrorCode;
 import com.ssafy.ganhoho.global.error.CustomException;
 import com.ssafy.ganhoho.global.error.ErrorResponse;
+
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @Slf4j
 @RestController
