@@ -13,6 +13,7 @@ fastapi
 uvicorn
 python-multipart
 requests
+onnxruntime
 
 # 데이터 유효성 검사 및 모델링
 pydantic
