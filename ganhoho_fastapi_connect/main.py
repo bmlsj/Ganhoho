@@ -10,10 +10,10 @@ from ocr_service.app.api.routes import ocr
 app = FastAPI(title="Ganhoho Combined API")
 
 # OCR 서비스 라우터 추가
-app.include_router(ocr.router, prefix="/api/schedules", tags=["OCR"])
+app.include_router(ocr.router, prefix="/fastapi", tags=["OCR"])
 
 # 알약 인식 엔드포인트
-@app.post("/predict/", tags=["Pill Detection"])
+@app.post("/fastapi/", tags=["Pill Detection"])
 async def predict_pill(image: UploadFile = File(...)) -> Dict[str, Any]:
     try:
         # 1. 이미지 파일을 바이너리로 읽기
