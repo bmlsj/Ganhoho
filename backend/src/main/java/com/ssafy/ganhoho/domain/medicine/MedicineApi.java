@@ -160,7 +160,7 @@ public class MedicineApi {
             log.info("1. FastAPI 이미지 분석 시작");
             
             RestTemplate restTemplate = new RestTemplate();
-            String fastApiUrl = fastApiServerUrl + "/predict/";
+            String fastApiUrl = fastApiServerUrl + "/fastapi/";
             log.info("2. FastAPI URL: {}", fastApiUrl);
             
             ByteArrayResource imageResource = new ByteArrayResource(imageFile.getBytes()) {
