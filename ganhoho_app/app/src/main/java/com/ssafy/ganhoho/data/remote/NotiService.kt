@@ -10,7 +10,7 @@ import retrofit2.http.POST
 interface NotiService {
 
     // 알림 기록 조회
-    @GET("api/noifications")
+    @GET("api/notifications")
     suspend fun getNotifications(
         @Header("Authorization") token: String
     ) : Response<List<Notification>>
