@@ -58,7 +58,7 @@ public class AuthServiceImpl implements AuthService {
 
         if(matchPassword == true) {
             JWTToken jwtToken = jwtUtil.createTokens(member.getMemberId());
-            updateFcmToken(loginRequest.getFcmToken(), member.getMemberId());
+            if(loginRequest.getFcmToken() != null) updateFcmToken(loginRequest.getFcmToken(), member.getMemberId());
 
             return LoginResponse.builder()
                     .memberId(member.getMemberId())

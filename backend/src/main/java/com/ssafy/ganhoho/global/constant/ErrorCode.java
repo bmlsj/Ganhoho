@@ -22,6 +22,7 @@ public enum ErrorCode {
     EXPIRED_ACCESS_TOKEN("액세스 토큰이 만료되었습니다.", HttpStatus.UNAUTHORIZED),
     EXPIRED_REFRESH_TOKEN("리프레시 토큰이 만료되었습니다.", HttpStatus.UNAUTHORIZED),
     INVALID_FCM_TOKEN("유효하지 않은 fcm 토큰입니다", HttpStatus.UNAUTHORIZED),
+    INVALID_PI_TOKEN("유효하지 않은 pi 토큰입니다", HttpStatus.UNAUTHORIZED),
 
     // 403 FORBIDDEN
     ACCES_DENIED("접근 권한이 없습니다.", HttpStatus.FORBIDDEN),

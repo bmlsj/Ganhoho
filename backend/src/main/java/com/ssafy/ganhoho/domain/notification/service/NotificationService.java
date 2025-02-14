@@ -11,5 +11,5 @@ public interface NotificationService {
 
     List<NotificationDto> getNotifications(Long memberId);
 
-    void sendNotification(Long memberId, NotificationDto notificationSendRequestBody);
+    void sendNotification(NotificationDto notificationSendRequestBody);
 }

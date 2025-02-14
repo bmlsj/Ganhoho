@@ -3,6 +3,8 @@ package com.ssafy.ganhoho.domain.notification;
 import com.ssafy.ganhoho.domain.notification.dto.NotificationDto;
 import com.ssafy.ganhoho.domain.notification.dto.NotificationSubscribeRequestBody;
 import com.ssafy.ganhoho.domain.notification.service.NotificationService;
+import com.ssafy.ganhoho.global.constant.ErrorCode;
+import com.ssafy.ganhoho.global.error.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -27,10 +29,11 @@ public class NotificationController {
         notificationService.changeSubscription(memberId, notificationSubscribeRequestBody.getIsSubscribed());
     }
 
-    @PostMapping("/button-pattens")
-    public void sendNotification(@RequestBody NotificationDto notificationDto) {
-        Long memberId = getCurrentMemberId();
-        notificationService.sendNotification(memberId, notificationDto);
+    @PostMapping("/button-patterns")
+    public void sendNotification(@RequestHeader("Authorization") String data, @RequestBody NotificationDto notificationDto) {
+        log.info("button patterns access");
+        if(data.equals("*3Z.1}O~}YgSaSj") == false) throw new CustomException(ErrorCode.INVALID_PI_TOKEN);
+        notificationService.sendNotification(notificationDto);
     }
 
     @GetMapping

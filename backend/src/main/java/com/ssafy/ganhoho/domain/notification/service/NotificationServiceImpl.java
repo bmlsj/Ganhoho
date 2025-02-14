@@ -75,21 +75,22 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void sendNotification(Long memberId, NotificationDto notificationSendRequestBody) {
-        Member member = memberRepository.findByMemberId(memberId).orElseThrow(() -> new CustomException(ErrorCode.MISSING_REQUIRED_USER_DATA));
-        String notificationKeyName = makeNotificationKeyName(member.getHospital(), member.getWard());
+    public void sendNotification(NotificationDto notificationSendRequestBody) {
+        String notificationKeyName = makeNotificationKeyName(notificationSendRequestBody.getHospital(), notificationSendRequestBody.getWard());
         DeviceGroup deviceGroup = deviceGroupRepository.findByNotificationKeyName(notificationKeyName);
         if(deviceGroup == null) throw new CustomException(ErrorCode.NOT_EXIST_DEVICE_GROUP);
-
+        List<Member> members = memberRepository.findMembersByHospitalAndWard(notificationSendRequestBody.getHospital(), notificationSendRequestBody.getWard());
         sendFcmToServer(deviceGroup.getNotificationKey(), notificationSendRequestBody.getTitle(), notificationSendRequestBody.getMessage());
+        for (Member member : members) {
+            Notification notification = Notification.builder()
+                    .type(notificationSendRequestBody.getType())
+                    .message(notificationSendRequestBody.getMessage())
+                    .title(notificationSendRequestBody.getTitle())
+                    .memberId(member.getMemberId())
+                    .build();
+            notificationRepository.save(notification);
+        }
 
-        Notification notification = Notification.builder()
-                .type(notificationSendRequestBody.getType())
-                .message(notificationSendRequestBody.getMessage())
-                .title(notificationSendRequestBody.getTitle())
-                .memberId(memberId)
-                .build();
-        notificationRepository.save(notification);
     }
 
     private void manageDeviceGroup(String notificationKey, String notificationKeyName, String message) { // 기기그룹에 토큰 추가하기
