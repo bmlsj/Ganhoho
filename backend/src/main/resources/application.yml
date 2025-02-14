@@ -6,7 +6,7 @@ spring:
   application:
     name: Ganhoho
   datasource:
-    url: jdbc:mysql://localhost:3306/ganhoho?serverTimezone=UTC&useSSL=false
+    url: jdbc:mysql://localhost:3306/ganhoho?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
     username: d209
     password: d209
   servlet:

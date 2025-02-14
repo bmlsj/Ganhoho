@@ -61,7 +61,7 @@ public class OCRScheduleServiceImpl implements OCRScheduleService {
 
             //FastAPI 서버로 이미지 전송
             RestTemplate restTemplate = new RestTemplate();
-            String url = fastApiUrl + "/api/schedules/ocr";
+            String url = fastApiUrl + "/fastapi/ocr";
             log.info("FastAPI 서버 요청: {}", url);
 
             // 이미지 파일 변환
