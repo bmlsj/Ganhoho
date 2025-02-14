@@ -17,6 +17,7 @@ onnxruntime
 
 # 데이터 유효성 검사 및 모델링
 pydantic
+pydantic-settings
 
 # 환경 변수 관리
 python-dotenv
@@ -24,4 +25,3 @@ PyYAML
 
 # Google Cloud Vision API
 google-cloud-vision
-
