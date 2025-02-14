@@ -9,5 +9,6 @@ class Settings(BaseSettings):
         env_file_encoding = "utf-8"
         # 환경 변수 이름 매핑
         env_prefix = "CLOVA_OCR_"
+        extra = "allow"
 
 settings = Settings()
