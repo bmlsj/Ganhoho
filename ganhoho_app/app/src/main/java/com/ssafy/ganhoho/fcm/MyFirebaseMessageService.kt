@@ -1,11 +1,17 @@
 package com.ssafy.ganhoho.fcm
 
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
+import android.os.Build
 import android.util.Log
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Create
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.ssafy.ganhoho.R
 
 private const val TAG = "MyFirebaseMsgSvc"
 
@@ -23,7 +29,6 @@ class MyFirebaseMessageService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         var messageTitle = ""
         var messageContent = ""
-        var messageChannel = ""
 
         Log.d("remoteMessage", remoteMessage.toString())
         // Notification이 있는 경우 (Foreground 처리)
@@ -39,45 +44,38 @@ class MyFirebaseMessageService : FirebaseMessagingService() {
         }
 
         // 알림 생성 및 표시
-        createNotification(messageChannel, messageTitle, messageContent)
+        createNotification(messageTitle, messageContent)
 
         // 서버에 알림 저장
         //  saveNotificationToServer(messageTitle, messageContent, messageChannel)
 
     }
 
-    private fun createNotification(channel: String, title: String, content: String) {
-//          val intent = Intent(this, NotificationActivity::class.java).apply {
-//              flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-//              putExtra("channel", channel) // 필요한 데이터 전달
-//              Log.d(TAG, "createNotification: $channel")
-//          }
-
-//          val mainPendingIntent: PendingIntent = PendingIntent.getActivity(
-//              this, 0,
-//              intent, PendingIntent.FLAG_IMMUTABLE
-//          )
-
-        // 아이콘 설정
-//          val smallIcon = when (channel) {
-//              MainActivity.DELIVERY_CHANNEL -> R.drawable.notification_notice_ib // 배송 채널 아이콘
-//              MainActivity.BROAD_CHANNEL -> R.drawable.notification_notice_ib // 일반 알림 채널 아이콘
-//              else -> R.drawable.notification_notice_ib // 기본 아이콘
-//
-//
-//          }
-
-        val builder = NotificationCompat.Builder(
-            this,
-            "default"
-        )
-            .setContentTitle(title)
-            .setContentText(content)
-            .setAutoCancel(true)
-
-        val notificationManager: NotificationManager =
+    private fun createNotification(title: String, message: String) {
+        val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
+
+        // 알림 채널 설정 (Android 8.0 이상 필수)
+        val channel = NotificationChannel(
+            "default",
+            "기본 알림",
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            description = "앱 기본 푸시 알림"
+        }
+        notificationManager.createNotificationChannel(channel)
+
+        // 🔹 작은 아이콘 설정 (이 아이콘이 없으면 앱이 크래시 발생!)
+        val smallIcon = R.drawable.icon_notification // 🚨 여기에 작은 아이콘을 설정해야 함!
+
+        val notificationBuilder = NotificationCompat.Builder(this, "default")
+            .setSmallIcon(smallIcon)  // 🔥 작은 아이콘 추가 (필수)
+            .setContentTitle(title)
+            .setContentText(message)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+
+        notificationManager.notify(0, notificationBuilder.build())
     }
 
     //      private fun saveNotificationToServer(title: String, content: String, c

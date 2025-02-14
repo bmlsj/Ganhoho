@@ -9,7 +9,7 @@ class RetrofitUtil {
         val authService = ApplicationClass.retrofit.create(AuthService::class.java)
         val friendService = ApplicationClass.retrofit.create(FriendService::class.java)
         val memberService = ApplicationClass.retrofit.create(MemberService::class.java)
-
+        val notiService = ApplicationClass.retrofit.create(NotiService::class.java)
 
     }
 }

@@ -2,8 +2,6 @@ package com.ssafy.ganhoho.base
 
 import android.app.Application
 import android.util.Log
-import com.google.firebase.FirebaseApp
-import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.ssafy.ganhoho.BuildConfig
