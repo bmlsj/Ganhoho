@@ -1,9 +1,10 @@
 package com.ssafy.ganhoho.domain.schedule.service;
 
-import com.ssafy.ganhoho.domain.schedule.entity.OCRSchedule;
+import java.util.List;
+
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import com.ssafy.ganhoho.domain.schedule.entity.OCRSchedule;
 
 public interface OCRScheduleService {
 
