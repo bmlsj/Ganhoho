@@ -108,4 +108,7 @@ dependencies {
     implementation ("androidx.datastore:datastore-preferences:1.1.2")
     implementation ("androidx.datastore:datastore-core:1.1.2")  // 코어 의존성 (필요 시)
 
+    // lottie
+    implementation ("com.airbnb.android:lottie-compose:6.6.2")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
 }
