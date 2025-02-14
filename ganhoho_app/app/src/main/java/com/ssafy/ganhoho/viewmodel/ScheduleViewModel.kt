@@ -9,11 +9,13 @@ import com.ssafy.ganhoho.data.model.dto.schedule.MyScheduleRequest
 import com.ssafy.ganhoho.data.model.dto.schedule.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.response.schedule.MyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.schedule.AddMyScheduleResponse
+import com.ssafy.ganhoho.data.model.response.schedule.FriendPersonalResponse
 import com.ssafy.ganhoho.data.model.response.schedule.ScheduleUpdateResponse
 import com.ssafy.ganhoho.repository.ScheduleRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlin.math.log
 
 class ScheduleViewModel() : ViewModel() {
 
@@ -48,8 +50,8 @@ class ScheduleViewModel() : ViewModel() {
     val friendWorkSchedule: StateFlow<Result<List<WorkScheduleDto>>?> = _friendWorkSchedule
 
     // 공개된 친구 스케줄 조회
-    private val _friendPublicSchedule = MutableStateFlow<Result<List<FriendPublicSchedule>>?>(null)
-    val friendPublicSchedule: StateFlow<Result<List<FriendPublicSchedule>>?> = _friendPublicSchedule
+    private val _friendPublicSchedule = MutableStateFlow<Result<FriendPersonalResponse>?>(null)
+    val friendPublicSchedule: StateFlow<Result<FriendPersonalResponse>?> = _friendPublicSchedule
 
 
     // 내 근무 스케줄 조회
@@ -140,14 +142,15 @@ class ScheduleViewModel() : ViewModel() {
     // 친구 근무 스케줄 조회
     fun getFriendWorkSchedule(token: String, memberId: Long) {
         viewModelScope.launch {
-            _friendWorkSchedule.value = repository.getFriendSchedule(token, memberId)
+            _friendWorkSchedule.value = repository.getFriendWorkSchedule(token, memberId)
         }
     }
 
     // 공개된 개인 스케줄 조회
     fun getFriendPublicSchedule(token: String, memberId: Long) {
         viewModelScope.launch {
-            _friendPublicSchedule.value = repository.getPublicSchedule(token, memberId)
+            _friendPublicSchedule.value = repository.getFriendPublicSchedule(token, memberId)
+            Log.d("friend", "getFriendPublicSchedule: ${friendPublicSchedule.value}")
         }
     }
 

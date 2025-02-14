@@ -7,6 +7,7 @@ import com.ssafy.ganhoho.data.model.dto.schedule.MyScheduleRequest
 import com.ssafy.ganhoho.data.model.dto.schedule.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.response.schedule.AddMyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.handleResponse
+import com.ssafy.ganhoho.data.model.response.schedule.FriendPersonalResponse
 import com.ssafy.ganhoho.data.model.response.schedule.MyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.schedule.ScheduleUpdateResponse
 import com.ssafy.ganhoho.data.remote.RetrofitUtil
@@ -19,7 +20,7 @@ class ScheduleRepository {
     ): Result<List<WorkScheduleDto>> {
         return try {
             val response =
-                RetrofitUtil.scheduleService.getMyWorkSchedule("Bearer $token")
+                RetrofitUtil.scheduleService.getMyWorkSchedule(token)
             handleResponse(response)
         } catch (e: Exception) {
             Result.failure(e)
@@ -51,7 +52,7 @@ class ScheduleRepository {
             val response = RetrofitUtil.scheduleService.getMySchedule(
                 "Bearer $token"
             )
-            Log.d("ScheduleViewModel", "레포지토리 응답: ${response} $token")
+            Log.d("ScheduleViewModel", "레포지토리 응답: ${response}")
             handleResponse(response)
         } catch (e: Exception) {
             Result.failure(e)
@@ -90,7 +91,6 @@ class ScheduleRepository {
     }
 
 
-
     // 개인 스케쥴 추가
     suspend fun addMySchedule(
         token: String,
@@ -107,7 +107,7 @@ class ScheduleRepository {
     }
 
     // 친구 근무 스케쥴 조회
-    suspend fun getFriendSchedule(
+    suspend fun getFriendWorkSchedule(
         token: String,
         memberId: Long
     ): Result<List<WorkScheduleDto>> {
@@ -122,10 +122,10 @@ class ScheduleRepository {
     }
 
     // 공개된 개인 스케쥴 조회
-    suspend fun getPublicSchedule(
+    suspend fun getFriendPublicSchedule(
         token: String,
         memberId: Long
-    ): Result<List<FriendPublicSchedule>> {
+    ): Result<FriendPersonalResponse> {
         return try {
             val response = RetrofitUtil.scheduleService.getPublicSchedule(
                 "Bearer $token", memberId

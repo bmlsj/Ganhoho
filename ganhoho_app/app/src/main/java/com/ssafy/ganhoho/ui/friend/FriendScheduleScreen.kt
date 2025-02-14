@@ -3,7 +3,6 @@ package com.ssafy.ganhoho.ui.friend
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,8 +40,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.kizitonwose.calendar.compose.ContentHeightMode
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
@@ -50,12 +47,10 @@ import com.kizitonwose.calendar.core.CalendarDay
 import com.kizitonwose.calendar.core.OutDateStyle
 import com.kizitonwose.calendar.core.yearMonth
 import com.ssafy.ganhoho.data.model.dto.schedule.FriendPublicSchedule
-import com.ssafy.ganhoho.data.model.dto.schedule.MySchedule
 import com.ssafy.ganhoho.data.model.dto.schedule.WorkScheduleDto
+import com.ssafy.ganhoho.data.model.dto.schedule.WorkType
 import com.ssafy.ganhoho.data.model.response.schedule.FriendPersonalResponse
-import com.ssafy.ganhoho.data.model.response.schedule.FriendWorkResponse
 import com.ssafy.ganhoho.util.convertFriendWorkScheduleToSchedule
-import com.ssafy.ganhoho.util.convertWorkScheduleToMySchedule
 import com.ssafy.ganhoho.util.parsedColor
 import com.ssafy.ganhoho.util.toLocalDate
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
@@ -70,7 +65,9 @@ import java.util.Locale
 fun FriendScheduleScreen(
     friendName: String,
     friendId: Long,  // 친구의 멤버 아이디
-    isFavorite: Boolean
+    isFavorite: Boolean,
+    publicSchedule: FriendPersonalResponse? = null, // ✅ 테스트 데이터 전달 가능
+    workSchedule: List<WorkScheduleDto> = emptyList() // ✅ 테스트 데이터 전달 가능
 ) {
 
     val currentMonth = remember { YearMonth.now() }
@@ -78,14 +75,11 @@ fun FriendScheduleScreen(
     val endMonth = remember { currentMonth.plusMonths(0) }
     val daysOfWeek = DayOfWeek.entries
 
-
-    // 📌 현재 보이는 월을 상태로 저장 (초기값: 현재 월)
     val currentMonthState = remember { mutableStateOf(YearMonth.now()) }
 
     val scheduleViewModel: ScheduleViewModel = viewModel()
     val authViewModel: AuthViewModel = viewModel()
 
-    // 토큰 로드하기
     val token = authViewModel.accessToken.collectAsState().value
     val context = LocalContext.current
 
@@ -95,29 +89,31 @@ fun FriendScheduleScreen(
         }
     }
 
-    // 친구 개인 일정 조회 리스트
-    val friendPublicScheduleState = scheduleViewModel.friendPublicSchedule.collectAsState().value
-    val friendPublicList = remember(friendPublicScheduleState) {
-        friendPublicScheduleState?.getOrNull() ?: emptyList()
-    }
-
-    // 친구 근무 스케쥴 조회
-    val friendWorkScheduleState = scheduleViewModel.friendWorkSchedule.collectAsState().value
-    val friendWorkList = friendWorkScheduleState?.getOrNull() ?: emptyList()
-
-    Log.d("friend", "FriendScheduleScreen: $friendWorkList $friendPublicList")
     LaunchedEffect(token) {
         if (token != null) {
-            // 친구 개인 일정 불러오기
+            Log.d("friend", "🚀 API 호출 시작: 친구 일정 & 근무 일정 요청 $friendId")
             scheduleViewModel.getFriendPublicSchedule(token, friendId)
-            // 친구 근무 일정 불러오기
             scheduleViewModel.getFriendWorkSchedule(token, friendId)
+        } else {
+            Log.e("friend", "🚨 토큰이 없습니다. API 호출 불가능")
         }
     }
 
-    Log.d("friend", "FriendScheduleScreen - Public Schedule: $friendPublicList")
-    Log.d("friend", "FriendScheduleScreen - Work Schedule: $friendWorkList")
+    // 📌 API에서 가져온 데이터 OR 프리뷰에서 넘긴 데이터 사용
+    val friendPublicScheduleState = scheduleViewModel.friendPublicSchedule.collectAsState().value
+    val friendWorkScheduleState = scheduleViewModel.friendWorkSchedule.collectAsState().value
 
+    val friendPublicList = remember(friendPublicScheduleState, publicSchedule) {
+        friendPublicScheduleState?.getOrNull() ?: publicSchedule
+    }
+
+    val friendWorkList = remember(friendWorkScheduleState, workSchedule) {
+        friendWorkScheduleState?.getOrNull() ?: workSchedule
+    }
+
+
+    Log.d("friend", "친구 개인 일정: $friendPublicList")
+    Log.d("friend", "친구 근무 일정: $friendWorkList")
 
     val calendarState = rememberCalendarState(
         startMonth = startMonth,
@@ -127,31 +123,19 @@ fun FriendScheduleScreen(
         outDateStyle = OutDateStyle.EndOfRow
     )
 
-    // 캘린더가 상태 변화 감지하도록 `LaunchedEffect` 추가
-    LaunchedEffect(friendPublicList, friendWorkList) {
-        Log.d("friend", "Calendar updated with new schedules!")
-    }
-
-
-
     Column(
         modifier = Modifier
             .padding(10.dp)
             .fillMaxWidth(),
     ) {
-
         Spacer(modifier = Modifier.height(10.dp))
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 friendName,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.ExtraBold
             )
-
             Spacer(modifier = Modifier.width(12.dp))
 
             // 즐겨찾기 아이콘
@@ -163,19 +147,17 @@ fun FriendScheduleScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    imageVector =
-                    Icons.Default.Star, contentDescription = "Favorite",
+                    imageVector = Icons.Default.Star,
+                    contentDescription = "Favorite",
                     tint = if (isFavorite) Color(0xffffe600) else Color.LightGray,
-                    modifier = Modifier
-                        .size(80.dp)
+                    modifier = Modifier.size(80.dp)
                 )
             }
         }
 
-        // 앱바와 헤더 사이 공간
         Spacer(modifier = Modifier.height(30.dp))
 
-        // 캘린더 헤더(2025년 02월)
+        // 캘린더 헤더
         Text(
             text = "${currentMonthState.value.year}년 ${
                 currentMonthState.value.month.getDisplayName(TextStyle.FULL, Locale.KOREA)
@@ -186,27 +168,28 @@ fun FriendScheduleScreen(
         )
 
         // 캘린더 출력
-        if (friendPublicList.isNotEmpty() || friendWorkList.isNotEmpty()) {
-            HorizontalCalendar(
-                state = calendarState,
-                dayContent = { day ->
+        HorizontalCalendar(
+            state = calendarState,
+            dayContent = { day ->
+                friendPublicList?.data?.let {
                     DayContent(
-                        friendPublicList,
+                        it,
                         friendWorkList,
                         day,
                         currentMonthState.value
                     )
-                },
-                monthHeader = {
-                    MonthHeader(daysOfWeek)
-                },
-                modifier = Modifier.fillMaxSize(),
-                contentHeightMode = ContentHeightMode.Fill,
-                contentPadding = PaddingValues(top = 10.dp, bottom = 50.dp)
-            )
-        }
+                }
+            },
+            monthHeader = {
+                MonthHeader(daysOfWeek)
+            },
+            modifier = Modifier.fillMaxSize(),
+            contentHeightMode = ContentHeightMode.Fill,
+            contentPadding = PaddingValues(top = 10.dp, bottom = 50.dp)
+        )
     }
 }
+
 
 // 요일
 @Composable
@@ -261,16 +244,19 @@ fun DayContent(
 
     // ✅ 해당 날짜의 *근무 스케줄* 필터링 (근무 일정은 무조건 당일 일정)
     val workScheduleEvents = convertedWorkSchedules.filter {
-        Log.d("friend", "Work Schedule Date: ${it.startDt.toLocalDate()}, Calendar Date: $date")
+       // Log.d("filter", "📝리스트: $date  ${it.startDt.toLocalDate()}")
         it.startDt.toLocalDate() == date
     }
 
+    // Log.d("filter", "📝 필터링된 친구일정 스케줄 리스트: $friendPublicSchedule")
     // 해당 날짜의 이벤트 필터링
-    // ✅ `LocalDateTime`을 `LocalDate`로 변환 후 비교
+    // ✅ LocalDateTime을 LocalDate로 변환 후 비교
     val matchingEvents = friendPublicSchedule.filter {
+        // Log.d("filter", "📝 필터링된 근무 스케줄 리스트: $it ${it.startDt}")
         it.startDt.toLocalDate() <= date &&
                 date <= it.endDt.toLocalDate()
     }
+    // Log.d("filter", "📝 필터링된 공개 일정 리스트: $matchingEvents")
 
     val textHeight = remember { mutableStateOf(15.dp) } // 첫날의 Text 높이를 저장
     val density = LocalDensity.current  // LocalDensity를 미리 가져오기
@@ -278,6 +264,10 @@ fun DayContent(
     // 🎯 장기 일정(이틀 이상)과 단기 일정(당일) 분리
     val longEvents = matchingEvents.filter { it.startDt != it.endDt } // 이틀 이상 지속되는 일정
     val singleEvents = matchingEvents.filter { it.startDt == it.endDt } // 당일 일정
+
+
+    // Log.d("filter", "📆 장기 일정 필터링 결과: $longEvents")
+    // Log.d("filter", "📌 단일 일정 필터링 결과: $singleEvents")
 
     // 🎯 근무 시간 다음, 장기 일정을 기간이 긴 순서대로 정렬하고, 단기 일정은 시간 순서대로 정렬
     val sortedEvents: List<FriendPublicSchedule> = workScheduleEvents +  // 근무 일정
@@ -287,12 +277,11 @@ fun DayContent(
         LocalTime.parse(it.startDt)
     }
 
+    // Log.d("friend", "Work Schedule Date: ${sortedEvents}, Calendar Date: $date")
 
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .clickable(enabled = !isOutDate) {
-            },
+            .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -311,15 +300,13 @@ fun DayContent(
         if (!isOutDate) {  // 해당 월에 속하는 날짜일 경우,
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .clickable {
-                    },
+                    .fillMaxSize(),
                 verticalArrangement = Arrangement.Top
             ) {
 
                 // 정렬된 이벤트 표시
                 sortedEvents.forEachIndexed { index, event ->
-
+                    Log.d("sortedEvent", "DayContent: ${event}")
                     val startDate = event.startDt.toLocalDate()
                     val endDate = event.endDt.toLocalDate()
 
@@ -402,7 +389,42 @@ fun DayContent(
 @Preview(showBackground = true)
 @Composable
 fun FriendScreenPreview() {
-    val navController = rememberNavController()
-    FriendScheduleScreen("서정후", -1L, true)
+    // 📌 가짜 데이터 (친구 일정)
+//    val sampleFriendPublicSchedule = listOf(
+//        FriendPublicSchedule(
+//            scheduleId = 1,
+//            startDt = "2025-02-10T09:00:00",
+//            endDt = "2025-02-10T18:00:00",
+//            scheduleTitle = "친구 일정 1",
+//            scheduleColor = "#FF5733"
+//        ),
+//        FriendPublicSchedule(
+//            scheduleId = 2,
+//            startDt = "2025-02-12T14:00:00",
+//            endDt = "2025-02-14T16:00:00",
+//            scheduleTitle = "친구 일정 2 (여러 날)",
+//            scheduleColor = "#33FF57"
+//        )
+//    )
+//
+//    // 📌 가짜 데이터 (근무 일정)
+//    val sampleFriendWorkSchedule = listOf(
+//        WorkScheduleDto(
+//            workDate = "2025-02-15",
+//            workType = WorkType.N
+//        ),
+//        WorkScheduleDto(
+//            workDate = "2025-02-18",
+//            workType = WorkType.D
+//        )
+//    )
+//
+//    // ✅ 수정한 FriendScheduleScreen에 테스트 데이터 전달!
+//    FriendScheduleScreen(
+//        friendName = "서정후",
+//        friendId = -1L,
+//        isFavorite = true,
+//        publicSchedule = sampleFriendPublicSchedule, // ✅ 친구 일정 전달
+//        workSchedule = sampleFriendWorkSchedule  // ✅ 근무 일정 전달
+//    )
 }
-

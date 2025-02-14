@@ -14,7 +14,7 @@ class AuthInterceptor(private val context: Context) : Interceptor {
         val originalRequest = chain.request()
 
         // ✅ 로그인 API 요청인 경우 `Authorization` 헤더를 추가하지 않음
-        if (originalRequest.url.encodedPath.contains("api/auth/login")) {
+        if (originalRequest.url.encodedPath.contains("api/auth")) {
             return chain.proceed(originalRequest)
         }
 
@@ -28,7 +28,6 @@ class AuthInterceptor(private val context: Context) : Interceptor {
         }
 
         val request = chain.request().newBuilder()
-            .addHeader("Authorization", "Bearer $token")
             .addHeader("Content-Type", "application/json")
             .addHeader("Accept", "application/json")
             .build()

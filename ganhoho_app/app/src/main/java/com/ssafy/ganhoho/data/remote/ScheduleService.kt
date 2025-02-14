@@ -6,6 +6,7 @@ import com.ssafy.ganhoho.data.model.dto.schedule.MyScheduleRequest
 import com.ssafy.ganhoho.data.model.dto.schedule.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.response.schedule.MyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.schedule.AddMyScheduleResponse
+import com.ssafy.ganhoho.data.model.response.schedule.FriendPersonalResponse
 import com.ssafy.ganhoho.data.model.response.schedule.ScheduleUpdateResponse
 import retrofit2.Response
 import retrofit2.http.Body
@@ -69,10 +70,10 @@ interface ScheduleService {
     ): Response<List<WorkScheduleDto>>
 
     // 공개된 개인 스케쥴 조회
-    @GET("/api/schedules/personal/{memberId}")
+    @GET("api/schedules/personal/{memberId}")
     suspend fun getPublicSchedule(
         @Header("Authorization") token: String,
         @Path("memberId") memberId: Long
-    ): Response<List<FriendPublicSchedule>>
+    ): Response<FriendPersonalResponse>
 
 }

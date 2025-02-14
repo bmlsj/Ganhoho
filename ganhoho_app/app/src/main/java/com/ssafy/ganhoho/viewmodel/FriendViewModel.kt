@@ -123,19 +123,4 @@ class FriendViewModel() : ViewModel() {
         }
     }
 
-    // 친구 근무 일정 조회
-    fun getFriendWorkSchedule(token: String, memberId: Long) {
-        viewModelScope.launch {
-            val result = friendRepository.getFriendWorkSchedule(token, memberId)
-            _friendWorkSchedule.value = result
-        }
-    }
-
-    // 친구 개인 일정 조회
-    fun getFriendPersonalSchedule(token: String, memberId: Long) {
-        viewModelScope.launch {
-            val result = friendRepository.getFriendPersonalShedule(token, memberId)
-            _friendPersonalSchedule.value = result
-        }
-    }
 }

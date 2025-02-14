@@ -86,34 +86,5 @@ class FriendRepository {
         }
     }
 
-    // 친구 근무 스케쥴 조회
-    suspend fun getFriendWorkSchedule(
-        token: String,
-        memberId: Long
-    ): Result<FriendWorkResponse> {
-        return try {
-            val response = RetrofitUtil.friendService.getFriendWorkSchedule(
-                "Bearer $token", memberId
-            )
-            handleResponse(response)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
-    // 친구의 공개된 스케쥴
-    suspend fun getFriendPersonalShedule(
-        token: String,
-        memberId: Long
-    ): Result<FriendPersonalResponse> {
-        return try {
-            val response = RetrofitUtil.friendService.getFriendPublicSchedule(
-                "Bearer $token", memberId
-            )
-            handleResponse(response)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
 
 }
