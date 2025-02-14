@@ -168,6 +168,7 @@ class AuthViewModel : ViewModel() {
             val result = authRepository.withdrawalMember(token, context)
             if (result.isSuccess) {
                 SecureDataStore.clearTokens(context)
+                _userInfo.value = null
                 _accessToken.value = null
                 _refreshToken.value = null
             }

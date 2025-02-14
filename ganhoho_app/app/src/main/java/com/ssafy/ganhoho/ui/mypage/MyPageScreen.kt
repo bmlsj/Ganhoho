@@ -183,6 +183,9 @@ fun MyPageScreen(navController: NavController) {
                 text = "회원탈퇴",
                 onClick = {
                     // 토큰 날리기
+                    if (token != null) {
+                        authViewModel.withdrawalMember(token, context)
+                    }
                 }
             )
 
