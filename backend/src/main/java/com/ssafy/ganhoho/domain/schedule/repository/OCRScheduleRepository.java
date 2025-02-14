@@ -1,13 +1,11 @@
 package com.ssafy.ganhoho.domain.schedule.repository;
 
-import java.util.List;
-
-import org.springframework.data.mongodb.repository.MongoRepository;
+import com.ssafy.ganhoho.domain.schedule.entity.OCRSchedule;
 import org.springframework.data.mongodb.repository.Query;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
-import com.ssafy.ganhoho.domain.schedule.entity.OCRSchedule;
-
+import java.util.List;
 @Repository
 public interface OCRScheduleRepository  extends MongoRepository<OCRSchedule, String> {
     // 회원 ID로 OCR 스케줄 조회
