@@ -7,6 +7,7 @@ import com.ssafy.ganhoho.global.constant.ErrorCode;
 import com.ssafy.ganhoho.global.error.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +23,9 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
+    @Value("${iot.token}")
+    private String iotToken;
+
     @PostMapping("/subscription")
     public void changeNotificationSubscription(@RequestBody NotificationSubscribeRequestBody notificationSubscribeRequestBody) {
         // 멤버의 알림 구독 여부를 변경하는 함수
@@ -31,8 +35,8 @@ public class NotificationController {
 
     @PostMapping("/button-patterns")
     public void sendNotification(@RequestHeader("Authorization") String data, @RequestBody NotificationDto notificationDto) {
-        log.info("button patterns access");
-        if(data.equals("*3Z.1}O~}YgSaSj") == false) throw new CustomException(ErrorCode.INVALID_PI_TOKEN);
+        log.info("button patterns access : {}",iotToken);
+        if(data.equals(iotToken) == false) throw new CustomException(ErrorCode.INVALID_PI_TOKEN);
         notificationService.sendNotification(notificationDto);
     }
 
