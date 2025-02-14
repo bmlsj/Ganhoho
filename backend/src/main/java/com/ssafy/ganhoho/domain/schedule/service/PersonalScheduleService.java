@@ -104,12 +104,14 @@ public class PersonalScheduleService {
 
             // 4. 기존 ScheduleDetail 업데이트
             if (!schedule.getScheduleDetails().isEmpty()) {
+                log.warn("schedule is not empty : {}",schedule.getScheduleDetails());
                 ScheduleDetail existingDetail = schedule.getScheduleDetails().get(0);
                 existingDetail.setStartDt(requestDto.getStartDt());
                 existingDetail.setEndDt(requestDto.getEndDt());
                 existingDetail.setScheduleTitle(requestDto.getScheduleTitle());
                 existingDetail.setScheduleColor(requestDto.getScheduleColor());
                 existingDetail.setIsTimeSet(requestDto.getIsTimeSet());
+
             } else {
                 // 만약 ScheduleDetail이 없다면 새로 생성
                 ScheduleDetail newDetail = ScheduleDetail.builder()
@@ -162,13 +164,18 @@ public class PersonalScheduleService {
 
     public void deletePersonalSchedule(Long scheduleId, Long memberId) {
         PersonalSchedule schedule = personalScheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new RuntimeException("Schedule not found"));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_DATA));
 
         if (!schedule.getMemberId().equals(memberId)) {
-            throw new RuntimeException("Unauthorized access");
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
 
-        personalScheduleRepository.delete(schedule);
+        try {
+            personalScheduleRepository.delete(schedule);
+        } catch (Exception e) {
+            log.error("일정 삭제 실패: {}", e.getMessage());
+            throw new CustomException(ErrorCode.SERVER_ERROR);
+        }
     }
 
     public Map<String, List<Map<String, Object>>> getPersonalSchedulesByMemberId(Long memberId) {
@@ -183,8 +190,8 @@ public class PersonalScheduleService {
                             map.put("scheduleId", schedule.getScheduleId());
                             map.put("startDt", detail.getStartDt());
                             map.put("endDt", detail.getEndDt() != null ? detail.getEndDt() : null);
-                            map.put("title", detail.getScheduleTitle());
-                            map.put("color", detail.getScheduleColor());
+                            map.put("scheduleTitle", detail.getScheduleTitle());
+                            map.put("scheduleColor", detail.getScheduleColor());
                             return map;
                         }))
                 .collect(Collectors.toList());
@@ -207,8 +214,8 @@ public class PersonalScheduleService {
                             map.put("scheduleId", schedule.getScheduleId());
                             map.put("startDt", detail.getStartDt());
                             map.put("endDt", detail.getEndDt() != null ? detail.getEndDt() : null);
-                            map.put("title", detail.getScheduleTitle());
-                            map.put("color", detail.getScheduleColor());
+                            map.put("scheduleTitle", detail.getScheduleTitle());
+                            map.put("scheduleColor", detail.getScheduleColor());
                             map.put("isPublic", detail.getIsPublic());
                             map.put("isTimeSet", detail.getIsTimeSet());
                             return map;

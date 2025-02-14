@@ -1,10 +1,7 @@
 package com.ssafy.ganhoho.global.config;
 
-import com.ssafy.ganhoho.global.auth.jwt.JWTFilter;
-import com.ssafy.ganhoho.global.auth.jwt.JWTUtil;
-import com.ssafy.ganhoho.global.error.CustomAccessDeniedHandler;
-import com.ssafy.ganhoho.global.error.CustomBasicAuthenticationEntryPoint;
-import jakarta.servlet.http.HttpServletRequest;
+import java.util.Collections;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.password.CompromisedPasswordChecker;
@@ -20,7 +17,13 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-import java.util.Collections;
+import com.ssafy.ganhoho.global.auth.jwt.JWTFilter;
+import com.ssafy.ganhoho.global.auth.jwt.JWTUtil;
+import com.ssafy.ganhoho.global.error.CustomAccessDeniedHandler;
+import com.ssafy.ganhoho.global.error.CustomBasicAuthenticationEntryPoint;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.List;
 
 @Configuration
