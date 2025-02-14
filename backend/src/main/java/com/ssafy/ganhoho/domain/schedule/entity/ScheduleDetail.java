@@ -12,6 +12,7 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class ScheduleDetail {
     //ㄴㅇㄹ
     @Id

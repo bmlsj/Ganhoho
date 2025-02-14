@@ -40,17 +40,18 @@ public class OCRScheduleServiceImpl implements OCRScheduleService {
     private final WorkScheduleService workScheduleService;
     private final AuthRepository authRepository;
 
-    @Value("${ocr.fastapi.url}")
-    private String fastApiUrl;
-
+    // FastAPI URL 주석 처리
+    // @Value("${ocr.fastapi.url}")
+    // private String fastApiUrl;
 
     @Override
     @Transactional
-    // 이미지 처리 및 스케줄 저장(결과 MongoDB, 근무 스케줄 정보 함께 저장)
     public List<OCRSchedule> processANDSaveSchedule(MultipartFile ocrImg, Long memberId) {
-        try {
+        // FastAPI 서버 비활성화 상태 알림
+        throw new CustomException(ErrorCode.SERVER_ERROR);
 
-            // 예외처리 존재하지 않는 회원일시
+        /* 기존 FastAPI 관련 코드 주석 처리
+        try {
             Member member = authRepository.findById(memberId)
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
 
@@ -60,64 +61,15 @@ public class OCRScheduleServiceImpl implements OCRScheduleService {
             //FastAPI 서버로 이미지 전송
             RestTemplate restTemplate = new RestTemplate();
             String url = fastApiUrl + "/api/schedules/ocr";
-            log.info("FastAPI 서버 요청: {}", url);
-
-            // 이미지 파일 변환
-            ByteArrayResource imageResource = new ByteArrayResource(ocrImg.getBytes()) {
-                @Override
-                public String getFilename() {
-                    return ocrImg.getOriginalFilename();
-                }
-            };
-
-            //multipart/form-data 형식 구성
-            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-            body.add("ocrImg", imageResource);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-
-            //Fast api로 전송 및 응답 수신
-            log.info("OCR 이미지 처리 요청");
-            ResponseEntity<Map> response = restTemplate.postForEntity(url, requestEntity, Map.class);
-            log.info("OCR 이미지 처리 응답 수신: {}", response.getBody());
-
-            //응답 검증
-            if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
-                throw new CustomException(ErrorCode.SERVER_ERROR); //OCR 처리중 오류 발생
-            }
-
-            // 스케줄 데이터 추출
-            List<Map<String, Object>> scheduleDataList = (List<Map<String, Object>>) response.getBody().get("data");
-            if (scheduleDataList.isEmpty()) {
-                throw new CustomException(ErrorCode.SERVER_ERROR);
-            }
-
-            // 모든 스케줄 MongoDB 저장
-            List<OCRSchedule> savedSchedules = new ArrayList<>();
-            for (Map<String, Object> scheduleData : scheduleDataList) {
-                OCRSchedule schedule = convertToOCRSchedule(scheduleData, member);
-                OCRSchedule savedSchedule = ocrScheduleRepository.save(schedule);
-                savedSchedules.add(savedSchedule);
-
-                // jwt 제공 토큰과 일치하는 회원의 이름 workSChedule에 추가
-                if (savedSchedule.getName().equals(member.getName())) {
-                    saveToWorkSchedule(savedSchedule);
-                }
-
-            }
-
-            return savedSchedules;
-
+            ...
         } catch (Exception e) {
             log.error("OCR 스케줄 처리 실패: {}", e.getMessage());
             throw new CustomException(ErrorCode.SERVER_ERROR);
         }
+        */
     }
 
-    @Override // 회원 ID와 이름으로 OCR 스케줄 조회 (추후 전체 근무줄 스케줄 조회에 사용)
+    @Override
     public List<OCRSchedule> getScheduleByMemberId(Long memberId) {
         // 회원 존재 확인
         if (!authRepository.existsById(memberId)) {
@@ -126,7 +78,7 @@ public class OCRScheduleServiceImpl implements OCRScheduleService {
         return ocrScheduleRepository.findByMemberId(memberId);
     }
 
-    //FastAPI 응답 데이터 OCRSchedule 형태로 변환
+    // 나머지 helper 메서드들은 그대로 유지
     private OCRSchedule convertToOCRSchedule(Map<String, Object> data, Member member) {
         List<Map<String, Object>> scheduleList = (List<Map<String, Object>>) data.get("schedule");
         List<OCRSchedule.ScheduleDay> scheduleDays = scheduleList.stream()
@@ -145,7 +97,6 @@ public class OCRScheduleServiceImpl implements OCRScheduleService {
                 .build();
     }
 
-    // OCR 스케줄 -> 근무 스케줄로 변환 저장
     private void saveToWorkSchedule(OCRSchedule schedule) {
         List<WorkScheduleRequestDto> workSchedules = schedule.getScheduleData().stream()
                 .map(day -> {
@@ -168,5 +119,4 @@ public class OCRScheduleServiceImpl implements OCRScheduleService {
                 .collect(Collectors.toList());
         workScheduleService.updateOrAddWorkSchedules(workSchedules, schedule.getMemberId());
     }
-
 }
