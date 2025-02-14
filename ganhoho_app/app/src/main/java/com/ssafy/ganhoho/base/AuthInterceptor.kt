@@ -27,6 +27,7 @@ class AuthInterceptor(private val context: Context) : Interceptor {
             Log.d("AuthInterceptor", "Access Token is NULL!!")
         }
 
+        //url 바꾸면서 수정함
         val request = chain.request().newBuilder()
             .addHeader("Authorization", "Bearer $token")
             .addHeader("Content-Type", "application/json")

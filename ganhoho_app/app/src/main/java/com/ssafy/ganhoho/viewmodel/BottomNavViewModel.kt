@@ -4,7 +4,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 
-class BottomNavViewModel : ViewModel() {
+open class BottomNavViewModel : ViewModel() {
     private val _isBottomNavVisible = mutableStateOf(true)
     val isBottomNavVisible: State<Boolean> = _isBottomNavVisible
 

@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.ui.group
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -60,7 +61,6 @@ fun EachGroupScreen(
     group: GroupDto,
     groupMember: List<GroupMemberResponse>,
     memberSchedule: List<MemberMonthlyScheduleResponse>,
-    onToggleBottomNav: (Boolean) -> Unit
 ) {
     val currentDate = LocalDate.now()
     val currentYear = currentDate.year
@@ -114,7 +114,12 @@ fun EachGroupScreen(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
                                         .padding(bottom = 2.dp)
-                                        .clickable { isMemberScreenVisible = true },
+                                        .clickable {
+                                        if (!isMemberScreenVisible) { // ✅ 이미 열려 있으면 다시 변경하지 않음
+                                            Log.d("EachGroupScreen", "🔄 그룹원 목록 열기")
+                                            isMemberScreenVisible = true
+                                        }
+                                    }
                                 ) {
                                     Image(
                                         painter = painterResource(R.drawable.icon_group_person),
@@ -252,11 +257,12 @@ fun EachGroupScreen(
                             .fillMaxSize()
                             .background(Color.Black.copy(alpha = backgroundAlpha))
                             .clickable {
-                                isMemberScreenVisible = false
-                                onToggleBottomNav(true) // 네비게이션 바 다시 표시
+                                if (isMemberScreenVisible) {  // 현재 열려 있을 때만 닫음
+                                    isMemberScreenVisible = false
+                                }
                             }
-                            .zIndex(1f)
                     )
+
                 }
 
 
@@ -273,7 +279,6 @@ fun EachGroupScreen(
                         isVisible = isMemberScreenVisible,
                         onClose = {
                             isMemberScreenVisible = false
-                            onToggleBottomNav(true) //네비게이션 다시 띄움
                         },
 
                         navController = navController,
@@ -289,7 +294,6 @@ fun EachGroupScreen(
                         },
                         onDismiss = {
                             isDialogVisible = false
-                            onToggleBottomNav(false)
                         },
                         navController = navController
                     )
@@ -366,14 +370,10 @@ fun getShiftColor(shift: String): Color {
 }
 
 // 샘플 데이터 생성
-fun getSampleGroup(): GroupDto {
-    return GroupDto(
-        groupId = 1,
-        groupName = "동기모임",
-        groupIconType = R.drawable.icon_profile,
-        groupMemberCount = 6
-    )
+fun getSampleGroup(groupId: Int): GroupDto {
+    return GroupDto(groupId = groupId, groupName = "그룹 $groupId", groupIconType = R.drawable.icon_profile, groupMemberCount = 6)
 }
+
 
 fun getSampleMembers(): List<GroupMemberResponse> {
     return listOf(
@@ -442,9 +442,8 @@ fun PreviewEachGroupScreen() {
 
     EachGroupScreen(
         navController = navController,
-        group = getSampleGroup(),
+        group = getSampleGroup(2),
         groupMember = getSampleMembers(),
         memberSchedule = getSampleSchedules(),
-        onToggleBottomNav = {}
     )
 }

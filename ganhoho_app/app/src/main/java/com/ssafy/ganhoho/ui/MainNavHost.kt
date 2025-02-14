@@ -9,6 +9,7 @@ import com.ssafy.ganhoho.ui.auth.AuthDataStore
 import com.ssafy.ganhoho.ui.auth.HospitalInfoScreen
 import com.ssafy.ganhoho.ui.auth.JoinScreen
 import com.ssafy.ganhoho.ui.auth.LoginScreen
+import com.ssafy.ganhoho.ui.bottom_navigation.CustomBottomNavigation
 import com.ssafy.ganhoho.ui.theme.GANHOHOTheme
 
 @Composable
@@ -28,7 +29,7 @@ fun MainNavHost(authDataStore: AuthDataStore) {
 
         // 메인 화면
         composable("main") {
-            MainScreen(navController, authDataStore)
+            CustomBottomNavigation(navController)
         }
 
         // 회원 가입 화면

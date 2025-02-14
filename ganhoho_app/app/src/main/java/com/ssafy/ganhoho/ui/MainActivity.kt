@@ -1,41 +1,23 @@
 package com.ssafy.ganhoho.ui
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.FabPosition
-import androidx.compose.material.Scaffold
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.ssafy.ganhoho.R
 import com.ssafy.ganhoho.ui.auth.AuthDataStore
 import com.ssafy.ganhoho.ui.auth.LoginScreen
-import com.ssafy.ganhoho.ui.bottom_navigation.AppNavHost
 import com.ssafy.ganhoho.ui.bottom_navigation.CustomBottomNavigation
 import com.ssafy.ganhoho.ui.theme.GANHOHOTheme
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
@@ -51,7 +33,7 @@ class MainActivity : ComponentActivity() {
         authViewModel.loadTokens(this)
         setContent {
             val navController = rememberNavController()
-            val isLoggedIn by authDataStore.isLoggedIn.collectAsState(initial = false) // ✅ 자동 로그인 상태 확인
+            val isLoggedIn by authDataStore.isLoggedIn.collectAsState(initial = false) // 자동 로그인 상태 확인
 
             GANHOHOTheme {
                 Surface(
@@ -59,11 +41,11 @@ class MainActivity : ComponentActivity() {
                 ) {
                     NavHost(
                         navController = navController,
-                        //startDestination = if (isLoggedIn) "main" else "login" // ✅ 자동 로그인 여부에 따라 시작 화면 결정
-                        startDestination = "main"
+                        startDestination = if (isLoggedIn) "main" else "login" // 자동 로그인 여부에 따라 시작 화면 결정
+                        ///startDestination = "main"
                     ) {
                         composable("login") { LoginScreen(navController, authDataStore) }
-                        composable("main") { MainScreen(navController, authDataStore) }
+                        composable("main") { CustomBottomNavigation(navController) }
                     }
                 }
             }
@@ -88,67 +70,67 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-@SuppressLint("UseOfNonLambdaOffsetOverload")
-@Composable
-fun MainScreen(navController: NavHostController, authDataStore: AuthDataStore) {
-
-    val navController = rememberNavController()
-
-    // 현재 활성화된 경로(route)를 추적
-    val currentBackStackEntry =
-        navController.currentBackStackEntryAsState().value  // currentRoute 자동 업데이트
-    val currentRoute = currentBackStackEntry?.destination?.route ?: "home"
-
-    BoxWithConstraints {
-        val screenWidth = with(LocalDensity.current) { constraints.maxWidth.toDp() }
-        val itemWidth = screenWidth / 5   // 네비게이션 버튼 5개 기준
-
-        Scaffold(
-            floatingActionButton = {
-
-                val fabOffsetX = calculateFabOffset(currentRoute, itemWidth)
-
-                FloatingActionButton(
-                    onClick = {
-                        if (currentRoute != "home") {
-                            navController.navigate("home")
-                        }
-                    },
-                    containerColor = Color(0xFF79C7E3),
-                    shape = CircleShape,
-                    modifier = Modifier
-                        .offset(x = fabOffsetX, y = (-13).dp) // FAB 이동
-                        .size(70.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(
-                            id = when (currentRoute) {
-                                "work" -> R.drawable.nav_work
-                                "pill" -> R.drawable.nav_pill
-                                "group" -> R.drawable.nav_group
-                                "friend" -> R.drawable.nav_friend
-                                else -> R.drawable.nav_home
-                            }
-                        ),
-                        contentDescription = "FAB Icon",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-
-                }
-            },
-            isFloatingActionButtonDocked = true,
-            floatingActionButtonPosition = FabPosition.Center,
-            bottomBar = {
-                CustomBottomNavigation(navController)
-            },
-        ) { innerPadding ->
-
-            AppNavHost(navController = navController, modifier = Modifier.padding(innerPadding))
-        }
-    }
-}
+//
+//@SuppressLint("UseOfNonLambdaOffsetOverload")
+//@Composable
+//fun MainScreen(navController: NavHostController, authDataStore: AuthDataStore) {
+//
+//    val navController = rememberNavController()
+//
+//    // 현재 활성화된 경로(route)를 추적
+//    val currentBackStackEntry =
+//        navController.currentBackStackEntryAsState().value  // currentRoute 자동 업데이트
+//    val currentRoute = currentBackStackEntry?.destination?.route ?: "home"
+//
+//    BoxWithConstraints {
+//        val screenWidth = with(LocalDensity.current) { constraints.maxWidth.toDp() }
+//        val itemWidth = screenWidth / 5   // 네비게이션 버튼 5개 기준
+//
+//        Scaffold(
+//            floatingActionButton = {
+//
+//                val fabOffsetX = calculateFabOffset(currentRoute, itemWidth)
+//
+//                FloatingActionButton(
+//                    onClick = {
+//                        if (currentRoute != "home") {
+//                            navController.navigate("home")
+//                        }
+//                    },
+//                    containerColor = Color(0xFF79C7E3),
+//                    shape = CircleShape,
+//                    modifier = Modifier
+//                        .offset(x = fabOffsetX, y = (-13).dp) // FAB 이동
+//                        .size(70.dp)
+//                ) {
+//                    Icon(
+//                        painter = painterResource(
+//                            id = when (currentRoute) {
+//                                "work" -> R.drawable.nav_work
+//                                "pill" -> R.drawable.nav_pill
+//                                "group" -> R.drawable.nav_group
+//                                "friend" -> R.drawable.nav_friend
+//                                else -> R.drawable.nav_home
+//                            }
+//                        ),
+//                        contentDescription = "FAB Icon",
+//                        tint = Color.White,
+//                        modifier = Modifier.size(24.dp)
+//                    )
+//
+//                }
+//            },
+//            isFloatingActionButtonDocked = true,
+//            floatingActionButtonPosition = FabPosition.Center,
+//            bottomBar = {
+//                CustomBottomNavigation(navController)
+//            },
+//        ) { innerPadding ->
+//
+//            AppNavHost(navController = navController, modifier = Modifier.padding(innerPadding))
+//        }
+//    }
+//}
 
 // ✅ Cutout 이동을 동적으로 처리
 //@SuppressLint("UnusedBoxWithConstraintsScope")
@@ -215,5 +197,5 @@ fun MainActivityPreview() {
     val context = LocalContext.current
     val authDataStore = AuthDataStore(context)
 
-    MainScreen(navController, authDataStore)
+    CustomBottomNavigation(navController = navController)
 }

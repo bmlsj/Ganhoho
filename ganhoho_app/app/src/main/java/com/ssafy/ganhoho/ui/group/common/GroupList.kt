@@ -1,18 +1,25 @@
 package com.ssafy.ganhoho.ui.group.common
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -22,7 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.ssafy.ganhoho.data.model.dto.group.GroupDto
-import com.ssafy.ganhoho.R
+import com.ssafy.ganhoho.ui.group.getGroupIconResource
 
 @Composable
 fun GroupList(
@@ -53,10 +60,12 @@ fun GroupItem(
     Card(
         modifier = Modifier
             .clickable{
-                navController.navigate("EachGroupScreen/${group.groupId}"){
-                    launchSingleTop = true
+                navController.navigate("EachGroupScreen/${group.groupId}") {
+                    popUpTo("group") { inclusive = false } // group을 백스택에서 유지
+                    launchSingleTop = true // 같은 화면으로 여러 번 이동 방지
                 }
-        }
+
+            }
             .padding(8.dp)
             .fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -84,12 +93,17 @@ fun GroupItem(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ){
-                Image(
-                    painter = painterResource(id = group.groupIconType),
-                    contentDescription = "그룹 아이콘",
-                    modifier = Modifier
-                        .size(26.dp)
-                )
+                val iconRes = getGroupIconResource(group.groupIconType)
+                if (iconRes != 0) {  // 유효한 리소스 ID인지 확인
+                    Image(
+                        painter = painterResource(id = iconRes),
+                        contentDescription = "그룹 아이콘",
+                        modifier = Modifier.size(50.dp)
+                    )
+                } else {
+                    Log.e("GroupIcon", "❌ Invalid icon resource ID for groupIconType: ${group.groupIconType}")
+                }
+
             }
 
         }
@@ -101,10 +115,10 @@ fun GroupItem(
 fun GroupListPreview() {
     val navController = rememberNavController()
     val sampleGroups = listOf(
-        GroupDto(1, "동기모임", R.drawable.emoji_hospital, 6),
-        GroupDto(2, "싸피대학교", R.drawable.emoji_school, 5),
-        GroupDto(3, "빵빵즈", R.drawable.emoji_dragon, 3),
-        GroupDto(4, "D209", R.drawable.emoji_nurse, 4),
+        GroupDto(1, "동기모임", 1, 6),
+        GroupDto(2, "싸피대학교", 2, 5),
+        GroupDto(3, "빵빵즈", 3, 3),
+        GroupDto(4, "D209", 4, 4),
 
         )
 

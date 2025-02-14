@@ -12,6 +12,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
+
 class ApplicationClass : Application() {
 
     companion object {
@@ -22,6 +23,8 @@ class ApplicationClass : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        TokenManager.init(this) // 앱 실행 시 SharedPreferences 초기화
+        Log.d("GanHohoApplication", "🚀 TokenManager 초기화됨")
 
         // sharedPreferencesUtil 초기화
         sharedPreferencesUtil = SharedPreferencesUtil(applicationContext)

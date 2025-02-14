@@ -115,4 +115,16 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
     implementation ("androidx.navigation:navigation-compose:2.4.0-alpha10") //네비게이션
 
+    // okhttp3
+    implementation("com.squareup.okhttp3:okhttp")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+
+    // datastore
+    implementation ("androidx.datastore:datastore-preferences:1.1.2")
+    implementation ("androidx.datastore:datastore-core:1.1.2")  // 코어 의존성 (필요 시)
+
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+    implementation ("androidx.navigation:navigation-compose:2.4.0-alpha10") //네비게이션
+    implementation("androidx.compose.material:material:1.5.4")
+
 }

@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.ganhoho.base.SecureDataStore
+import com.ssafy.ganhoho.base.TokenManager
 import com.ssafy.ganhoho.data.model.dto.member.LoginRequest
 import com.ssafy.ganhoho.data.model.dto.member.SignUpRequest
 import com.ssafy.ganhoho.data.model.response.auth.LoginResponse
@@ -49,9 +50,22 @@ class AuthViewModel : ViewModel() {
             result.onSuccess { response ->
                 Log.d("AuthViewModel", "Login Success: ${response.accessToken}")
 
+                // ✅ TokenManager에도 저장
+                TokenManager.saveAccessToken(response.accessToken)
+
+
                 // ✅ JWT & Refresh Token 저장
                 SecureDataStore.saveAccessToken(context, response.accessToken)
                 SecureDataStore.saveRefreshToken(context, response.refreshToken)
+
+                viewModelScope.launch {
+                    SecureDataStore.getAccessToken(context).collect { savedAccessToken ->
+                        Log.d("AuthViewModel", "🔑 저장 후 불러온 Access Token: $savedAccessToken")
+                    }
+                    SecureDataStore.getRefreshToken(context).collect { savedRefreshToken ->
+                        Log.d("AuthViewModel", "🔑 저장 후 불러온 Refresh Token: $savedRefreshToken")
+                    }
+                }
 
                 // ✅ 저장된 토큰 상태 업데이트
                 _accessToken.value = response.accessToken

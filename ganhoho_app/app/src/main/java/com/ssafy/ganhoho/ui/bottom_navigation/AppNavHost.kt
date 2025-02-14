@@ -2,9 +2,12 @@ package com.ssafy.ganhoho.ui.bottom_navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.ssafy.ganhoho.base.TokenManager
+import com.ssafy.ganhoho.data.repository.GroupRepository
 import com.ssafy.ganhoho.ui.friend.FriendScreen
 import com.ssafy.ganhoho.ui.group.EachGroupScreen
 import com.ssafy.ganhoho.ui.group.GroupMemberScheduleScreen
@@ -15,9 +18,13 @@ import com.ssafy.ganhoho.ui.group.getSampleSchedules
 import com.ssafy.ganhoho.ui.home.HomeScreen
 import com.ssafy.ganhoho.ui.pill.PillScreen
 import com.ssafy.ganhoho.ui.work_schedule.WorkScreen
+import com.ssafy.ganhoho.viewmodel.BottomNavViewModel
+import com.ssafy.ganhoho.viewmodel.GroupViewModel
 
 @Composable
 fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
+    val bottomNavViewModel: BottomNavViewModel = viewModel()
+    val groupRepository = GroupRepository()
 
     NavHost(
         navController = navController,
@@ -25,30 +32,39 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
     ) {
         composable("work") { WorkScreen(navController) }
         composable("pill") { PillScreen(navController) }
-        composable("home") { HomeScreen(modifier) }
-        composable("group") { GroupScreen(navController) }
+        composable("home") { HomeScreen() } // modifier 제거
+        composable("group") {
+            GroupScreen(
+                navController = navController,
+                bottomNavViewModel = bottomNavViewModel,
+                repository = groupRepository,
+                tokenManager = TokenManager
+            )
+        }
         composable("friend") { FriendScreen(navController) }
-        composable("GroupScreen") { GroupScreen(navController) }
+
+        composable("group/{groupIconType}") { backStackEntry ->
+            val groupIconType = backStackEntry.arguments?.getString("groupIconType")?.toIntOrNull() ?: 1
+            val groupViewModel: GroupViewModel = viewModel()
+
+            GroupScreen(
+                navController = navController,
+                bottomNavViewModel = bottomNavViewModel,
+                repository = groupRepository,
+                tokenManager = TokenManager
+            )
+        }
+
         composable("EachGroupScreen/{groupId}") { backStackEntry ->
             val groupId = backStackEntry.arguments?.getString("groupId")?.toIntOrNull()
             if (groupId != null) {
                 EachGroupScreen(
                     navController = navController,
-                    group = getSampleGroup(), // todo:실제 데이터 연동 필요
+                    group = getSampleGroup(groupId), // todo: 실제 데이터 연동 필요
                     groupMember = getSampleMembers(),
-                    memberSchedule = getSampleSchedules(),
-                    onToggleBottomNav = { isVisible -> /* 네비게이션 바 상태 변경 로직 추가 */ }
+                    memberSchedule = getSampleSchedules()
                 )
             }
-        }
-        composable("eachGroupScreen") {
-            EachGroupScreen(
-                navController = navController,
-                group = getSampleGroup(), // TODO: 실제 데이터 연동 필요
-                groupMember = getSampleMembers(),
-                memberSchedule = getSampleSchedules(),
-                onToggleBottomNav = { isVisible -> /* 네비게이션 바 상태 변경 로직 추가 */ }
-            )
         }
 
         composable("GroupMemberSchedule/{memberName}") { backStackEntry ->
@@ -59,6 +75,5 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
                 onToggleBottomNav = { isVisible -> /* 바텀 네비게이션 상태 변경 */ }
             )
         }
-
     }
 }
