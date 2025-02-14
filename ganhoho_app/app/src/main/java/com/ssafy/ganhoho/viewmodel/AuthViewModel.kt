@@ -95,7 +95,6 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-
     /**
      * 🔹 회원가입 요청
      */
@@ -158,6 +157,21 @@ class AuthViewModel : ViewModel() {
             _accessToken.value = null
             _refreshToken.value = null
             Log.d("AuthViewModel", "User logged out: Tokens cleared")
+        }
+    }
+
+    /**
+     * 🔹 회원 탈퇴(토큰 삭제)
+     */
+    fun withdrawalMember(token: String, context: Context) {
+        viewModelScope.launch {
+            val result = authRepository.withdrawalMember(token, context)
+            if (result.isSuccess) {
+                SecureDataStore.clearTokens(context)
+                _accessToken.value = null
+                _refreshToken.value = null
+            }
+
         }
     }
 }

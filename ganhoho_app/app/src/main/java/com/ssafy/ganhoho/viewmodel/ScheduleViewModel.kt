@@ -104,7 +104,7 @@ class ScheduleViewModel() : ViewModel() {
     fun updateSchedule(token: String, scheduleId: Long, request: MySchedule) {
         viewModelScope.launch {
             val response = repository.updateMySchedule(token, scheduleId, request)
-            Log.d("update", "📌 서버 응답: $response, 요청 데이터: $request")
+            Log.d("update", "📌 서버 응답: ${response}, 요청 데이터: $request")
 
             _editMyScheduleResult.value = response
             if (response.isSuccess) {
