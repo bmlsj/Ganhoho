@@ -12,6 +12,7 @@ import com.ssafy.ganhoho.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 class AuthViewModel : ViewModel() {
@@ -38,6 +39,27 @@ class AuthViewModel : ViewModel() {
     private val _refreshToken = MutableStateFlow<String?>(null)
     val refreshToken: StateFlow<String?> = _refreshToken
 
+    // 🔹 저장된 사용자 정보
+    private val _userInfo = MutableStateFlow<LoginResponse?>(null)
+    val userInfo: StateFlow<LoginResponse?> = _userInfo
+
+
+    /**
+     * ✅ 앱 실행 시 저장된 토큰을 확인하여 자동 로그인
+     */
+    fun checkAutoLogin(context: Context) {
+        viewModelScope.launch {
+            val userInfo = SecureDataStore.getUserInfo(context).firstOrNull()
+            if (userInfo != null && userInfo.accessToken.isNotEmpty()) {
+                _userInfo.value = userInfo
+                _loginResult.value = Result.success(userInfo)
+                Log.d("AuthViewModel", "✅ 자동 로그인 성공: ${userInfo.loginId}")
+            } else {
+                Log.d("AuthViewModel", "⚠️ 자동 로그인 실패: 저장된 사용자 정보 없음")
+            }
+        }
+    }
+
     /**
      * 🔹 로그인 요청
      */
@@ -49,13 +71,13 @@ class AuthViewModel : ViewModel() {
             result.onSuccess { response ->
                 Log.d("AuthViewModel", "Login Success: ${response.accessToken}")
 
-                // ✅ JWT & Refresh Token 저장
-                SecureDataStore.saveAccessToken(context, response.accessToken)
-                SecureDataStore.saveRefreshToken(context, response.refreshToken)
+                // ✅ 로그인한 사용자 정보 저장
+                SecureDataStore.saveUserInfo(context, response)
 
                 // ✅ 저장된 토큰 상태 업데이트
                 _accessToken.value = response.accessToken
                 _refreshToken.value = response.refreshToken
+                _userInfo.value = response
 
                 // ✅ 저장 후 바로 불러와서 확인
                 val savedAccessToken = SecureDataStore.getAccessToken(context).first()
@@ -72,7 +94,6 @@ class AuthViewModel : ViewModel() {
             }
         }
     }
-
 
 
     /**
@@ -133,6 +154,7 @@ class AuthViewModel : ViewModel() {
     fun logout(context: Context) {
         viewModelScope.launch {
             SecureDataStore.clearTokens(context)
+            _userInfo.value = null
             _accessToken.value = null
             _refreshToken.value = null
             Log.d("AuthViewModel", "User logged out: Tokens cleared")
