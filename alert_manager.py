@@ -17,9 +17,8 @@ async def send_to_server(session, bed_id, response_text, type_value):
         "hospital": HOSPITAL_NAME,
         "ward": WARD_NAME
     }
-    print(data.values())
     headers = {
-        "Authorization": f"Bearer {JWT_TOKEN}"
+        "Authorization": f"{JWT_TOKEN}"
     }
     try:
         async with session.post(url, json=data, headers=headers, timeout=5) as response:

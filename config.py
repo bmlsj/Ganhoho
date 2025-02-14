@@ -5,9 +5,9 @@ DB_PATHS = {
     "devices": "devices.db"   # 기기 정보를 저장하는 DB
 }
 
-SERVER_URL = "https://i12d209.p.ssafy.io/api/notifications/button-pattens"  # 서버 URL
+SERVER_URL = "https://i12d209.p.ssafy.io/api/notifications/button-patterns"  # 서버 URL
 
-JWT_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJtZW1iZXJJZCI6MTAsImlhdCI6MTczOTQ5Mzg2NiwiZXhwIjoxNzM5NTgwMjY2fQ.TWRoaJVitki2pbLSJ67KabiGrz1TGb1ZTNBeSgAzFuY"
+JWT_TOKEN = '9[,NG!yZbnA#Fm3PFNkZ"V{!2X6&cO'
 
 # evdev 리모컨 버튼 데이터 매핑: (메시지, type)
 BUTTON_MAPPING = {
