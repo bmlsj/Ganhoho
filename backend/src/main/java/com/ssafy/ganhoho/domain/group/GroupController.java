@@ -134,7 +134,7 @@ public class GroupController {
                     .body(new ErrorResponse(ErrorCode.UNAUTHORIZED));
         }
     }
-
+    //잘되어라!
     @Operation(summary = "그룹 탈퇴", description = "특정 그룹에서 탈퇴")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "그룹 탈퇴 성공",
