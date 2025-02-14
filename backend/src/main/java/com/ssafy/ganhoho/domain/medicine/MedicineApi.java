@@ -28,9 +28,8 @@ public class MedicineApi {
     private static final String BASE_URL = "https://apis.data.go.kr/1471000/DrugPrdtPrmsnInfoService06/getDrugPrdtPrmsnDtlInq05";
     private static final String SERVICE_KEY = "7hw6itQ0XsLQvJpbmMEBmRnN48OXxRf3SzUE5FpM3zb/FY0N2Q45MR5PUMk1PeNNhJJm9omcPNWHShD9Hs/G6g==";
 
-    // FastAPI 서버 URL 주석 처리
-    // @Value("${fastapi.server.url}")
-    // private String fastApiServerUrl;
+    @Value("${fastapi.server.url}")
+    private String fastApiServerUrl;
 
     @GetMapping("/api/medicines/{itemSeq}")
     public ResponseEntity<Object> getMedicineById(@PathVariable String itemSeq) {
@@ -157,15 +156,6 @@ public class MedicineApi {
             return ResponseEntity.badRequest().body(Map.of("error", "파일이 업로드되지 않았습니다."));
         }
 
-        // FastAPI 서버 기능 비활성화 상태 응답
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-            .body(Map.of(
-                "success", false,
-                "message", "이미지 분석 서비스가 현재 비활성화되어 있습니다.",
-                "status", "MAINTENANCE"
-            ));
-
-        /* 기존 FastAPI 관련 코드 주석 처리
         try {
             log.info("1. FastAPI 이미지 분석 시작");
             
@@ -274,6 +264,5 @@ public class MedicineApi {
                     "error", "이미지 처리 중 오류 발생: " + e.getMessage()
                 ));
         }
-        */
     }
 }
