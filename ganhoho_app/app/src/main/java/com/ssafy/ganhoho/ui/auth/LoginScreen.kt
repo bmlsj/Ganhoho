@@ -47,7 +47,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.messaging.FirebaseMessaging
 import com.ssafy.ganhoho.R
-import com.ssafy.ganhoho.data.model.dto.member.LoginRequest
+import com.ssafy.ganhoho.data.model.dto.auth.LoginRequest
 import com.ssafy.ganhoho.ui.theme.BackgroundBlue40
 import com.ssafy.ganhoho.ui.theme.FieldGray
 import com.ssafy.ganhoho.ui.theme.FieldLightGray
@@ -67,17 +67,21 @@ fun LoginScreen(navController: NavController) {
     val context = LocalContext.current
 
     // 로그인 결과 상태 감지
-    val loginResult = authViewModel.loginResult.collectAsState().value
+    // val loginResult = authViewModel.loginResult.collectAsState().value
+    val userInfo = authViewModel.userInfo.collectAsState().value
 
-    LaunchedEffect(loginResult) {
-        loginResult?.onSuccess {
-            // ✅ 로그인 성공 시 메인 화면으로 이동
-            Toast.makeText(context, "로그인 성공!", Toast.LENGTH_SHORT).show()
+    // ✅ 앱 실행 시 자동 로그인 확인
+    LaunchedEffect(Unit) {
+        authViewModel.checkAutoLogin(context)
+    }
+
+    // ✅ 로그인 성공 시 메인 화면 이동
+    LaunchedEffect(userInfo) {
+        userInfo?.let {
+            Toast.makeText(context, "${it.name}님 자동 로그인 성공!", Toast.LENGTH_SHORT).show()
             navController.navigate("main") {
                 popUpTo("login") { inclusive = true }
             }
-        }?.onFailure { error ->
-            Toast.makeText(context, "로그인 실패: ${error.message}", Toast.LENGTH_SHORT).show()
         }
     }
 

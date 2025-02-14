@@ -39,7 +39,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.ssafy.ganhoho.BuildConfig
 import com.ssafy.ganhoho.ui.friend.common.FriendAdd
 import com.ssafy.ganhoho.ui.friend.common.FriendList
 import com.ssafy.ganhoho.ui.friend.common.FriendRequestList
