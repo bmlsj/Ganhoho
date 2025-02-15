@@ -1,109 +1,166 @@
 <template>
   <div class="container">
-    <!-- 타이틀 -->
-    <div class="title">{{ medicineDetail.medicineName || "타이레놀" }}</div>
+    <h3 class="title">{{ medicineDetail?.ITEM_NAME || '의약품 상세정보' }}</h3>
 
     <!-- 이미지 -->
     <div class="image-container">
-      <img :src="medicineDetail.imageUrl || defaultImage" alt="알약 이미지" class="medicine-image" />
+      <img :src="medicineDetail?.imageSrc || defaultImage" alt="알약 이미지" class="medicine-image" />
+    </div>
+
+    <!-- 기본 정보 -->
+    <div class="info-box">
+      <div class="info-item">
+        <span class="info-label">제조사:</span>
+        <span class="info-value">{{ medicineDetail?.ENTP_NAME }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">분류:</span>
+        <span class="info-value">{{ medicineDetail?.ETC_OTC_CODE }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">유효기간:</span>
+        <span class="info-value">{{ medicineDetail?.VALID_TERM }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">보관방법:</span>
+        <span class="info-value">{{ medicineDetail?.STORAGE_METHOD }}</span>
+      </div>
     </div>
 
     <!-- 네비게이션 바 -->
     <div class="tab-container">
-      <div class="tab-indicator" :style="{ transform: `translateX(${selectedTabIndex * 100}%)` }"></div>
       <div class="tab-buttons">
-        <button @click="navigateTo('default', 0)" :class="{ 'active-tab': selectedTab === 'default' }">기본</button>
-        <button @click="navigateTo('identification', 1)" :class="{ 'active-tab': selectedTab === 'identification' }">식별</button>
-        <button @click="navigateTo('efficacy', 2)" :class="{ 'active-tab': selectedTab === 'efficacy' }">효능</button>
-        <button @click="navigateTo('precautions', 3)" :class="{ 'active-tab': selectedTab === 'precautions' }">주의사항</button>
+        <button 
+          v-for="(tab, index) in tabs" 
+          :key="tab.id"
+          @click="navigateTo(tab.id, index)" 
+          :class="{ 'active-tab': selectedTab === tab.id }"
+        >
+          {{ tab.name }}
+        </button>
       </div>
     </div>
 
-    <!-- 라우터 뷰 -->
+    <!-- 컨텐츠 영역 -->
     <div class="router-view">
-      <RouterView />
+      <div v-if="selectedTab === 'default'" class="section">
+        <h2 class="section-title">성분</h2>
+        <p class="material-text">{{ medicineDetail?.MATERIAL_NAME || '정보 없음' }}</p>
+        
+        <h2 class="section-title mt-4">용법용량</h2>
+        <div class="content-text" v-html="parseXmlContent(medicineDetail?.UD_DOC_DATA)"></div>
+      </div>
+      <div v-else-if="selectedTab === 'identification'" class="section">
+        <h2 class="section-title">성상</h2>
+        <p class="material-text">{{ medicineDetail?.CHART || '정보 없음' }}</p>
+      </div>
+      <div v-else-if="selectedTab === 'efficacy'" class="section">
+        <h2 class="section-title">효능 효과</h2>
+        <div class="content-text" v-html="parseXmlContent(medicineDetail?.EE_DOC_DATA)"></div>
+      </div>
+      <div v-else-if="selectedTab === 'precautions'" class="section">
+        <h2 class="section-title">사용상의 주의사항</h2>
+        <div class="content-text" v-html="parseXmlContent(medicineDetail?.NB_DOC_DATA)"></div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { useApiStore } from "@/stores/apiRequest"
-import { ref, onMounted } from "vue"
-import { useRoute, useRouter } from "vue-router"
-import defaultImage from "@/assets/image-26920.png" // 기본 이미지
+import { ref, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
+import { useApiStore } from '@/stores/apiRequest'
+import defaultImage from '@/assets/image-26920.png'
 
-const apiStore = useApiStore()
 const route = useRoute()
-const router = useRouter()
+const apiStore = useApiStore()
+const selectedTab = ref('default')
+const selectedTabIndex = ref(0)
 
-const selectedTab = ref("default")
-const selectedTabIndex = ref(0) // ✅ 클릭된 버튼의 인덱스를 저장
+// medicineDetail을 computed로 변경하여 store의 변경사항을 실시간으로 반영
+const medicineDetail = computed(() => apiStore.medicineDetail)
 
-console.log("📢 받은 약 ID:", route.params.id);
+const tabs = [
+  { id: 'default', name: '기본' },
+  { id: 'identification', name: '식별' },
+  { id: 'efficacy', name: '효능' },
+  { id: 'precautions', name: '주의사항' }
+]
 
-onMounted(() => {
-  apiStore.fetchMedicineDetail(route.params.id)
-  selectedTab.value = route.path.split("/").pop() // 현재 경로에서 마지막 부분 추출하여 탭 선택
-  
-  // 초기 탭 위치 설정 (URL을 보고 자동 감지)
-  switch (selectedTab.value) {
-    case "identification":
-      selectedTabIndex.value = 1;
-      break;
-    case "efficacy":
-      selectedTabIndex.value = 2;
-      break;
-    case "precautions":
-      selectedTabIndex.value = 3;
-      break;
-    default:
-      selectedTabIndex.value = 0;
-  }
-});
+const parseXmlContent = (xmlString) => {
+  if (!xmlString) return '';
+  return xmlString
+    .replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1')
+    .replace(/<DOC.*?>/g, '')
+    .replace(/<\/DOC>/g, '')
+    .replace(/<SECTION.*?>/g, '')
+    .replace(/<\/SECTION>/g, '')
+    .replace(/<ARTICLE title="(.*?)">/g, '<h3>$1</h3>')
+    .replace(/<\/ARTICLE>/g, '')
+    .replace(/<PARAGRAPH.*?>/g, '<p>')
+    .replace(/<\/PARAGRAPH>/g, '</p>');
+}
 
-// ✅ 버튼 클릭 시 라우팅 및 스타일 변경
-const navigateTo = (path, index) => {
-  selectedTab.value = path
+const navigateTo = (tab, index) => {
+  selectedTab.value = tab
   selectedTabIndex.value = index
-  router.push(`/pill-detail/${route.params.id}/${path}`)
-};
+}
 
-const medicineDetail = apiStore.medicineDetail
+onMounted(async () => {
+  try {
+    const result = await apiStore.fetchMedicineDetail(route.params.id)
+    if (!result) {
+      console.error('의약품 상세 정보를 가져오는데 실패했습니다.')
+    }
+  } catch (error) {
+    console.error('의약품 상세 정보 요청 중 오류 발생:', error)
+  }
+})
 </script>
 
 <style scoped>
-/* ✅ 반응형 크기 조정을 위한 CSS 변수 */
-:root {
-  --tab-width: 100px; /* 탭의 기본 너비 */
-}
-
 .container {
-  font-family: Arial, sans-serif;
-  max-width: 600px;
-  margin: 0 auto;
   padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .title {
-  margin-left:14px;
-  text-align: left;
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 20px;
 }
 
 .image-container {
-  text-align: center;
+  width: 100%;
   margin-bottom: 20px;
 }
 
 .medicine-image {
   width: 100%;
-  max-width: 300px;
-  border-radius: 10px;
+  max-width: 400px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
 }
 
-/* ✅ 네비게이션 바 */
+.info-box {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.info-item {
+  margin-bottom: 10px;
+}
+
+.info-label {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+/* 네비게이션 바 */
 .tab-container {
   width: 100%;
   max-width: 400px;
@@ -115,18 +172,11 @@ const medicineDetail = apiStore.medicineDetail
   align-items: center;
 }
 
-/* ✅ 클릭된 버튼 아래 파란색 강조 바 */
+/* 탭 인디케이터 제거 */
 .tab-indicator {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: var(--tab-width);
-  height: 4px;
-  background: #007bff;
-  transition: transform 0.3s ease-in-out;
+  display: none; /* 또는 이 스타일 블록 자체를 삭제 */
 }
 
-/* ✅ 탭 버튼 스타일 */
 .tab-buttons {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -136,7 +186,7 @@ const medicineDetail = apiStore.medicineDetail
 
 button {
   background: none;
-  width:92%;
+  width: 92%;
   border: none;
   font-size: clamp(12px, 2vw, 16px);
   font-weight: 600;
@@ -144,28 +194,23 @@ button {
   cursor: pointer;
   outline: none;
   transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
-  border-radius: 20px; /* ✅ 선택 버튼에 둥근 모서리 적용 */
+  border-radius: 20px;
 }
 
-/* ✅ 클릭된 버튼 스타일 */
 .active-tab {
-  background: #79C7E3; /* ✅ 배경을 파란색으로 변경 */
-  color: #ffffff; /* ✅ 글자를 흰색으로 변경 */
+  background: #79C7E3;
+  color: #ffffff;
   font-weight: bold;
 }
 
-
-/* ✅ 클릭되지 않은 버튼 스타일 */
 button:not(.active-tab) {
   background: none;
   color: #151515;
 }
 
-/* ✅ RouterView 크기를 tab-container와 동일하게 설정 */
 .router-view {
   width: 100%;
-  max-width: 400px; /* ✅ tab-container와 동일한 너비 */
-
+  max-width: 400px;
   margin: 0 auto;
   display: flex;
   flex-grow: 1;
@@ -173,6 +218,49 @@ button:not(.active-tab) {
   justify-content: center;
   border-radius: 10px;
   padding: 5px;
+}
+
+.section {
+  margin-bottom: 30px;
+  width: 100%;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.material-text {
+  font-size: 16px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.content-text {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+}
+
+.mt-4 {
+  margin-top: 25px;
+}
+
+:deep(h3) {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 15px 0;
+  color: #333;
+}
+
+:deep(p) {
+  font-size: 15px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 10px;
 }
 </style>
 

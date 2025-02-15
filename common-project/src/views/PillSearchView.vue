@@ -26,15 +26,19 @@
 
 
     <!-- 약 정보 목록 -->
-    <div v-if="filteredMedicineList.length > 0">
-      <div v-for="(pill, index) in filteredMedicineList" :key="index">
-        <PillInformation
-          :name="pill.name"
-          :content="pill.content"
-          :expiry="pill.expiry"
-          :image-src="pill.imageSrc"
-          @click="goToDetailPage(pill.id)"
-        />
+    <div v-if="filteredMedicineList.length > 0" class="pill-list">
+      <div v-for="(pill, index) in filteredMedicineList" 
+           :key="index" 
+           class="pill-card"
+           @click="goToDetailPage(pill.id)">
+        <div class="pill-image-container">
+          <img :src="pill.imageSrc || defaultImage" :alt="pill.name" class="pill-image" />
+        </div>
+        <div class="pill-info">
+          <h3 class="pill-name">{{ pill.name }}</h3>
+          <p class="pill-content">{{ pill.content }}</p>
+          <p class="pill-expiry">제조일로부터 {{ pill.expiry }}</p>
+        </div>
       </div>
     </div>
 
@@ -46,7 +50,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue"
+import { ref, computed, onMounted, watch } from "vue"
 import { useRouter } from "vue-router"
 import { useApiStore } from "@/stores/apiRequest"
 import PillInformation from "@/components/PillInformation.vue"
@@ -59,25 +63,43 @@ const searchQuery = ref("")
 const fileInput = ref(null)
 const filteredMedicineList = ref([])
 
-// API에서 의약품 목록 가져오기
-onMounted(async () => {
-  await apiStore.fetchMedicineList("");
-  filteredMedicineList.value = apiStore.medicineList
+// 검색어 변경 시 API 호출
+watch(searchQuery, async (newQuery) => {
+  if (newQuery.length >= 1) { // 1글자 이상일 때만 검색
+    console.log("검색 시작:", newQuery);
+    const success = await apiStore.fetchMedicineList(newQuery);
+    if (success) {
+      filteredMedicineList.value = apiStore.medicineList;
+    } else {
+      filteredMedicineList.value = [];
+    }
+  } else {
+    filteredMedicineList.value = [];
+  }
 })
 
-
-
-// ✅ 검색 시 목록 필터링
-const filterMedicineList = () => {
-  if (!searchQuery.value) {
-    filteredMedicineList.value = apiStore.medicineList;
-  } else {
-    filteredMedicineList.value = apiStore.medicineList.filter(pill => 
-      pill.name.includes(searchQuery.value)
-    );
+onMounted(async () => {
+  console.log(apiStore.token)
+  try {
+    if (!apiStore.token) {
+      console.error("토큰이 없습니다. 로그인이 필요합니다.");
+      return;
+    }
+    // 초기 로딩 시에는 빈 목록으로 시작
+    filteredMedicineList.value = [];
+  } catch (error) {
+    console.error("초기화 중 오류 발생:", error);
+    filteredMedicineList.value = [];
   }
-};
 
+  // ✅ 앱에서 호출할 전역 함수 등록
+  window.receiveToken = (access_token, refresh_token) => {
+    console.log("📢 Received access token:", access_token)
+    console.log("📢 Received refresh token:", refresh_token)
+    // ✅ Pinia Store에 저장
+    apiStore.setToken(access_token, refresh_token)
+  }
+})
 
 // ✅ 약 상세 페이지 이동
 const goToDetailPage = (medicineId) => {
@@ -101,7 +123,7 @@ const openCamera = async (event) => {
 
   console.log("선택된 파일:", file);
 
-  await apiStore.sendImageToAPI(file); //이건 ai한테 보내는 걸로 바꿔야함!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  await apiStore.uploadMedicineImage(file);
 };
 </script>
 
@@ -182,5 +204,75 @@ const openCamera = async (event) => {
   color: gray;
   font-size: 16px;
   margin-top: 20px;
+}
+
+.pill-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.pill-card {
+  display: flex;
+  background: #F5F7FF;
+  border-radius: 10px;
+  padding: 14px;
+  cursor: pointer;
+  transition: transform 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.pill-card:hover {
+  transform: translateY(-2px);
+}
+
+.pill-image-container {
+  width: 100px;
+  height: 70px;
+  margin-right: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.pill-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.pill-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px; /* 글자 요소들 사이 간격 축소 */
+}
+
+.pill-name {
+  font-size: 15px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 2px; /* 간격 축소 */
+  line-height: 1.2; /* 줄 간격 축소 */
+}
+
+.pill-content {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 2px; /* 간격 축소 */
+  line-height: 1.2; /* 줄 간격 축소 */
+}
+
+.pill-expiry {
+  font-size: 12px;
+  color: #888;
+  line-height: 1.2; /* 줄 간격 축소 */
 }
 </style>

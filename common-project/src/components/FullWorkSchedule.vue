@@ -7,7 +7,7 @@
         </div>
         <div :class="{'overlay': tutorialStep === 1 && isFirstVisit}"></div> <!-- 블러처리 -->
 
-        <div class="button-wrapper ">
+        <div class="button-wrapper">
           <p v-if="tutorialStep === 1 && isFirstVisit" class="add-schedule-text target tuto-text">
             버튼을 눌러 스케줄을<br> 추가하세요.
           </p>
@@ -31,13 +31,12 @@
     <!-- 데이터가 없을 경우 -->
     <div v-if="store.people.length === 0" class="empty-state">
       <p>현재 등록된 일정이 없습니다.</p>
-      <!-- <button class="reset-button" @click="resetTutorial">튜토리얼 다시 보기</button> -->
     </div>
 
-    <!-- 캘린더 UI -->
-    <div v-else class="calendar-body">
+    <!-- 캘린더 UI (여기에 ref를 추가하여 스크롤 대상로 지정) -->
+    <div v-else class="calendar-body" ref="calendarBodyRef">
       <div v-for="(week, weekIndex) in store.calendar" :key="weekIndex" class="week">
-        <div class="dates">
+        <div class="dates" ref="dateRefs[weekIndex]">
           <div v-for="(day, dayIndex) in week" :key="dayIndex" class="date">
             {{ day || '' }}
           </div>
@@ -86,10 +85,14 @@ const galleryInput = ref(null)
 const tutorialStep = ref(1)
 const isFirstVisit = ref(localStorage.getItem('visitedFullWorkSchedule') !== 'true') // 첫 방문 여부
 
+// 새로운 ref: 캘린더 UI의 스크롤 컨테이너
+const calendarBodyRef = ref(null)
+const dateRefs = ref([])
+
 const nextTutorialStep = async () => {
   if (tutorialStep.value === 1) {
     tutorialStep.value = 2
-    localStorage.setItem('visitedFullWorkSchedule', 'true') // ✅ 화면 터치하는 순간 저장
+    localStorage.setItem('visitedFullWorkSchedule', 'true') // 화면 터치하는 순간 저장
     isFirstVisit.value = false
     await nextTick()
     document.removeEventListener('click', nextTutorialStep)
@@ -104,32 +107,53 @@ const openGallery = () => {
 const handleFileSelection = async (event) => {
   const files = event.target.files
   if (files.length > 0) {
-    await store.sendImageToAPI(files[0]) // 첫 번째 선택한 파일을 API로 전송
+    await store.sendImageToAPI(files[0]) // 첫 번째 파일을 API로 전송
   }
 }
 
 onMounted(async () => {
-  console.log("📢 캘린더 업데이트 실행!")
-  // ✅ 처음 로드 시 GET 요청을 실행하지 않음
-  if (store.isDataLoaded) {
-    console.log("📢 기존 데이터 유지됨 → GET 요청 생략")
-  } else {
-    console.log("📢 POST 요청이 먼저 실행되어야 합니다. (GET 요청 대기 중)")
+  console.log("📢 캘린더 업데이트 실행!");
+
+  if (!store.isDataLoaded) {
+    console.log("📢 POST 요청이 먼저 실행되어야 합니다. (GET 요청 대기 중)");
   }
 
-  await nextTick() // DOM 업데이트 후 캘린더 생성
-  store.generateCalendar()
-  console.log("📢 불러온 일정 데이터:", store.people)
+  await nextTick(); // DOM 업데이트 후 캘린더 생성
+  store.generateCalendar();
+  console.log("📢 불러온 일정 데이터:", store.people);
 
-  isFirstVisit.value = localStorage.getItem('visitedFullWorkSchedule') !== 'true'
-  console.log("onMounted 후 isFirstVisit:", isFirstVisit.value)
+  isFirstVisit.value = localStorage.getItem('visitedFullWorkSchedule') !== 'true';
+  console.log("onMounted 후 isFirstVisit:", isFirstVisit.value);
 
   if (tutorialStep.value === 1 && isFirstVisit.value) {
-    document.addEventListener('click', nextTutorialStep)
+    document.addEventListener('click', nextTutorialStep);
   }
-})
 
-// Pinia store가 변경될 때마다 `isDataLoaded` 체크
+  // ★★ 자동 스크롤 기능 (오늘 날짜가 포함된 주차가 최상단으로 이동) ★★
+  await nextTick(); // DOM 렌더링이 완료될 때까지 대기
+
+  const today = new Date().getDate();
+  let targetWeekIndex = -1;
+
+  // 현재 날짜가 포함된 주차 찾기
+  store.calendar.forEach((week, index) => {
+    if (week.includes(today)) {
+      targetWeekIndex = index;
+    }
+  });
+
+  console.log(`📢 오늘 날짜(${today})가 포함된 주차 인덱스: ${targetWeekIndex}`);
+
+  if (targetWeekIndex !== -1 && dateRefs.value[targetWeekIndex]) {
+    await nextTick(); // 추가 렌더링 대기 후 스크롤 적용
+    dateRefs.value[targetWeekIndex].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    console.log(`📢 자동 스크롤: 오늘(${today})이 포함된 주의 날짜가 최상단에 오도록 이동`);
+  } else {
+    console.warn("⚠️ 해당 주차를 찾지 못했습니다.");
+  }
+});
+
+
 watchEffect(() => {
   console.log("📢 데이터 상태 변경 감지:", store.isDataLoaded)
 })
@@ -140,9 +164,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* ------------------------------------------- */
-/* 기본 스타일 */
-/* ------------------------------------------- */
 .calendar-wrapper {
   font-family: Arial, sans-serif;
   max-width: 100%;
@@ -175,8 +196,8 @@ onUnmounted(() => {
 }
 
 .button-wrapper {
-  position: relative; 
-  display: flex; 
+  position: relative;
+  display: flex;
 }
 
 .weekdays {
@@ -195,6 +216,8 @@ onUnmounted(() => {
 .calendar-body {
   display: flex;
   flex-direction: column;
+  max-height: 70vh; /* ★★ 스크롤을 위한 최대 높이 설정 */
+  overflow-y: auto;  /* ★★ 수직 스크롤 활성화 */
 }
 
 .week {
@@ -314,23 +337,20 @@ onUnmounted(() => {
   font-weight: bold;
   color: #007bff;
   background: white;
-  
   border-radius: 8px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
   white-space: nowrap;
   position: relative;
   margin-right: 20px;
 }
-
 .add-schedule-text::after {
   content: "";
   position: absolute;
-  top: 30%;              /* 말풍선 높이의 40% 위치 (원하는 위치로 조정) */
-  right: -20px;          /* 말풍선 바깥쪽에 위치 */
+  top: 30%;
+  right: -20px;
   width: 40px;
   height: 40px;
-  background: white;     /* 말풍선 배경색과 동일 */
-  /* 아래 clip-path 경로는 예시입니다. 디자인에 따라 경로 값을 조정하세요. */
+  background: white;
   clip-path: path('M0,20 Q30,0 40,0 Q20,20 0,20 Z');
 }
 
@@ -373,12 +393,12 @@ onUnmounted(() => {
   }
 
   .year-month {
-    font-size: 16px;
-    margin-left: 8px;
+    font-size: 18px;
+    margin-left: 12px;
   }
 
   .weekdays {
-    grid-template-columns: 45px repeat(7, 1fr); /* 첫 열(이름) 폭 축소 */
+    grid-template-columns: 45px repeat(7, 1fr);
   }
 
   .date {
@@ -424,8 +444,8 @@ onUnmounted(() => {
   }
 
   .year-month {
-    font-size: 14px;
-    margin-left: 4px;
+    font-size: 18px;
+    margin-left: 12px;
   }
 
   .weekdays {

@@ -16,38 +16,41 @@
         <p class="invite-text">Join GANHOHO with your invitation code!</p>
       </div>
 
-      <button class="invite-button" @click="openAppOrDownload">초대 수락하기</button>
+      <button class="invite-button" @click="openApp">초대 수락하기</button>
     </div>
-    
   </div>
 </template>
 
 <script setup>
-import nurseImg from "@/assets/nurse0.png";
-import doctorImg from "@/assets/medical-doctor0.png";
-import barcodeImg from "@/assets/barcode1.svg";
+import nurseImg from "@/assets/nurse0.png"
+import doctorImg from "@/assets/medical-doctor0.png"
+import barcodeImg from "@/assets/barcode1.svg"
 
-const openAppOrDownload = () => {
-  const androidAppScheme =
-    "intent://ganhoho.com/#Intent;scheme=ganhoho;package=com.ganhoho.app;end;";
-  const iosAppScheme = "ganhoho://";
-  const appDownloadLinkAndroid =
-    "https://play.google.com/store/apps/details?id=com.ganhoho.app";
-  const appDownloadLinkiOS =
-    "https://apps.apple.com/app/id123456789"; // 실제 ID로 변경 필요
+import { useApiStore } from "@/stores/apiRequest"
+import { onMounted } from "vue";
+
+const apiStore = useApiStore();
+
+onMounted(() => {
+  // ✅ 앱에서 호출할 전역 함수 등록
+  window.receiveToken = (access_token, refresh_token) => {
+    console.log("📢 Received access token:", access_token)
+    console.log("📢 Received refresh token:", refresh_token)
+    // ✅ Pinia Store에 저장
+    apiStore.setToken(access_token, refresh_token)
+  }
+})
+
+const openApp = () => {
+  const androidAppScheme = "intent://invite?code=123456#Intent;scheme=ganhoho;package=com.ganhoho.app;end;"
+  // 아이폰 지원 X (삼송이니까 ㅎㅎ)
 
   if (/Android/i.test(navigator.userAgent)) {
-    window.location.href = androidAppScheme;
-    setTimeout(() => {
-      window.location.href = appDownloadLinkAndroid;
-    }, 2000); // 앱이 없을 경우 Play Store로 이동
+    window.location.href = androidAppScheme
   } else if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    window.location.href = iosAppScheme;
-    setTimeout(() => {
-      window.location.href = appDownloadLinkiOS;
-    }, 2000); // 앱이 없을 경우 App Store로 이동
+    alert("이 기능은 Android에서만 지원됩니다!")
   } else {
-    alert("모바일 기기에서만 사용할 수 있습니다.");
+    alert("모바일 기기에서만 사용할 수 있습니다.")
   }
 };
 </script>
@@ -170,11 +173,11 @@ const openAppOrDownload = () => {
 }
 
 .wrapper {
-  border: 2px solid rgba(255, 255, 255, 0.6); /* 반투명 테두리 */
+  border: 2px solid rgba(255, 255, 255, 0.6);
   border-radius: 20px;
   padding: 30px;
-  backdrop-filter: blur(15px); /* 배경을 흐리게 하여 투명 효과 */
-  background: rgba(255, 255, 255, 0.15); /* 내부 투명 */
+  backdrop-filter: blur(15px);
+  background: rgba(255, 255, 255, 0.15);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -183,5 +186,4 @@ const openAppOrDownload = () => {
   max-width: 350px;
   text-align: center;
 }
-
 </style>

@@ -1,0 +1,256 @@
+<template>
+  <div class="calendar-wrapper">
+    <div class="calendar-header">
+      <div class="header-row">
+        <button class="nav-button" @click="prevWeek">◀</button>
+        <div class="year-month">
+          {{ store.currentYear || defaultYear }}년 {{ store.currentMonth || defaultMonth }}월 {{ getCurrentWeekRange }}
+        </div>
+        <button class="nav-button" @click="nextWeek">▶</button>
+      </div>
+
+      <div class="weekdays">
+        <span 
+          v-for="(day, index) in [''].concat(weekDays)" 
+          :key="index" 
+          :class="{ sunday: index === 1 }">
+          {{ day }}
+        </span>
+      </div>
+    </div>
+
+    <div v-if="store.people.length === 0" class="empty-state">
+      <p>현재 등록된 일정이 없습니다.</p>
+    </div>
+
+    <div v-else class="calendar-body">
+      <div class="week">
+        <div class="dates">
+          <div 
+            v-for="(day, dayIndex) in currentWeek" 
+            :key="dayIndex" 
+            class="date">
+            {{ day || '' }}
+          </div>
+        </div>
+
+        <div 
+          v-for="person in store.people" 
+          :key="person.name" 
+          class="person-row">
+          <div class="person-name">{{ person.name }}</div>
+          <div class="person-schedule">
+            <div
+              v-for="(day, dayIndex) in currentWeek.slice(1, 8)"
+              :key="dayIndex"
+              class="schedule-box"
+              :class="person.schedule[day]?.toLowerCase()"
+              :style="{ visibility: day === null ? 'hidden' : 'visible' }">
+              {{ person.schedule[day] || '-' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useApiStore } from '@/stores/apiRequest'
+
+const store = useApiStore()
+const defaultYear = new Date().getFullYear()
+const defaultMonth = new Date().getMonth() + 1
+const weekDays = ['일', '월', '화', '수', '목', '금', '토']
+
+// 현재 주 인덱스 (자동 설정)
+const currentWeekIndex = ref(0)
+
+// 현재 월의 모든 주를 계산하여 배열로 반환
+const weeks = computed(() => {
+  const month = store.currentMonth || defaultMonth
+  const year = store.currentYear || defaultYear
+  const firstDayOfMonth = new Date(year, month - 1, 1).getDay()
+  const lastDateOfMonth = new Date(year, month, 0).getDate()
+
+  let weeksArr = []
+  let currentWeek = [null, ...new Array(7).fill(null)]
+  let dayCounter = 1
+
+  // 첫 주 채우기 (빈 칸 포함)
+  for (let i = firstDayOfMonth; i < 7; i++) {
+    currentWeek[i + 1] = dayCounter++
+  }
+  weeksArr.push([...currentWeek])
+
+  // 나머지 주 계산
+  while (dayCounter <= lastDateOfMonth) {
+    currentWeek = [null, ...new Array(7).fill(null)]
+    for (let i = 1; i <= 7 && dayCounter <= lastDateOfMonth; i++) {
+      currentWeek[i] = dayCounter++
+    }
+    weeksArr.push([...currentWeek])
+  }
+  return weeksArr
+})
+
+// 현재 선택된 주
+const currentWeek = computed(() => {
+  return weeks.value[currentWeekIndex.value] || []
+})
+
+// 현재 주의 날짜 범위 (예: "15일 - 21일")
+const getCurrentWeekRange = computed(() => {
+  const firstDay = currentWeek.value.find(day => day !== null) || 1
+  const lastDay = [...currentWeek.value].reverse().find(day => day !== null) || firstDay
+  return `${firstDay}일 - ${lastDay}일`
+})
+
+// 이전 주로 이동
+const prevWeek = () => {
+  if (currentWeekIndex.value > 0) currentWeekIndex.value--
+}
+
+// 다음 주로 이동
+const nextWeek = () => {
+  if (currentWeekIndex.value < weeks.value.length - 1) currentWeekIndex.value++
+}
+
+// 마운트 시, 오늘 날짜가 포함된 주를 자동 선택
+onMounted(() => {
+  const today = new Date().getDate()
+  let targetIndex = 0
+  weeks.value.forEach((week, index) => {
+    if (week.includes(today)) {
+      targetIndex = index
+    }
+  })
+  currentWeekIndex.value = targetIndex
+  console.log(`오늘(${today})이 포함된 주 인덱스: ${targetIndex}`)
+})
+</script>
+
+<style scoped>
+.calendar-wrapper {
+  font-family: Arial, sans-serif;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.calendar-header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 10;
+  border-bottom: 1px solid #ddd;
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.nav-button {
+  background-color: #f1f1f1;
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.year-month {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: 55px repeat(7, 1fr);
+  align-items: center;
+  justify-items: center;
+  column-gap: 2px;
+  text-align: center;
+}
+
+.sunday {
+  color: red;
+}
+
+.calendar-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.dates {
+  display: grid;
+  grid-template-columns: 55px repeat(7, 1fr);
+  column-gap: 2px;
+}
+
+.date {
+  text-align: center;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.person-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.person-name {
+  width: 55px;
+  height: 23px;
+  flex-shrink: 0;
+  text-align: center;
+  line-height: 23px;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.person-schedule {
+  flex: 1;
+  display: flex;
+}
+
+.schedule-box {
+  flex: 1;
+  text-align: center;
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  margin: 0 2px;
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* 기존 일정 스타일 유지 */
+.schedule-box.nig {
+  background-color: #DDD4cD;
+}
+.schedule-box.day {
+  background-color: #fff8bf;
+}
+.schedule-box.eve {
+  background-color: #e4c7f1;
+}
+.schedule-box.off {
+  background-color: #fcd6c8;
+}
+
+.empty-state {
+  text-align: center;
+  font-size: 16px;
+  color: gray;
+  margin-top: 190px;
+}
+</style>
