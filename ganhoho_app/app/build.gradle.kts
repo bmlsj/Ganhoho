@@ -26,8 +26,9 @@ android {
         versionName = "1.0"
 
         buildConfigField("String", "SERVER_URL", "\"${localProperties.getProperty("SERVER_URL", "")}\"")
-        buildConfigField("String", "NAVER_CLIENT_ID", "\"${localProperties.getProperty("NAVER_CLIENT_ID", "")}\"")
+        buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"${localProperties.getProperty("KAKAO_NATIVE_APP_KEY", "")}\"")
 
+        manifestPlaceholders["KAKAO_NATIVE_APP_KEY"] = localProperties["KAKAO_NATIVE_APP_KEY"] ?: ""
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -64,7 +65,9 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
 }
+
 
 dependencies {
 
@@ -109,8 +112,10 @@ dependencies {
     implementation ("androidx.datastore:datastore-preferences:1.1.2")
     implementation ("androidx.datastore:datastore-core:1.1.2")  // 코어 의존성 (필요 시)
 
-    // 네이버 지도 API
-    implementation("com.naver.maps:map-sdk:3.20.0")
-    implementation ("io.github.fornewid:naver-map-compose:1.8.0")
+    // 카카오 지도 API
+    implementation ("com.kakao.maps.open:android:2.11.9")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+
+    implementation ("com.kakao.sdk:v2-all:2.20.6") // 전체 모듈 설치, 2.11.0 버전부터 지원
 
 }

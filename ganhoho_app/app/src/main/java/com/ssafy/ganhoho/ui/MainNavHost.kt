@@ -1,19 +1,13 @@
 package com.ssafy.ganhoho.ui
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.ssafy.ganhoho.base.SecureDataStore
-import com.ssafy.ganhoho.ui.auth.HospitalInfoScreen
 import com.ssafy.ganhoho.ui.auth.JoinScreen
 import com.ssafy.ganhoho.ui.auth.LoginScreen
+import com.ssafy.ganhoho.ui.auth.SearchHospital
 import com.ssafy.ganhoho.ui.theme.GANHOHOTheme
 
 @Composable
@@ -43,7 +37,7 @@ fun MainNavHost() {
 
         // 병원 정보 화면
         composable("hospitalInfo") {
-            HospitalInfoScreen()
+            SearchHospital(navController)
         }
     }
 }

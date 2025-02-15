@@ -103,6 +103,16 @@ fun JoinScreen(navController: NavController) {
         }
     }
 
+    // 병원 이름 받아오기
+    LaunchedEffect(navController.currentBackStackEntry) {
+        val hospitalName = navController.currentBackStackEntry
+            ?.savedStateHandle
+            ?.get<String>("selectedHospital")
+        if (hospitalName != null) {
+            hospital = hospitalName
+        }
+    }
+
 
     Column(
         modifier = Modifier
@@ -220,7 +230,8 @@ fun JoinScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // PW 입력
-                OutlinedTextField(value = password,
+                OutlinedTextField(
+                    value = password,
                     onValueChange = { password = it },
                     label = {
                         Text(
@@ -269,7 +280,8 @@ fun JoinScreen(navController: NavController) {
 
 
                 // Name 입력
-                OutlinedTextField(value = name,
+                OutlinedTextField(
+                    value = name,
                     onValueChange = { name = it },
                     label = { Text("Name", color = FieldGray) },
                     leadingIcon = {
@@ -301,7 +313,8 @@ fun JoinScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    OutlinedTextField(value = hospital,
+                    OutlinedTextField(
+                        value = hospital,
                         onValueChange = { hospital = it },
                         label = { Text("Hospital", color = FieldGray) },
                         leadingIcon = {
@@ -315,7 +328,7 @@ fun JoinScreen(navController: NavController) {
                                 )
                             }
                         },
-                        modifier = Modifier.width(200.dp),
+                        modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(30.dp),
                         colors = TextFieldDefaults.colors(
                             focusedIndicatorColor = Color.Black,
@@ -331,7 +344,8 @@ fun JoinScreen(navController: NavController) {
                         onClick = {
                             // 병원 찾기 페이지로 이동
                             navController.navigate("hospitalInfo")
-                        }, colors = ButtonDefaults.buttonColors(
+                        },
+                        colors = ButtonDefaults.buttonColors(
                             containerColor = PrimaryBlue
                         )
                     ) {
@@ -343,7 +357,8 @@ fun JoinScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Ward 선택
-                OutlinedTextField(value = ward,
+                OutlinedTextField(
+                    value = ward,
                     onValueChange = { ward = it },
                     label = { Text("Ward", color = FieldGray) },
                     leadingIcon = {
@@ -372,10 +387,11 @@ fun JoinScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Sign Up 버튼
-                Button(onClick = {
-                    val signUpRequest = SignUpRequest(id, password, name, hospital, ward)
-                    authViewModel.signUp(signUpRequest) // ✅ 회원가입 요청 보내기
-                },
+                Button(
+                    onClick = {
+                        val signUpRequest = SignUpRequest(id, password, name, hospital, ward)
+                        authViewModel.signUp(signUpRequest) // ✅ 회원가입 요청 보내기
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp)

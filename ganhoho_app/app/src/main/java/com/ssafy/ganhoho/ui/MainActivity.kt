@@ -2,10 +2,10 @@ package com.ssafy.ganhoho.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -27,6 +27,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.kakao.vectormap.KakaoMap
+import com.kakao.vectormap.KakaoMapSdk
+import com.ssafy.ganhoho.BuildConfig
+import com.ssafy.ganhoho.BuildConfig.KAKAO_NATIVE_APP_KEY
 import com.ssafy.ganhoho.R
 import com.ssafy.ganhoho.ui.bottom_navigation.AppNavHost
 import com.ssafy.ganhoho.ui.bottom_navigation.CustomBottomNavigation
@@ -41,12 +45,18 @@ class MainActivity : ComponentActivity() {
 
         // 저장된 토큰 불러오기
         authViewModel.loadTokens(this)
+        // 카카오 맵
+        KakaoMapSdk.init(
+            this@MainActivity,
+            KAKAO_NATIVE_APP_KEY
+        )
+
         setContent {
             GANHOHOTheme {
                 Surface(
                     color = MaterialTheme.colorScheme.background
                 ) {
-                   // MainScreen()
+                    // MainScreen()
                     MainNavHost()
                 }
             }
