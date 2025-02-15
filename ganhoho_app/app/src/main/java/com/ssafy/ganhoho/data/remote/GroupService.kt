@@ -6,11 +6,11 @@ import com.ssafy.ganhoho.data.model.response.group.GroupMemberResponse
 import com.ssafy.ganhoho.data.model.response.group.MemberMonthlyScheduleResponse
 import retrofit2.Response
 import retrofit2.http.Body
-import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface GroupService {
 
@@ -34,23 +34,24 @@ interface GroupService {
         @Path("groupId") groupId: Long
     ): Response<GroupInviteLinkResponse>
 
-    // 그룹원 정보 전체 조회
-    @GET("groups/members/{groupId}")
+    // 그룹원 리스트 조회
+    @GET("api/groups/members/{groupId}")
     suspend fun getGroupMemberInfo(
         @Header("Authorization") token: String,
         @Path("groupId") groupId: Long
     ): Response<List<GroupMemberResponse>>
 
     // 그룹원 월별 스케쥴 조회
-    @GET("groups/schedules/{groupId}")
+    @GET("api/groups/schedules/{groupId}") // URL에는 {yearMonth} 제거
     suspend fun getEachMemberMonthlySchedule(
         @Header("Authorization") token: String,
-        @Path("groupId") groupId: Long,
-        @Path("yearMonth") yearMonth: String
+        @Path("groupId") groupId: Int,
+        @Query("yearMonth") yearMonth: String
     ): Response<List<MemberMonthlyScheduleResponse>>
 
+
     // 그룹 탈퇴
-    @DELETE("api/groups/{groupId}")
+    @GET("api/groups/schedules/{groupId}")
     suspend fun leaveGroup(
         @Header("Authorization") token: String,
         @Path("groupId") groupId: Int

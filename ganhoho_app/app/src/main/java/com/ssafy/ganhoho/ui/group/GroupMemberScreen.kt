@@ -25,6 +25,8 @@ import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,6 +45,9 @@ import com.ssafy.ganhoho.base.TokenManager
 import com.ssafy.ganhoho.data.model.dto.group.GroupDto
 import com.ssafy.ganhoho.data.model.response.group.GroupMemberResponse
 import com.ssafy.ganhoho.data.repository.GroupRepository
+import com.ssafy.ganhoho.viewmodel.GroupViewModel
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun GroupMemberScreen(
@@ -51,12 +56,21 @@ fun GroupMemberScreen(
     onClose: () -> Unit, // 사이드 메뉴 닫기
     navController: NavController,
     onNavigateToSchedule: () -> Unit,
-    groupId: Int
-
+    groupId: Int,
+    viewModel: GroupViewModel
 ) {
+    val yearMonth: String = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"))
+
+    LaunchedEffect(Unit) {
+        viewModel.fetchMemberSchedules(groupId, yearMonth) // 스케줄 불러오기
+        viewModel.fetchMemberList(groupId) // 그룹원 리스트 불러오기 추가
+    }
+
+
     var isDialogVisible by rememberSaveable { mutableStateOf(false) } // rememberSaveable로 상태 유지
     var selectedMember by remember { mutableStateOf<GroupMemberResponse?>(null) }
     var isPopupVisible by remember { mutableStateOf(false) }
+    val groupMembers by viewModel.groupMembers.collectAsState()
 
     AnimatedVisibility(
         visible = isVisible,
@@ -102,15 +116,28 @@ fun GroupMemberScreen(
                             .weight(1f),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        items(members) { member ->
-                            MemberCard(
-                                member = member,
-                                onClick = {
-                                    selectedMember = member
-                                    onNavigateToSchedule() //네비게이션 바 숨기기
-                                    navController.navigate("GroupMemberSchedule/${Uri.encode(member.name)}")
-                                }
-                            )
+                        if (members.isEmpty()) {
+                            item {
+                                Text(
+                                    text = "그룹원이 없습니다.",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    textAlign = TextAlign.Center,
+                                    color = Color.Gray,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        } else {
+                            items(groupMembers) { member ->
+                                MemberCard(
+                                    member = member,
+                                    onClick = {
+                                        selectedMember = member
+                                        onNavigateToSchedule()
+                                        navController.navigate("GroupMemberSchedule/${Uri.encode(member.name)}")
+                                    }
+                                )
+                            }
                         }
                     }
 

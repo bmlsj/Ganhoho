@@ -6,8 +6,7 @@ data class MemberMonthlyScheduleResponse(
     val memberId: Long,
     val name: String,
     val loginId: String,
-    val hospital: String?,
-    val ward: String?,
-    val schedules: List<WorkScheduleDto?>
+    val schedules: List<WorkScheduleDto?>,
+    val hospital: String="미정",
+    val ward: String
 )
-

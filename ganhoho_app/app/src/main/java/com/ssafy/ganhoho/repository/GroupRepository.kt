@@ -33,17 +33,27 @@ class GroupRepository {
         }
     }
 
-    // 그룹원 정보 전체 조회
-    suspend fun getGroupMemberInfo(token: String, groupId: Long): Result<List<GroupMemberResponse>> {
-        return try{
-            val response = RetrofitUtil.groupService.getGroupMemberInfo("Bearer $token", groupId)
+    // 그룹원 정보 가져오기
+    suspend fun getGroupMembers(token: String, groupId: Int): Result<List<GroupMemberResponse>> {
+        return try {
+            val response = RetrofitUtil.groupService.getGroupMemberInfo("Bearer $token", groupId.toLong())
             handleResponse(response)
-        } catch (e: Exception){
-            Log.e("GroupRepository", "Error feching group member info", e)
+        } catch (e: Exception) {
+            Log.e("GroupRepository", "Error fetching group members", e)
             Result.failure(e)
         }
     }
 
+    // 그룹원 스케줄 가져오기
+    suspend fun getMemberSchedules(token: String, groupId: Int, yearMonth: String): Result<List<MemberMonthlyScheduleResponse>> {
+        return try {
+            val response = RetrofitUtil.groupService.getEachMemberMonthlySchedule("Bearer $token", groupId, yearMonth)
+            handleResponse(response)
+        } catch (e: Exception) {
+            Log.e("GroupRepository", "Error fetching member schedules", e)
+            Result.failure(e)
+        }
+    }
     suspend fun addGroup(token: String, groupName: String, groupIconType: Int): Result<GroupDto> {
         return try {
             val response = RetrofitUtil.groupService.addGroup(
@@ -64,17 +74,27 @@ class GroupRepository {
 
 
     // 그룹원 월별 스케줄 조회
-    suspend fun getEachMemberMonthlySchedule(tocken:String, groupId:Long, yearMonth: String): Result<List<MemberMonthlyScheduleResponse>>{
-        return try{
-            val response = RetrofitUtil.groupService.getEachMemberMonthlySchedule(
-                "Bearer $tocken", groupId, yearMonth
-            )
-            handleResponse(response)
-        }catch (e:Exception){
-            Log.e("GroupRepository", "Error feching group member's monthly schedule", e)
-            Result.failure(e)
+    suspend fun getEachMemberMonthlySchedule(token: String, groupId: Int, yearMonth: String): Result<List<MemberMonthlyScheduleResponse>> {
+        val formattedYearMonth = yearMonth  // "2025-02" -> "202502"
+
+        val response = RetrofitUtil.groupService.getEachMemberMonthlySchedule(
+            "Bearer $token", groupId, formattedYearMonth
+        )
+
+        if (response.isSuccessful) {
+            val responseBody = response.body()
+            if (responseBody != null) {
+                return Result.success(responseBody)
+            } else {
+                return Result.failure(Exception("Empty response body"))
+            }
+        } else {
+            val errorBody = response.errorBody()?.string()
+            Log.e("GroupRepository", "API Error Response: $errorBody")
+            return Result.failure(Exception("API Request Failed: ${response.code()}"))
         }
     }
+
 
     // 그룹 탈퇴
     suspend fun leaveGroup(token: String, groupId: Int): Result<Boolean>{

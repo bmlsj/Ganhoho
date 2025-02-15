@@ -27,6 +27,8 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +50,7 @@ import com.ssafy.ganhoho.data.model.dto.group.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.response.group.GroupMemberResponse
 import com.ssafy.ganhoho.data.model.response.group.MemberMonthlyScheduleResponse
 import com.ssafy.ganhoho.data.repository.GroupRepository
+import com.ssafy.ganhoho.viewmodel.GroupViewModel
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.TextStyle
@@ -58,10 +61,12 @@ fun EachGroupScreen(
     navController: NavController,
     group: GroupDto,
     groupMember: List<GroupMemberResponse>,
-    memberSchedule: List<MemberMonthlyScheduleResponse>,
     repository:GroupRepository,
-    tokenManager:TokenManager
-) {
+    tokenManager:TokenManager,
+    viewModel: GroupViewModel,
+    groupId: Int,
+    yearMonth: String
+    ) {
     val currentDate = LocalDate.now()
     val currentYear = currentDate.year
     val currentMonth = currentDate.monthValue
@@ -72,6 +77,14 @@ fun EachGroupScreen(
 
     var isMemberScreenVisible by remember { mutableStateOf(false) }
     var isDialogVisible by remember { mutableStateOf(false) } // 다이얼로그 상태 추가
+
+    val memberSchedules by viewModel.memberSchedules.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.fetchMemberSchedules(groupId, yearMonth)
+        Log.d("DEBUG", "Fetching schedules for groupId: $groupId, yearMonth: $yearMonth")
+
+    }
 
     Box(modifier = Modifier.fillMaxSize()){
         Scaffold(
@@ -164,9 +177,15 @@ fun EachGroupScreen(
                             )
                         }
 
-                        val adjustedSchedules = memberSchedule.map {
-                            it.copy(schedules = adjustWorkSchedule(it.schedules, currentYear, currentMonth))
+                        val adjustedSchedules = memberSchedules.map {
+                            Log.d("DEBUG_MEMBER_SCHEDULE", "Member: ${it.name}, Schedule Size: ${it.schedules.size}")
+
+                            it.copy(
+                                schedules = adjustWorkSchedule(it.schedules, currentYear, currentMonth),
+                                ward = it.ward ?: "미정"
+                            )
                         }
+
 
                         itemsIndexed(weeks) { weekIndex, weekDays ->
                             Row(
@@ -215,6 +234,7 @@ fun EachGroupScreen(
                                     ) {
                                         weekDays.forEachIndexed { index, _ ->
                                             val workSchedule = weekSchedule.getOrNull(index)
+
                                             Box(
                                                 contentAlignment = Alignment.Center,
                                                 modifier = Modifier
@@ -281,7 +301,8 @@ fun EachGroupScreen(
 
                         navController = navController,
                         onNavigateToSchedule = {},
-                        groupId = group.groupId
+                        groupId = group.groupId,
+                        viewModel = viewModel
                     )
 
                     // 다이얼로그 (그룹 탈퇴)
@@ -326,6 +347,8 @@ fun adjustWorkSchedule(
     while (adjustedSchedule.size % 7 != 0) {
         adjustedSchedule.add(null)
     }
+
+    Log.d("DEBUG_ADJUST_SCHEDULE", "Adjusted Schedule: ${adjustedSchedule.size} items")
 
     return adjustedSchedule
 }
@@ -382,7 +405,7 @@ fun getSampleMembers(): List<GroupMemberResponse> {
         GroupMemberResponse("han_ahyoung", "한아영", "서울병원", "응급실"),
         GroupMemberResponse("lee_seungji", "이승지", "서울병원", "응급실"),
 
-    )
+        )
 }
 
 fun getSampleSchedules(): List<MemberMonthlyScheduleResponse> {

@@ -10,13 +10,13 @@ import androidx.navigation.compose.composable
 import com.google.gson.Gson
 import com.ssafy.ganhoho.base.TokenManager
 import com.ssafy.ganhoho.data.model.dto.group.GroupDto
+import com.ssafy.ganhoho.data.model.response.group.GroupViewModelFactory
 import com.ssafy.ganhoho.data.repository.GroupRepository
 import com.ssafy.ganhoho.ui.friend.FriendScreen
 import com.ssafy.ganhoho.ui.group.EachGroupScreen
 import com.ssafy.ganhoho.ui.group.GroupMemberScheduleScreen
 import com.ssafy.ganhoho.ui.group.GroupScreen
 import com.ssafy.ganhoho.ui.group.getSampleMembers
-import com.ssafy.ganhoho.ui.group.getSampleSchedules
 import com.ssafy.ganhoho.ui.home.HomeScreen
 import com.ssafy.ganhoho.ui.pill.PillScreen
 import com.ssafy.ganhoho.ui.work_schedule.WorkScreen
@@ -72,19 +72,42 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
             }
 
             if (group != null) {
+                val groupViewModel: GroupViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+                    factory = GroupViewModelFactory(groupRepository, TokenManager)
+                )
+
+
                 EachGroupScreen(
                     navController = navController,
                     group = group,
                     groupMember = getSampleMembers(),
-                    memberSchedule = getSampleSchedules(),
                     repository = GroupRepository(),
-                    tokenManager = TokenManager
+                    tokenManager = TokenManager,
+                    viewModel = groupViewModel,
+                    groupId = group.groupId,
+                    yearMonth = "2025-02"
                 )
             } else {
                 Log.e("Navigation", "group이 null이므로 EachGroupScreen을 열 수 없음")
             }
         }
 
+
+        composable("group/{groupId}") { backStackEntry ->
+            val groupId = backStackEntry.arguments?.getString("groupId")?.toIntOrNull() ?: return@composable
+            val groupViewModel: GroupViewModel = viewModel()
+
+            EachGroupScreen(
+                navController = navController,
+                group = GroupDto(groupId, "Sample Group", 1, 5), // 필요시 수정
+                groupMember = getSampleMembers(),
+                repository = groupRepository,
+                tokenManager = TokenManager,
+                viewModel = groupViewModel,
+                groupId = groupId,
+                yearMonth = "2025-02"
+            )
+        }
 
         composable("GroupMemberSchedule/{memberName}") { backStackEntry ->
             val memberName = backStackEntry.arguments?.getString("memberName") ?: "이름 없음"
