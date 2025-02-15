@@ -26,6 +26,7 @@ android {
         versionName = "1.0"
 
         buildConfigField("String", "SERVER_URL", "\"${localProperties.getProperty("SERVER_URL", "")}\"")
+        buildConfigField("String", "NAVER_CLIENT_ID", "\"${localProperties.getProperty("NAVER_CLIENT_ID", "")}\"")
 
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -107,5 +108,9 @@ dependencies {
     // datastore
     implementation ("androidx.datastore:datastore-preferences:1.1.2")
     implementation ("androidx.datastore:datastore-core:1.1.2")  // 코어 의존성 (필요 시)
+
+    // 네이버 지도 API
+    implementation("com.naver.maps:map-sdk:3.20.0")
+    implementation ("io.github.fornewid:naver-map-compose:1.8.0")
 
 }

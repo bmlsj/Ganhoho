@@ -37,7 +37,7 @@ fun MainNavHost() {
 
         // 병원 정보 화면
         composable("hospitalInfo") {
-            HospitalInfoScreen(navController)
+            HospitalInfoScreen()
         }
     }
 }
