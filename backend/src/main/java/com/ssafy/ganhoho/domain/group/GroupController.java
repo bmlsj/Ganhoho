@@ -210,4 +210,24 @@ public class GroupController {
         }
     }
 
+    @Operation(summary = "그룹 초대 링크 조회 (비회원용)", description = "초대 링크를 통해 그룹 딥링크 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "딥링크 조회 성공",
+                content = @Content(schema = @Schema(implementation = GroupPublicInviteLinkResponse.class))),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 초대 링크입니다")
+    })
+    @GetMapping("/invite")
+    public ResponseEntity<?> getGroupInviteByCode(
+            @Schema(description = "초대링크", example = "abc123de")
+            @RequestParam String inviteLink) {
+        try {
+            GroupPublicInviteLinkResponse response = groupService.getGroupInviteLinkByCode(inviteLink);
+            return ResponseEntity.ok(response);
+        } catch (CustomException e) {
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus())
+                    .body(new ErrorResponse(e.getErrorCode()));
+        }
+    }
+
+
 }

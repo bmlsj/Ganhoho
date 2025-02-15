@@ -96,7 +96,7 @@ public class GroupServiceImpl implements GroupService {
         Group savedGroup = groupRepository.save(group);
 
         // ID 발급 후 딥링크 생성 및 업데이트
-        String deepLink = GroupDeepLinkUtil.createGroupDeepLink(savedGroup.getGroupId());
+        String deepLink = GroupDeepLinkUtil.createGroupDeepLink(savedGroup.getGroupInviteLink());
         savedGroup.setGroupDeepLink(deepLink);
         savedGroup = groupRepository.save(savedGroup);
 
@@ -221,6 +221,19 @@ public class GroupServiceImpl implements GroupService {
 
     }
 
+    // 초대 링크로 그룹 딥링크 조회
+    @Override
+    public GroupPublicInviteLinkResponse getGroupInviteLinkByCode(String inviteLink) {
+
+        Group group = groupRepository.findByGroupInviteLink(inviteLink)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_GROUP));
+
+        return GroupPublicInviteLinkResponse.builder()
+                .groupDeepLink(group.getGroupDeepLink())
+                .build();
+
+    }
+
     @Override
     @Transactional
     public GroupLeaveResponse getGroupLeave(Long memberId, Long groupId) {
@@ -280,7 +293,7 @@ public class GroupServiceImpl implements GroupService {
         linkMemberSchedulesToGroup(groupId, memberId, currentYearMonth);
 
         // 업데이트 이후 목록 반환
-        List<Group> groups = groupRepository.findGroupByMemberId(groupId);
+        List<Group> groups = groupRepository.findGroupByMemberId(memberId);
 
         return groups.stream()
                 .map(g -> GroupAcceptResponse.builder()
