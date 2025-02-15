@@ -42,6 +42,7 @@ import com.ssafy.ganhoho.R
 import com.ssafy.ganhoho.ui.bottom_navigation.AppNavHost
 import com.ssafy.ganhoho.ui.bottom_navigation.CustomBottomNavigation
 import com.ssafy.ganhoho.ui.theme.GANHOHOTheme
+import com.ssafy.ganhoho.util.NotificationPermission
 import com.ssafy.ganhoho.util.PermissionChecker
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 
@@ -53,6 +54,7 @@ class MainActivity : ComponentActivity() {
 
         // 저장된 토큰 불러오기
         authViewModel.loadTokens(this)
+
         setContent {
             GANHOHOTheme {
                 Surface(
@@ -78,6 +80,9 @@ fun MainScreen() {
         navController.currentBackStackEntryAsState().value  // currentRoute 자동 업데이트
     val currentRoute = currentBackStackEntry?.destination?.route ?: "home"
 
+    // 알림 권한 요청
+    NotificationPermission()
+    
     BoxWithConstraints {
         val screenWidth = with(LocalDensity.current) { constraints.maxWidth.toDp() }
         val itemWidth = screenWidth / 5   // 네비게이션 버튼 5개 기준
