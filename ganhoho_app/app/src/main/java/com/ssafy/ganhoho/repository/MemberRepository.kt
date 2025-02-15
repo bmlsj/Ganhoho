@@ -36,7 +36,7 @@ class MemberRepository {
         request: UpdateHospitalWardRequest
     ): Result<MyPageResponse> {
         return try {
-            val response = RetrofitUtil.memberService.updateHospitalAndWardInfo(token, request)
+            val response = RetrofitUtil.memberService.updateHospitalAndWardInfo("Bearer $token", request)
             handleResponse(response)
         } catch (e: Exception) {
             Result.failure(e)

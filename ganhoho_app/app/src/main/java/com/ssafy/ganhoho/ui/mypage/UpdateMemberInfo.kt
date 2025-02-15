@@ -1,8 +1,7 @@
 package com.ssafy.ganhoho.ui.mypage
 
+import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -39,8 +37,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,7 +47,6 @@ import com.ssafy.ganhoho.R
 import com.ssafy.ganhoho.data.model.dto.member.UpdateHospitalWardRequest
 import com.ssafy.ganhoho.data.model.response.member.MyPageResponse
 import com.ssafy.ganhoho.ui.theme.FieldGray
-import com.ssafy.ganhoho.ui.theme.FieldLightGray
 import com.ssafy.ganhoho.ui.theme.PrimaryBlue
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.MemberViewModel
@@ -75,18 +70,22 @@ fun UpdateMemberInfo(navController: NavController) {
     LaunchedEffect(token) {
         if (token.isNullOrEmpty()) {
             authViewModel.loadTokens(context)
-        }
-    }
-
-    LaunchedEffect(token) {
-        if (token != null) {
+        } else {
             // 마이페이지 정보 불러오기
             memberViewModel.getMyPageInfo(token)
         }
     }
+
     val memberInfoState = memberViewModel.mypageInfo.collectAsState().value
     val memberInfo = memberInfoState?.getOrNull() ?: MyPageResponse(-1, "", "", "", "")
 
+    // 회원 정보가 업데이트되면 UI에 반영
+    LaunchedEffect(memberInfo) {
+        id = memberInfo.loginId
+        name = memberInfo.name
+        hospital = memberInfo.hospital ?: ""
+        ward = memberInfo.ward ?: ""
+    }
 
     Box(
         modifier = Modifier
@@ -309,11 +308,11 @@ fun UpdateMemberInfo(navController: NavController) {
             Button(
                 onClick = {
                     // 회원정보 수정 저장
-                    val request = UpdateHospitalWardRequest(
-                        hospital, ward
-                    )
+                    Log.d("mypage", "$hospital ${ward}")
+                    val request = UpdateHospitalWardRequest(hospital, ward)
                     if (token != null) {
                         memberViewModel.updateHospitalAndWardInfo(token, request)
+                        navController.popBackStack()
                     }
                 },
                 modifier = Modifier
