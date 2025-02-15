@@ -93,12 +93,11 @@ onMounted(async () => {
   }
 
   // ✅ 앱에서 호출할 전역 함수 등록
-  window.receiveToken = (access_token, refresh_token) => {
-    console.log("📢 Received access token:", access_token)
-    console.log("📢 Received refresh token:", refresh_token)
-    // ✅ Pinia Store에 저장
+  document.addEventListener('tokenReceived', (e) => {
+    const { access_token, refresh_token } = e.detail
+    console.log("Component - Token received via event:", access_token)
     apiStore.setToken(access_token, refresh_token)
-  }
+  })
 })
 
 // ✅ 약 상세 페이지 이동
