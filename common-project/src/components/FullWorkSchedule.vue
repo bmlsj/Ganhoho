@@ -36,7 +36,7 @@
     <!-- 캘린더 UI (여기에 ref를 추가하여 스크롤 대상로 지정) -->
     <div v-else class="calendar-body" ref="calendarBodyRef">
       <div v-for="(week, weekIndex) in store.calendar" :key="weekIndex" class="week">
-        <div class="dates" ref="dateRefs[weekIndex]">
+        <div class="dates">
           <div v-for="(day, dayIndex) in week" :key="dayIndex" class="date">
             {{ day || '' }}
           </div>
@@ -87,7 +87,6 @@ const isFirstVisit = ref(localStorage.getItem('visitedFullWorkSchedule') !== 'tr
 
 // 새로운 ref: 캘린더 UI의 스크롤 컨테이너
 const calendarBodyRef = ref(null)
-const dateRefs = ref([])
 
 const nextTutorialStep = async () => {
   if (tutorialStep.value === 1) {
@@ -114,10 +113,6 @@ const handleFileSelection = async (event) => {
 onMounted(async () => {
   console.log("📢 캘린더 업데이트 실행!");
 
-  if (!store.isDataLoaded) {
-    console.log("📢 POST 요청이 먼저 실행되어야 합니다. (GET 요청 대기 중)");
-  }
-
   await nextTick(); // DOM 업데이트 후 캘린더 생성
   store.generateCalendar();
   console.log("📢 불러온 일정 데이터:", store.people);
@@ -129,30 +124,29 @@ onMounted(async () => {
     document.addEventListener('click', nextTutorialStep);
   }
 
-  // ★★ 자동 스크롤 기능 (오늘 날짜가 포함된 주차가 최상단으로 이동) ★★
-  await nextTick(); // DOM 렌더링이 완료될 때까지 대기
-
+  // ★★ 자동 스크롤 기능 ★★
+  await nextTick();
   const today = new Date().getDate();
-  let targetWeekIndex = -1;
+  let targetWeekIndex = 0;
 
-  // 현재 날짜가 포함된 주차 찾기
   store.calendar.forEach((week, index) => {
     if (week.includes(today)) {
       targetWeekIndex = index;
     }
   });
 
-  console.log(`📢 오늘 날짜(${today})가 포함된 주차 인덱스: ${targetWeekIndex}`);
+  if (calendarBodyRef.value) {
+    const weekElements = calendarBodyRef.value.querySelectorAll('.week');
+    if (weekElements.length > targetWeekIndex) {
+      const targetElement = weekElements[targetWeekIndex];
 
-  if (targetWeekIndex !== -1 && dateRefs.value[targetWeekIndex]) {
-    await nextTick(); // 추가 렌더링 대기 후 스크롤 적용
-    dateRefs.value[targetWeekIndex].scrollIntoView({ behavior: 'smooth', block: 'start' });
-    console.log(`📢 자동 스크롤: 오늘(${today})이 포함된 주의 날짜가 최상단에 오도록 이동`);
-  } else {
-    console.warn("⚠️ 해당 주차를 찾지 못했습니다.");
+      // 🚀 부드러운 스크롤 애니메이션 적용
+      targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
+
+      console.log(`📢 자동 스크롤: 오늘(${today})이 포함된 주(인덱스 ${targetWeekIndex})로 부드럽게 이동`);
+    }
   }
-});
-
+})
 
 watchEffect(() => {
   console.log("📢 데이터 상태 변경 감지:", store.isDataLoaded)
