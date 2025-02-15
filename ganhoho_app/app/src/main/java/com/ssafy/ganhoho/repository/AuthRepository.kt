@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.repository
 
+import android.content.Context
 import android.util.Log
 import com.ssafy.ganhoho.data.model.dto.auth.LoginRequest
 import com.ssafy.ganhoho.data.model.dto.auth.SignUpRequest
@@ -43,6 +44,16 @@ class AuthRepository {
     suspend fun isUsedId(loginId: String): Result<Boolean> {
         return try {
             val response = RetrofitUtil.authService.isUsedId(loginId)
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // 회원 탈퇴
+    suspend fun withdrawalMember(token: String, context: Context): Result<Void> {
+        return try {
+            val response = RetrofitUtil.authService.withdrawalMember(token)
             handleResponse(response)
         } catch (e: Exception) {
             Result.failure(e)

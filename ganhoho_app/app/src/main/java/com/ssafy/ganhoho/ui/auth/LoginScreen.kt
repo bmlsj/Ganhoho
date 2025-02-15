@@ -65,24 +65,12 @@ fun LoginScreen(navController: NavController) {
     val context = LocalContext.current
 
     // 로그인 결과 상태 감지
-    val loginResult = authViewModel.loginResult.collectAsState().value
+    // val loginResult = authViewModel.loginResult.collectAsState().value
     val userInfo = authViewModel.userInfo.collectAsState().value
 
     // ✅ 앱 실행 시 자동 로그인 확인
     LaunchedEffect(Unit) {
         authViewModel.checkAutoLogin(context)
-    }
-
-    LaunchedEffect(loginResult) {
-        loginResult?.onSuccess {
-            // ✅ 로그인 성공 시 메인 화면으로 이동
-            Toast.makeText(context, "로그인 성공!", Toast.LENGTH_SHORT).show()
-            navController.navigate("main") {
-                popUpTo("login") { inclusive = true }
-            }
-        }?.onFailure { error ->
-            Toast.makeText(context, "로그인 실패: ${error.message}", Toast.LENGTH_SHORT).show()
-        }
     }
 
     // ✅ 로그인 성공 시 메인 화면 이동
