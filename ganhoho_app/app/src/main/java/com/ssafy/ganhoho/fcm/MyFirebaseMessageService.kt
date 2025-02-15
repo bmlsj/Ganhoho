@@ -9,6 +9,7 @@ import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.ssafy.ganhoho.R
@@ -73,9 +74,14 @@ class MyFirebaseMessageService : FirebaseMessagingService() {
             .setContentTitle(title)
             .setContentText(message)
             .setAutoCancel(true)
+            .setLocalOnly(false)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .extend(NotificationCompat.WearableExtender()
+                .setBridgeTag("testOne"))
+            .build()
 
-        notificationManager.notify(0, notificationBuilder.build())
+        NotificationManagerCompat.from(this).notify(0, notificationBuilder);
+//        notificationManager.notify(0, notificationBuilder.build())
     }
 
     //      private fun saveNotificationToServer(title: String, content: String, c
