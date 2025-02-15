@@ -3,6 +3,7 @@ package com.ssafy.ganhoho.data.repository
 
 import android.util.Log
 import com.ssafy.ganhoho.data.model.dto.group.GroupDto
+import com.ssafy.ganhoho.data.model.dto.group.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.response.group.GroupInviteLinkResponse
 import com.ssafy.ganhoho.data.model.response.group.GroupMemberResponse
 import com.ssafy.ganhoho.data.model.response.group.MemberMonthlyScheduleResponse
@@ -97,13 +98,42 @@ class GroupRepository {
 
 
     // 그룹 탈퇴
-    suspend fun leaveGroup(token: String, groupId: Int): Result<Boolean>{
-        return try{
+    suspend fun leaveGroup(token: String, groupId: Int): Result<Boolean> {
+        return try {
             val response = RetrofitUtil.groupService.leaveGroup("Bearer $token", groupId)
-            handleResponse(response)
-        }catch (e:Exception){
-            Log.e("GroupRepository", "Error feching group leave group", e)
+
+            if (response.isSuccessful) {
+                val success = response.body()?.success ?: false // ✅ DTO 사용하여 success 값 가져오기
+                Log.d("GroupRepository", "그룹 탈퇴 성공: $success")
+                Result.success(success)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Log.e("GroupRepository", "그룹 탈퇴 실패: ${response.code()} - $errorBody")
+                Result.failure(Exception("API Request Failed: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Log.e("GroupRepository", "그룹 탈퇴 요청 중 오류 발생", e)
             Result.failure(e)
         }
     }
+
+
+    // 그룹 멤버 개인 근무 스케줄
+    suspend fun getMemberWorkSchedule(token: String, memberId: Long?): Result<List<WorkScheduleDto>> {
+        return try {
+            val response = RetrofitUtil.groupService.getMemberWorkSchedule("Bearer $token", memberId)
+
+            if (response.isSuccessful) {
+                response.body()?.let {
+                    Result.success(it)
+                } ?: Result.failure(Exception("Empty response"))
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Result.failure(Exception("API Error: ${response.code()} - $errorBody"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
 }

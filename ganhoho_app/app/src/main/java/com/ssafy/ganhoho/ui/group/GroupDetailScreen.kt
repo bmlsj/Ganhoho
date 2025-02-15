@@ -36,23 +36,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavController
 import com.ssafy.ganhoho.R
 import com.ssafy.ganhoho.base.TokenManager
 import com.ssafy.ganhoho.data.model.dto.group.GroupDto
 import com.ssafy.ganhoho.data.model.dto.group.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.response.group.GroupMemberResponse
-import com.ssafy.ganhoho.data.model.response.group.MemberMonthlyScheduleResponse
+import com.ssafy.ganhoho.data.model.response.group.GroupViewModelFactory
 import com.ssafy.ganhoho.data.repository.GroupRepository
 import com.ssafy.ganhoho.viewmodel.GroupViewModel
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -63,10 +65,16 @@ fun EachGroupScreen(
     groupMember: List<GroupMemberResponse>,
     repository:GroupRepository,
     tokenManager:TokenManager,
-    viewModel: GroupViewModel,
     groupId: Int,
     yearMonth: String
     ) {
+
+    val viewModel: GroupViewModel = ViewModelProvider(
+        LocalContext.current as ViewModelStoreOwner,
+        GroupViewModelFactory(repository, tokenManager)
+    ).get(GroupViewModel::class.java)
+
+
     val currentDate = LocalDate.now()
     val currentYear = currentDate.year
     val currentMonth = currentDate.monthValue
@@ -300,9 +308,11 @@ fun EachGroupScreen(
                         },
 
                         navController = navController,
-                        onNavigateToSchedule = {},
                         groupId = group.groupId,
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        repository = repository,
+                        tokenManager = TokenManager,
+                        group = group
                     )
 
                     // 다이얼로그 (그룹 탈퇴)
@@ -325,8 +335,6 @@ fun EachGroupScreen(
     }
 
 }
-
-
 
 
 fun adjustWorkSchedule(
@@ -401,62 +409,62 @@ fun getSampleGroup(groupId: Int): GroupDto {
 
 fun getSampleMembers(): List<GroupMemberResponse> {
     return listOf(
-        GroupMemberResponse("john_doe", "서정후", "서울병원", "응급실"),
-        GroupMemberResponse("han_ahyoung", "한아영", "서울병원", "응급실"),
-        GroupMemberResponse("lee_seungji", "이승지", "서울병원", "응급실"),
+        GroupMemberResponse("john_doe", "서정후", "서울병원", "ssafy", "응급실"),
+        GroupMemberResponse("han_ahyoung", "한아영", "서울병원", "ssafy", "응급실"),
+        GroupMemberResponse("lee_seungji", "이승지", "서울병원", "ssafy", "응급실"),
 
         )
 }
 
-fun getSampleSchedules(): List<MemberMonthlyScheduleResponse> {
-    val currentDate = LocalDate.now()
-    val nextMonthDate = currentDate.lengthOfMonth()
-
-    return listOf(
-        MemberMonthlyScheduleResponse(
-            memberId = 1,
-            name = "서정후",
-            loginId = "john_doe",
-            hospital = "서울병원",
-            ward = "응급실",
-            schedules = List(nextMonthDate) { i ->
-                val day = "%02d".format(i + 1)
-                WorkScheduleDto(
-                    LocalDateTime.parse("2025-02-${day}T00:00:00"),
-                    listOf("Nig", "Off", "Eve", "Day").random()
-                )
-            }
-        ),
-        MemberMonthlyScheduleResponse(
-            memberId = 2,
-            name = "한아영",
-            loginId = "han_ahyoung",
-            hospital = "서울병원",
-            ward = "응급실",
-            schedules = List(nextMonthDate) { i ->
-                val day = "%02d".format(i + 1)
-                WorkScheduleDto(
-                    LocalDateTime.parse("2025-02-${day}T00:00:00"),
-                    listOf("Nig", "Off", "Eve", "Day").random()
-                )
-            }
-        ),
-        MemberMonthlyScheduleResponse(
-            memberId = 3,
-            name = "이승지",
-            loginId = "lee_seungji",
-            hospital = "서울병원",
-            ward = "응급실",
-            schedules = List(nextMonthDate) { i ->
-                val day = "%02d".format(i + 1)
-                WorkScheduleDto(
-                    LocalDateTime.parse("2025-02-${day}T00:00:00"),
-                    listOf("Nig", "Off", "Eve", "Day").random()
-                )
-            }
-        )
-    )
-}
+//fun getSampleSchedules(): List<MemberMonthlyScheduleResponse> {
+//    val currentDate = LocalDate.now()
+//    val nextMonthDate = currentDate.lengthOfMonth()
+//
+//    return listOf(
+//        MemberMonthlyScheduleResponse(
+//            memberId = 1,
+//            name = "서정후",
+//            loginId = "john_doe",
+//            hospital = "서울병원",
+//            ward = "응급실",
+//            schedules = List(nextMonthDate) { i ->
+//                val day = "%02d".format(i + 1)
+//                WorkScheduleDto(
+//                    LocalDateTime.parse("2025-02-${day}T00:00:00"),
+//                    listOf("Nig", "Off", "Eve", "Day").random()
+//                )
+//            }
+//        ),
+//        MemberMonthlyScheduleResponse(
+//            memberId = 2,
+//            name = "한아영",
+//            loginId = "han_ahyoung",
+//            hospital = "서울병원",
+//            ward = "응급실",
+//            schedules = List(nextMonthDate) { i ->
+//                val day = "%02d".format(i + 1)
+//                WorkScheduleDto(
+//                    LocalDateTime.parse("2025-02-${day}T00:00:00"),
+//                    listOf("Nig", "Off", "Eve", "Day").random()
+//                )
+//            }
+//        ),
+//        MemberMonthlyScheduleResponse(
+//            memberId = 3,
+//            name = "이승지",
+//            loginId = "lee_seungji",
+//            hospital = "서울병원",
+//            ward = "응급실",
+//            schedules = List(nextMonthDate) { i ->
+//                val day = "%02d".format(i + 1)
+//                WorkScheduleDto(
+//                    LocalDateTime.parse("2025-02-${day}T00:00:00"),
+//                    listOf("Nig", "Off", "Eve", "Day").random()
+//                )
+//            }
+//        )
+//    )
+//}
 
 
 //@Preview(showBackground = true)

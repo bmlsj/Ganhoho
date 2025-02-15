@@ -12,8 +12,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class GroupViewModel(
-    private val repository: GroupRepository,
+class GroupViewModel (
+    val repository: GroupRepository,
     private val tokenManager: TokenManager
 ) : ViewModel() {
 
@@ -68,27 +68,29 @@ class GroupViewModel(
 
 
     //그룹 탈퇴
-    fun leaveGroup(groupId: Int, onResult: (Boolean) -> Unit) {
+    fun leaveGroup(groupId: Int, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
         viewModelScope.launch {
-            val token = tokenManager.getAccessToken() ?: run {
-                Log.e("GroupViewModel", "No token available!")
-                onResult(false)
+            val token = TokenManager.getAccessToken() // 토큰 가져오기
+            if (token == null) {
+                onFailure("토큰이 없습니다.")
                 return@launch
             }
 
-            Log.d("GroupViewModel", "그룹 탈퇴 요청: groupId=$groupId, token=$token")
-
             val result = repository.leaveGroup(token, groupId)
-
             result.onSuccess {
-                Log.d("GroupViewModel", "그룹 탈퇴 성공!")
-                onResult(true)
+                if (it) {
+                    Log.d("GroupViewModel", "✅ 그룹 탈퇴 성공!")
+                    onSuccess() // 성공 콜백 실행
+                } else {
+                    onFailure("그룹 탈퇴 실패: 응답이 false입니다.")
+                }
             }.onFailure { error ->
-                Log.e("GroupViewModel",  "그룹 탈퇴 실패: ${error.message}")
-                onResult(false)
+                Log.e("GroupViewModel", "❌ 그룹 탈퇴 실패", error)
+                onFailure(error.localizedMessage ?: "알 수 없는 오류 발생")
             }
         }
     }
+
 
 
     // 그룹별 스케줄 조회
@@ -120,6 +122,8 @@ class GroupViewModel(
             }
         }
     }
+
+
 
 
 

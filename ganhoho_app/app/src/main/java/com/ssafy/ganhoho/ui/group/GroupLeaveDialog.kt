@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.ui.group
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -48,7 +49,7 @@ fun GroupLeaveDialog(
     )
 
     if (isVisible) {
-        Dialog(onDismiss) {
+        Dialog( onDismissRequest = { onDismiss()}) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth(0.85f)
@@ -77,10 +78,18 @@ fun GroupLeaveDialog(
 
                     Button(
                         onClick = {
-                            groupViewModel.leaveGroup(group.groupId) { success ->
-                                navController.navigate("group")
-
-                            }
+                            groupViewModel.leaveGroup(
+                                group.groupId,
+                                onSuccess = {
+                                    Log.d("GroupLeaveDialog", "✅ 그룹 탈퇴 성공! 홈 화면으로 이동")
+                                    navController.navigate("group") // 🔹 탈퇴 성공 시 그룹 목록으로 이동
+                                    onConfirm() // 다이얼로그 닫기
+                                },
+                                onFailure = { errorMessage ->
+                                    Log.e("GroupLeaveDialog", "❌ 그룹 탈퇴 실패: $errorMessage")
+                                    onDismiss() // 실패 시 다이얼로그 닫기
+                                }
+                            )
                         },
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF79C7E3)),
                         modifier = Modifier

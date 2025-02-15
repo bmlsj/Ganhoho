@@ -41,6 +41,8 @@ fun MainNavHost(authDataStore: AuthDataStore) {
         composable("hospitalInfo") {
             HospitalInfoScreen(navController)
         }
+
+
     }
 }
 

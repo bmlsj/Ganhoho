@@ -14,7 +14,6 @@ import com.ssafy.ganhoho.data.model.response.group.GroupViewModelFactory
 import com.ssafy.ganhoho.data.repository.GroupRepository
 import com.ssafy.ganhoho.ui.friend.FriendScreen
 import com.ssafy.ganhoho.ui.group.EachGroupScreen
-import com.ssafy.ganhoho.ui.group.GroupMemberScheduleScreen
 import com.ssafy.ganhoho.ui.group.GroupScreen
 import com.ssafy.ganhoho.ui.group.getSampleMembers
 import com.ssafy.ganhoho.ui.home.HomeScreen
@@ -83,7 +82,6 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
                     groupMember = getSampleMembers(),
                     repository = GroupRepository(),
                     tokenManager = TokenManager,
-                    viewModel = groupViewModel,
                     groupId = group.groupId,
                     yearMonth = "2025-02"
                 )
@@ -103,19 +101,10 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
                 groupMember = getSampleMembers(),
                 repository = groupRepository,
                 tokenManager = TokenManager,
-                viewModel = groupViewModel,
                 groupId = groupId,
                 yearMonth = "2025-02"
             )
         }
 
-        composable("GroupMemberSchedule/{memberName}") { backStackEntry ->
-            val memberName = backStackEntry.arguments?.getString("memberName") ?: "이름 없음"
-            GroupMemberScheduleScreen(
-                navController = navController,
-                memberName = memberName,
-                onToggleBottomNav = { isVisible -> /* 바텀 네비게이션 상태 변경 */ }
-            )
-        }
     }
 }

@@ -1,11 +1,14 @@
 package com.ssafy.ganhoho.data.remote
 
 import com.ssafy.ganhoho.data.model.dto.group.GroupDto
+import com.ssafy.ganhoho.data.model.dto.group.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.response.group.GroupInviteLinkResponse
 import com.ssafy.ganhoho.data.model.response.group.GroupMemberResponse
+import com.ssafy.ganhoho.data.model.response.group.LeaveGroupResponse
 import com.ssafy.ganhoho.data.model.response.group.MemberMonthlyScheduleResponse
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
@@ -51,11 +54,17 @@ interface GroupService {
 
 
     // 그룹 탈퇴
-    @GET("api/groups/schedules/{groupId}")
+    @DELETE("api/groups/{groupId}")
     suspend fun leaveGroup(
         @Header("Authorization") token: String,
         @Path("groupId") groupId: Int
-    ): Response<Boolean>
+    ): Response<LeaveGroupResponse>
 
+    // 멤버별 개인 근무 일정 조회
+    @GET("api/schedules/work/{memberId}")
+    suspend fun getMemberWorkSchedule(
+        @Header("Authorization") token: String,
+        @Path("memberId") memberId: Long?
+    ): Response<List<WorkScheduleDto>>
 
 }

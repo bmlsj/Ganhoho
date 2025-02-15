@@ -1,6 +1,6 @@
 package com.ssafy.ganhoho.ui.group
 
-import android.net.Uri
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
@@ -29,7 +29,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -52,24 +51,23 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun GroupMemberScreen(
     members: List<GroupMemberResponse>,
-    isVisible: Boolean, // 화면 표시 여부
-    onClose: () -> Unit, // 사이드 메뉴 닫기
+    isVisible: Boolean,
+    onClose: () -> Unit,
     navController: NavController,
-    onNavigateToSchedule: () -> Unit,
     groupId: Int,
-    viewModel: GroupViewModel
+    viewModel: GroupViewModel,
+    repository: GroupRepository,
+    tokenManager: TokenManager,
+    group: GroupDto
 ) {
     val yearMonth: String = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"))
 
     LaunchedEffect(Unit) {
         viewModel.fetchMemberSchedules(groupId, yearMonth) // 스케줄 불러오기
-        viewModel.fetchMemberList(groupId) // 그룹원 리스트 불러오기 추가
+        viewModel.fetchMemberList(groupId) // 그룹원 리스트 불러오기
     }
 
-
-    var isDialogVisible by rememberSaveable { mutableStateOf(false) } // rememberSaveable로 상태 유지
-    var selectedMember by remember { mutableStateOf<GroupMemberResponse?>(null) }
-    var isPopupVisible by remember { mutableStateOf(false) }
+    var isDialogVisible by rememberSaveable { mutableStateOf(false) } // 다이얼로그 상태 유지
     val groupMembers by viewModel.groupMembers.collectAsState()
 
     AnimatedVisibility(
@@ -87,29 +85,22 @@ fun GroupMemberScreen(
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxHeight() // 세로로 화면을 가득 채움
-                    .fillMaxWidth(0.7f) // 오른쪽에서 85% 차지
+                    .fillMaxHeight()
+                    .fillMaxWidth(0.7f)
                     .background(
                         Color.White,
                         shape = RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp)
                     )
                     .padding(25.dp)
-                    .align(Alignment.CenterEnd) // 오른쪽 정렬
+                    .align(Alignment.CenterEnd)
             ) {
                 Column {
-                    // 상단 닫기 버튼
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 40.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(text = "그룹원", fontSize = 27.sp, fontWeight = FontWeight(600))
-                    }
+                    // 상단 제목
+                    Text(text = "그룹원", fontSize = 27.sp, fontWeight = FontWeight.Bold)
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // 멤버 리스트 및 멤버별 개인 스케줄
+                    // 멤버 리스트
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxHeight()
@@ -132,21 +123,17 @@ fun GroupMemberScreen(
                                 MemberCard(
                                     member = member,
                                     onClick = {
-                                        selectedMember = member
-                                        onNavigateToSchedule()
-                                        navController.navigate("GroupMemberSchedule/${Uri.encode(member.name)}")
+                                        navController.navigate("GroupMemberSchedule/${member.loginId}")
                                     }
                                 )
                             }
                         }
                     }
 
-
-
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Button(
-                        onClick = { /* TODO: 초대 링크 공유 기능 추가 */ },
+                        onClick = { /* 초대 링크 공유 기능 추가 예정 */ },
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF79C7E3)),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -165,8 +152,10 @@ fun GroupMemberScreen(
                         fontSize = 10.sp,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { isDialogVisible = true } // 다이얼로그 표시 상태 변경
-
+                            .clickable {
+                                Log.d("DEBUG", "isDialogVisible 변경됨: $isDialogVisible -> true")
+                                isDialogVisible = true
+                            }
                             .padding(bottom = 35.dp),
                         textAlign = TextAlign.Center
                     )
@@ -175,31 +164,26 @@ fun GroupMemberScreen(
         }
     }
 
-    // 그룹 탈퇴 다이얼로그 표시
     if (isDialogVisible) {
-        val repository = GroupRepository()
-        val tokenManager = TokenManager
-
         GroupLeaveDialog(
             isVisible = isDialogVisible,
-            onConfirm = {
-                isDialogVisible = false // 확인 버튼 클릭 시 다이얼로그 닫기
-            },
-            onDismiss = { /* 확인을 눌러야 닫히도록 변경 (onDismiss 비활성화) */ },
+            onConfirm = { isDialogVisible = false }, // 다이얼로그 닫기
+            onDismiss = { isDialogVisible = false }, // 다이얼로그 닫기
             navController = navController,
             repository = repository,
             tokenManager = tokenManager,
-            group = GroupDto(groupId, "그룹명", 0, 0)
+            group = group
         )
     }
 }
 
-// 그룹원 카드를 개별 컴포넌트로 분리
+
+// 그룹원 개별 카드
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MemberCard(
     member: GroupMemberResponse,
-    onClick:() -> Unit
+    onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -210,7 +194,6 @@ fun MemberCard(
         shape = RoundedCornerShape(7.dp),
         elevation = 4.dp,
         backgroundColor = Color.White,
-
     ) {
         Column(
             modifier = Modifier
@@ -220,10 +203,8 @@ fun MemberCard(
         ) {
             Row(
                 horizontalArrangement = Arrangement.Start,
-                modifier = Modifier
-                    .padding(bottom = 2.dp)
-
-            ){
+                modifier = Modifier.padding(bottom = 2.dp)
+            ) {
                 Text(text = member.name, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 Text(
                     text = "@${member.loginId}",
@@ -233,33 +214,12 @@ fun MemberCard(
                         .align(Alignment.CenterVertically)
                         .padding(start = 4.dp)
                 )
-
             }
             Text(
-                text = "싸피병원",
+                text = member.hospital ?: "소속 병원 없음",
                 fontSize = 10.sp,
                 color = Color(0xFF000000)
-                )
+            )
         }
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun PreviewGroupMemberScreen() {
-//    var isVisible by remember { mutableStateOf(true) } // 초기에는 보이도록 설정
-//    var isDialogVisible by remember { mutableStateOf(false) }
-//    val navController = TestNavHostController(LocalContext.current) // 테스트용 네비게이션 컨트롤러
-//
-//    Column {
-//        GroupMemberScreen(
-//            members = getSampleMembers(), // 샘플 데이터 사용
-//            isVisible = isVisible,
-//            onClose = { isVisible = false }, // 닫기 버튼 클릭 시 숨김
-//            navController = navController, // 네비게이션 컨트롤러 전달
-//            onNavigateToSchedule = {} // (필요에 따라 동작 추가 가능),
-//
-//        )
-//
-//    }
-//}
