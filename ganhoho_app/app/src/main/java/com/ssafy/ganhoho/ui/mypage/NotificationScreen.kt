@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.google.firebase.messaging.FirebaseMessaging
 import com.ssafy.ganhoho.data.model.dto.notification.Notification
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.NotifiViewModel
@@ -44,16 +46,29 @@ fun NotificationScreen(navController: NavController) {
     val authViewModel: AuthViewModel = viewModel()
 
     val notificationState = notifiViewModel.notifcations.collectAsState().value
-    val notifications = notificationState?.getOrNull()?.notifications ?: emptyList()
+    val notifications = notificationState?.getOrNull() ?: emptyList()
+
+    // fcm 토큰 불러오기
+    val fcmToken = remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                fcmToken.value = task.result
+            } else {
+                fcmToken.value = null
+            }
+        }
+    }
 
     // 토큰 로드하기
     val token = authViewModel.accessToken.collectAsState().value
     val context = LocalContext.current
 
-    LaunchedEffect(token) {
+    LaunchedEffect(token, fcmToken) {
         if (token.isNullOrEmpty()) {
             authViewModel.loadTokens(context)
-        } else {
+        } else if (!fcmToken.value.isNullOrEmpty()) {
             Log.d("token", token)
             // 알림 기록 불러오기
             notifiViewModel.getNotifications(token)
@@ -64,10 +79,22 @@ fun NotificationScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(12.dp)
+            .padding(12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        for (notis in notifications) {
-            NotiDetail(notis)
+        if (notifications.isEmpty()) {
+            // ✅ 알림이 없을 때
+            Text(
+                text = "조회된 알림이 없습니다.",
+                fontSize = 18.sp,
+                color = Color.Gray
+            )
+        } else {
+            // ✅ 알림이 있을 때
+            for (notis in notifications) {
+                NotiDetail(notis)
+            }
         }
     }
 }
@@ -82,7 +109,7 @@ fun NotiDetail(notice: Notification) {
             .padding(10.dp)
             .shadow(10.dp, shape = RoundedCornerShape(10.dp)) // ✅ 먼저 적용
             .border(
-                1.dp,
+                2.dp,
                 color = if (notice.type != 1) Color.Transparent else Color.Red.copy(0.2f),
                 shape = RoundedCornerShape(10.dp)
             )

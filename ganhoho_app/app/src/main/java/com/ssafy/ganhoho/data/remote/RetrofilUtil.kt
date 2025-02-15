@@ -10,6 +10,7 @@ class RetrofitUtil {
         val friendService = ApplicationClass.retrofit.create(FriendService::class.java)
         val memberService = ApplicationClass.retrofit.create(MemberService::class.java)
         val notiService = ApplicationClass.retrofit.create(NotiService::class.java)
+        val scheduleService = ApplicationClass.retrofit.create(ScheduleService::class.java)
 
     }
 }

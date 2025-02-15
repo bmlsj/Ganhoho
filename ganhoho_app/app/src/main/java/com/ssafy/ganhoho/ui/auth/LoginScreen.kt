@@ -49,15 +49,13 @@ import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.wearable.Wearable
 import com.google.firebase.messaging.FirebaseMessaging
 import com.ssafy.ganhoho.R
-import com.ssafy.ganhoho.data.model.dto.member.LoginRequest
+import com.ssafy.ganhoho.data.model.dto.auth.LoginRequest
 import com.ssafy.ganhoho.ui.theme.BackgroundBlue40
 import com.ssafy.ganhoho.ui.theme.FieldGray
 import com.ssafy.ganhoho.ui.theme.FieldLightGray
 import com.ssafy.ganhoho.ui.theme.PrimaryBlue
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
-import kotlin.math.log
 
-private const val TAG = "LoginScreen"
 @Composable
 fun LoginScreen(navController: NavController) {
 
@@ -72,23 +70,33 @@ fun LoginScreen(navController: NavController) {
     // 로그인 결과 상태 감지
     val loginResult = authViewModel.loginResult.collectAsState().value
     val token = authViewModel.accessToken.collectAsState().value
+    // val loginResult = authViewModel.loginResult.collectAsState().value
+    val userInfo = authViewModel.userInfo.collectAsState().value
 
     LaunchedEffect(loginResult, token) {
         loginResult?.onSuccess {
             // ✅ 로그인 성공 시 메인 화면으로 이동
             Toast.makeText(context, "로그인 성공!", Toast.LENGTH_SHORT).show()
 
-            if(token != null) {
+            if (token != null) {
                 findConnectedNodes(context, token)
             } else {
                 authViewModel.loadTokens(context)
             }
+        }
+    }
+    // ✅ 앱 실행 시 자동 로그인 확인
+    LaunchedEffect(Unit) {
+        authViewModel.checkAutoLogin(context)
+    }
 
+    // ✅ 로그인 성공 시 메인 화면 이동
+    LaunchedEffect(userInfo) {
+        userInfo?.let {
+            Toast.makeText(context, "${it.name}님 자동 로그인 성공!", Toast.LENGTH_SHORT).show()
             navController.navigate("main") {
                 popUpTo("login") { inclusive = true }
             }
-        }?.onFailure { error ->
-            Toast.makeText(context, "로그인 실패: ${error.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -320,10 +328,8 @@ fun sendTokenToNode(context: Context, nodeId: String, token: String) {
     Wearable.getMessageClient(context).sendMessage(nodeId, messagePath, messageData.toByteArray())
         .addOnSuccessListener {
             // 성공적으로 메시지 전송
-            Log.d(TAG, "sendTokenToNode: ${it}")
         }
         .addOnFailureListener {
             // 메시지 전송 실패 처리
-            Log.d(TAG, "sendTokenToNode: ${it.message}")
         }
 }

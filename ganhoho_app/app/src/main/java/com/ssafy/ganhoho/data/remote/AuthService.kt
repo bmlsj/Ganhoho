@@ -1,11 +1,14 @@
 package com.ssafy.ganhoho.data.remote
 
-import com.ssafy.ganhoho.data.model.dto.member.LoginRequest
-import com.ssafy.ganhoho.data.model.dto.member.SignUpRequest
+import android.media.session.MediaSession.Token
+import com.ssafy.ganhoho.data.model.dto.auth.LoginRequest
+import com.ssafy.ganhoho.data.model.dto.auth.SignUpRequest
 import com.ssafy.ganhoho.data.model.response.auth.LoginResponse
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Query
 
@@ -24,4 +27,9 @@ interface AuthService {
     @GET("api/auth/duplicate-check")
     suspend fun isUsedId(@Query("loginId") id: String): Response<Boolean>
 
+    // 회원 탈퇴
+    @DELETE("api/members/withdrawal")
+    suspend fun withdrawalMember(
+        @Header("Authorization") token: String
+    ): Response<Void>
 }

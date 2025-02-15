@@ -7,6 +7,8 @@ import com.ssafy.ganhoho.data.model.dto.friend.FriendDto
 import com.ssafy.ganhoho.data.model.dto.friend.FriendFavoriteRequest
 import com.ssafy.ganhoho.data.model.dto.friend.FriendInviteDto
 import com.ssafy.ganhoho.data.model.response.friend.FriendAddResponse
+import com.ssafy.ganhoho.data.model.response.schedule.FriendPersonalResponse
+import com.ssafy.ganhoho.data.model.response.schedule.FriendWorkResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -55,5 +57,19 @@ interface FriendService {
     suspend fun updateFriendFavorite(
         @Header("Authorization") token: String, @Body request: FriendFavoriteRequest  // 즐겨찾기 수정 데이터
     ): Response<Boolean>
+
+    // 친구 근무 스케쥴 조회
+    @GET("api/schedules/work/{memberId}")
+    suspend fun getFriendWorkSchedule(
+        @Header("Authorization") token: String,
+        @Path("memberId") memberId: Long
+    ): Response<FriendWorkResponse>
+
+    // 친구의 공개된 스케쥴
+    @GET("api/schedules/personal/{memberId}")
+    suspend fun getFriendPublicSchedule(
+        @Header("Authorization") token: String,
+        @Path("memberId") memberId: Long
+    ): Response<FriendPersonalResponse>
 
 }

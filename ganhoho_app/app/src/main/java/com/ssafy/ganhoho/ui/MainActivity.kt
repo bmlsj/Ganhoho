@@ -12,6 +12,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -46,6 +47,7 @@ import com.ssafy.ganhoho.util.NotificationPermission
 import com.ssafy.ganhoho.util.PermissionChecker
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 class MainActivity : ComponentActivity() {
 
     private val authViewModel: AuthViewModel by viewModels()
