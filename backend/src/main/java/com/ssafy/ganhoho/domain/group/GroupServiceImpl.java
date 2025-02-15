@@ -5,16 +5,22 @@ import com.ssafy.ganhoho.domain.auth.AuthRepository;
 import com.ssafy.ganhoho.domain.group.dto.*;
 import com.ssafy.ganhoho.domain.group.entity.Group;
 import com.ssafy.ganhoho.domain.group.entity.GroupParticipation;
+import com.ssafy.ganhoho.domain.group.entity.GroupSchedule;
 import com.ssafy.ganhoho.domain.member.entity.Member;
 import com.ssafy.ganhoho.domain.schedule.entity.WorkSchedule;
+import com.ssafy.ganhoho.domain.schedule.repository.WorkScheduleRepository;
 import com.ssafy.ganhoho.global.constant.ErrorCode;
 import com.ssafy.ganhoho.global.error.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.jdbc.Work;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -28,7 +34,43 @@ public class GroupServiceImpl implements GroupService {
     private final GroupRepository groupRepository;
     private final GroupParticipationRepository groupParticipationRepository;
     private final AuthRepository authRepository;
+    private final WorkScheduleRepository workScheduleRepository;
     private final GroupScheduleRepository groupScheduleRepository;
+
+    // 멤버의 근무 스케줄을 그룹 스케줄ㄹ과 연결
+    @Override
+    @Transactional
+    public void linkMemberSchedulesToGroup(Long groupId, Long memberId, String yearMonth) {
+        //그룹 존재 여부 확인
+        Group group = groupRepository.findById(groupId)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_GROUP));
+
+        // 해당 그룹 해당 월 그룹스케줄 조회
+        Optional<GroupSchedule> existingSchedule = groupScheduleRepository
+            .findByGroupIdAndYearMonth(groupId, yearMonth);
+
+        GroupSchedule groupSchedule;
+        if (existingSchedule.isPresent()) {
+            groupSchedule = existingSchedule.get();
+        } else {
+            // 없으면 새로 생성
+            GroupSchedule newSchedule = GroupSchedule.builder()
+                .groupId(groupId)
+                .scheduleMonth(yearMonth)
+                .build();
+            groupSchedule = groupScheduleRepository.save(newSchedule);
+        }
+
+        // 해당 멤버 월 근무스케줄 찾아서 그룹 스케줄과 연결
+        List<WorkSchedule> memberSchedules = workScheduleRepository
+                .findByMemberIdAndMonthYear(memberId, yearMonth);
+
+        for (WorkSchedule schedule : memberSchedules) {
+            schedule.setWorkScheduleDetailId(groupSchedule.getWorkScheduleDetailId());
+            workScheduleRepository.save(schedule);
+        }
+
+    }
 
     @Override
     @Transactional
@@ -207,6 +249,10 @@ public class GroupServiceImpl implements GroupService {
         group.setGroupMemberCount(group.getGroupMemberCount() + 1);
         groupRepository.save(group);
 
+        // [추가]현재 월의 스케줄 연결
+        String currentYearMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+        linkMemberSchedulesToGroup(groupId, memberId, currentYearMonth);
+
         // 업데이트 이후 목록 반환
         List<GroupParticipation> participations = groupParticipationRepository.findByGroupId(groupId);
 
@@ -266,6 +312,7 @@ public class GroupServiceImpl implements GroupService {
                             .name(memberDto.getName())
                             .loginId(memberDto.getLoginId())
                             .hospital(memberDto.getHospital())
+                            .ward(memberDto.getWard())
                             .schedules(schedules)
                             .build();
                 })
