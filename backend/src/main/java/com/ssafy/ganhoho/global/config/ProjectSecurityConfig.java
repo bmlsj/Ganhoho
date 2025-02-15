@@ -31,10 +31,10 @@ public class ProjectSecurityConfig {
 
     private final JWTUtil jwtUtil;
 
-    @Value("url.https")
+    @Value("${url.https}")
     private String httpsServerUrl;
 
-    @Value("url.http")
+    @Value("${url.http}")
     private String httpServerUrl;
 
     public ProjectSecurityConfig(JWTUtil jwtUtil) {
