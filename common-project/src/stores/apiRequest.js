@@ -21,7 +21,7 @@ export const useApiStore = defineStore('api', () => {
     localStorage.setItem("refresh_token", refresh_token)
   }
   
-  token.value = "eyJhbGciOiJIUzI1NiJ9.eyJtZW1iZXJJZCI6OSwiaWF0IjoxNzM5NTM4OTMyLCJleHAiOjE3Mzk2MjUzMzJ9.pFiUHZWVb3zKlhMgc0vsDTZcS4aVDFg9BPEtD39MHqc";
+  token.value = "eyJhbGciOiJIUzI1NiJ9.eyJtZW1iZXJJZCI6MTYsImlhdCI6MTczOTYyNTAyNSwiZXhwIjoxNzM5NzExNDI1fQ.9IMUGm-2PIVhuDvJusOzC2iP4pCYrFv_1XmtCP57hTw";
 const fetchData = async () => { //전체 근무 페이지 ocr 데이터 받아오기.
   try {
 
@@ -94,7 +94,6 @@ const generateCalendar = () => { //전체 근무 페이지 캘린더 만들기�
 };
 
 const sendImageToAPI = async (file) => {
-
   const formData = new FormData();
   formData.append('ocrImg', file);
 
