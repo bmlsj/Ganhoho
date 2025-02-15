@@ -16,6 +16,7 @@ CREATE TABLE `group` (
                          `group_id` BIGINT NOT NULL AUTO_INCREMENT,
                          `group_name` VARCHAR(50) NOT NULL,
                          `group_invite_link` VARCHAR(50) NULL,
+                         `group_deep_link` VARCHAR(100) NULL,
                          `group_member_count` INT NULL,
                          `group_icon_type` INT NULL,
                          `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
