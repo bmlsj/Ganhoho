@@ -161,6 +161,15 @@ public class GroupController {
         }
     }
 
+    @Operation(summary = "그룹 초대 수락", description = "그룹 초대 링크를 통해 회원 가입")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "그룹 가입 성공",
+                content = @Content(schema = @Schema(implementation = GroupAcceptResponse.class))),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 요청입니다. (JWT 토큰 누락시)"),
+            @ApiResponse(responseCode = "404", description = "존재하지 않는 회원이거나 그룹입니다. (회원 ID 또는 그룹을 찾을 수 없을 시)"),
+            @ApiResponse(responseCode = "409", description = "이미 가입된 그룹입니다.(해당 그룹에 이미 가입된 회원일 시)"),
+            @ApiResponse(responseCode = "500", description = "서버 내부 오류가 발생햇습니다. 다시 시도해주세요(서버 오류 발생시")
+    })
     @PostMapping("/{groupId}")
     public ResponseEntity<?> acceptGroupInvitation(@PathVariable Long groupId) {
         try {
