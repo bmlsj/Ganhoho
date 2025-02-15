@@ -16,7 +16,7 @@ public class GroupDeepLinkUtil {
     private static final String BASE_DEEP_LINK = SCHEME + "://" + HOST;
 
     // 그룹 ID 포함해 딥링크 생성하기
-    public static String createGroupDeepLink(String groupId) {
+    public static String createGroupDeepLink(Long groupId) {
         return String.format("%s%s?groupId=%s",
                 BASE_DEEP_LINK,
                 GROUP_PATH,

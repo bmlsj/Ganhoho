@@ -6,6 +6,7 @@ import com.ssafy.ganhoho.domain.group.dto.*;
 import com.ssafy.ganhoho.domain.group.entity.Group;
 import com.ssafy.ganhoho.domain.group.entity.GroupParticipation;
 import com.ssafy.ganhoho.domain.group.entity.GroupSchedule;
+import com.ssafy.ganhoho.domain.group.util.GroupDeepLinkUtil;
 import com.ssafy.ganhoho.domain.member.entity.Member;
 import com.ssafy.ganhoho.domain.schedule.entity.WorkSchedule;
 import com.ssafy.ganhoho.domain.schedule.repository.WorkScheduleRepository;
@@ -90,6 +91,11 @@ public class GroupServiceImpl implements GroupService {
         // 그룹 저장
         Group savedGroup = groupRepository.save(group);
 
+        // ID 발급 후 딥링크 생성 및 업데이트
+        String deepLink = GroupDeepLinkUtil.createGroupDeepLink(savedGroup.getGroupId());
+        savedGroup.setGroupDeepLink(deepLink);
+        savedGroup = groupRepository.save(savedGroup);
+
         // 생성자 그룹 참여자로 추가
         GroupParticipation participation = GroupParticipation.builder()
                 .memberId(member.getMemberId())
@@ -116,6 +122,7 @@ public class GroupServiceImpl implements GroupService {
                 .groupIconType(savedGroup.getGroupIconType())
                 .groupMemberCount(savedGroup.getGroupMemberCount())
                 .groupInviteLink(savedGroup.getGroupInviteLink())
+                .groupDeepLink(savedGroup.getGroupDeepLink()) // 딥링크 추가
                 .build();
 
     }

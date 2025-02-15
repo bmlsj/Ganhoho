@@ -18,7 +18,5 @@ public class GroupCreatRequest {
     @Schema(description = "그룹 아이콘 타입", example = "1")
     private Integer groupIconType;
 
-    @Schema(description = "그룹 초대 링크", example = "abc123de(생성시 8자리랜덤난수로 생성됨)")
-    private String groupInviteLink;
 }
 
