@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.ssafy.ganhoho.domain.group.GroupParticipationRepository;
+import com.ssafy.ganhoho.domain.group.GroupService;
+import com.ssafy.ganhoho.domain.group.entity.GroupParticipation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
@@ -41,6 +44,8 @@ public class OCRScheduleServiceImpl implements OCRScheduleService {
     private final OCRScheduleRepository ocrScheduleRepository;
     private final WorkScheduleService workScheduleService;
     private final AuthRepository authRepository;
+    private final GroupParticipationRepository groupParticipationRepository;
+    private final GroupService groupService;
 
     @Value("${ocr.fastapi.url}")
     private String fastApiUrl;
@@ -169,6 +174,20 @@ public class OCRScheduleServiceImpl implements OCRScheduleService {
                 })
                 .collect(Collectors.toList());
         workScheduleService.updateOrAddWorkSchedules(workSchedules, schedule.getMemberId());
+
+        List<GroupParticipation> participations = groupParticipationRepository
+            .findByMemberId(schedule.getMemberId());
+
+        // 해당 멤버가 속한 모든 그룹에 스케줄 연동
+        for (GroupParticipation participation : participations) {
+            String yearMonth = String.format("%d-%02d", schedule.getYear(), schedule.getMonth());
+            groupService.linkMemberSchedulesToGroup(
+                    participation.getGroupId(),
+                    schedule.getMemberId(),
+                    yearMonth
+            );
+        }
+
     }
 
 }

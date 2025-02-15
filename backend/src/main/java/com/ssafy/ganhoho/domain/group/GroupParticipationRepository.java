@@ -14,4 +14,6 @@ public interface GroupParticipationRepository extends JpaRepository<GroupPartici
 
     // 그룹 탈퇴
     int deleteByMemberIdAndGroupId(@Param("memberId") Long memberId, @Param("groupId") Long groupId);
+
+    List<GroupParticipation> findByMemberId(Long memberId);
 }
