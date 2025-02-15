@@ -109,7 +109,7 @@ fun NotiDetail(notice: Notification) {
             .padding(10.dp)
             .shadow(10.dp, shape = RoundedCornerShape(10.dp)) // ✅ 먼저 적용
             .border(
-                1.dp,
+                2.dp,
                 color = if (notice.type != 1) Color.Transparent else Color.Red.copy(0.2f),
                 shape = RoundedCornerShape(10.dp)
             )
