@@ -23,7 +23,7 @@ const router = createRouter({
       component: PillSearchView
     },
     {
-      path: '/invitationlinkview',
+      path: '/invitationlinkview/:groupid',
       name: 'InvitationLinkView',
       component: InvitationLinkView
     },

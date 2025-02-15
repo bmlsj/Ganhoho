@@ -20,7 +20,7 @@ const toggleView = () => {
 }
 
 onMounted(() => {
-  // ✅ 앱에서 호출할 전역 함수 등록
+  // 앱에서 호출할 전역 함수 등록
   document.addEventListener('tokenReceived', (e) => {
     const { access_token, refresh_token } = e.detail
     console.log("Component - Token received via event:", access_token)

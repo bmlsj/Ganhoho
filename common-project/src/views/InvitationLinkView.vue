@@ -13,45 +13,31 @@
           <img :src="doctorImg" class="medical-doctor" />
         </div>
         <img :src="barcodeImg" class="barcode2" />
-        <p class="invite-text">Join GANHOHO with your invitation code!</p>
+        <p class="invite-text">
+          Join GANHOHO with your invitation code!
+        </p>
       </div>
 
-      <button class="invite-button" @click="openApp">초대 수락하기</button>
+      <!-- a 태그의 href에 딥링크를 지정하여 클릭 시 앱 실행 -->
+      <a :href="deepLink" class="invite-button">
+        초대 수락하기
+      </a>
     </div>
   </div>
 </template>
 
 <script setup>
+import { useRoute } from 'vue-router'
 import nurseImg from "@/assets/nurse0.png"
 import doctorImg from "@/assets/medical-doctor0.png"
 import barcodeImg from "@/assets/barcode1.svg"
 
-import { useApiStore } from "@/stores/apiRequest"
-import { onMounted } from "vue";
+// URL 파라미터에서 그룹 아이디를 받아옴
+const route = useRoute()
+const groupId = route.params.groupid
 
-const apiStore = useApiStore();
-
-onMounted(() => {
-  // ✅ 앱에서 호출할 전역 함수 등록
-  document.addEventListener('tokenReceived', (e) => {
-    const { access_token, refresh_token } = e.detail
-    console.log("Component - Token received via event:", access_token)
-    apiStore.setToken(access_token, refresh_token)
-  })
-})
-
-const openApp = () => {
-  const androidAppScheme = "intent://invite?code=123456#Intent;scheme=ganhoho;package=com.ganhoho.app;end;"
-  // 아이폰 지원 X (삼송이니까 ㅎㅎ)
-
-  if (/Android/i.test(navigator.userAgent)) {
-    window.location.href = androidAppScheme
-  } else if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    alert("이 기능은 Android에서만 지원됩니다!")
-  } else {
-    alert("모바일 기기에서만 사용할 수 있습니다.")
-  }
-};
+// 딥링크 URL (ssafyd209://ganhoho/group?groupCode={groupId})
+const deepLink = `ssafyd209://ganhoho/group?groupCode=${groupId}`
 </script>
 
 <style scoped>
@@ -165,6 +151,9 @@ const openApp = () => {
   box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: background 0.3s ease-in-out;
+  text-decoration: none;
+  text-align: center;
+  display: inline-block;
   z-index: 100;
 }
 .invite-button:hover {
