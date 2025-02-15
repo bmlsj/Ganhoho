@@ -15,7 +15,11 @@ public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Long
     List<WorkSchedule> findByMemberIdAndWorkDateBetween(
             Long memberId, LocalDateTime startDate, LocalDateTime endDate);
 
-    //s
+
+    // 특정 회원 근무스케줄을 날짜만 조회해서 중복 확인
+    @Query("SELECT ws FROM WorkSchedule ws " +
+            "WHERE ws.memberId = :memberId " +
+            "AND FUNCTION('DATE', ws.workDate) = FUNCTION('DATE', :workDate)")
     Optional<WorkSchedule> findByMemberIdAndWorkDate(Long memberId, LocalDateTime workDate);
 
     // 특정 회원의 특정 월 근무스케줄 조회
@@ -25,4 +29,11 @@ public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Long
     List<WorkSchedule> findByMemberIdAndMonthYear(
             @Param("memberId") Long memberId,
             @Param("yearMonth") String yearMonth);
+
+    // 특정회원의 null 근무스케줄 조회
+    @Query("SELECT ws FROM WorkSchedule ws " +
+            "WHERE ws.memberId = :memberId " +
+            "AND ws.workScheduleDetailId IS NULL")
+    List<WorkSchedule> findByMemberIdAndWorkScheduleDetailIdIsNull(
+            @Param("memberId") Long memberId);
 }

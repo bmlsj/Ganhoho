@@ -6,6 +6,7 @@ import com.ssafy.ganhoho.domain.group.dto.*;
 import com.ssafy.ganhoho.domain.group.entity.Group;
 import com.ssafy.ganhoho.domain.group.entity.GroupParticipation;
 import com.ssafy.ganhoho.domain.group.entity.GroupSchedule;
+import com.ssafy.ganhoho.domain.group.util.GroupDeepLinkUtil;
 import com.ssafy.ganhoho.domain.member.entity.Member;
 import com.ssafy.ganhoho.domain.schedule.entity.WorkSchedule;
 import com.ssafy.ganhoho.domain.schedule.repository.WorkScheduleRepository;
@@ -37,17 +38,17 @@ public class GroupServiceImpl implements GroupService {
     private final WorkScheduleRepository workScheduleRepository;
     private final GroupScheduleRepository groupScheduleRepository;
 
-    // 멤버의 근무 스케줄을 그룹 스케줄ㄹ과 연결
+    // 멤버의 근무 스케줄을 그룹 스케줄과 연결
     @Override
     @Transactional
     public void linkMemberSchedulesToGroup(Long groupId, Long memberId, String yearMonth) {
         //그룹 존재 여부 확인
         Group group = groupRepository.findById(groupId)
-            .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_GROUP));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_GROUP));
 
         // 해당 그룹 해당 월 그룹스케줄 조회
         Optional<GroupSchedule> existingSchedule = groupScheduleRepository
-            .findByGroupIdAndYearMonth(groupId, yearMonth);
+                .findByGroupIdAndYearMonth(groupId, yearMonth);
 
         GroupSchedule groupSchedule;
         if (existingSchedule.isPresent()) {
@@ -55,26 +56,30 @@ public class GroupServiceImpl implements GroupService {
         } else {
             // 없으면 새로 생성
             GroupSchedule newSchedule = GroupSchedule.builder()
-                .groupId(groupId)
-                .scheduleMonth(yearMonth)
-                .build();
+                    .groupId(groupId)
+                    .scheduleMonth(yearMonth)
+                    .build();
             groupSchedule = groupScheduleRepository.save(newSchedule);
         }
 
-        // 해당 멤버 월 근무스케줄 찾아서 그룹 스케줄과 연결
-        List<WorkSchedule> memberSchedules = workScheduleRepository
-                .findByMemberIdAndMonthYear(memberId, yearMonth);
-
-        for (WorkSchedule schedule : memberSchedules) {
-            schedule.setWorkScheduleDetailId(groupSchedule.getWorkScheduleDetailId());
-            workScheduleRepository.save(schedule);
+        // 그룹과 연결되지 않은(work_schedule_detail_id가 null인) 이전 스케줄들 처리
+        List<WorkSchedule> nullDetailSchedules = workScheduleRepository
+                .findByMemberIdAndWorkScheduleDetailIdIsNull(memberId);
+        for (WorkSchedule schedule : nullDetailSchedules) {
+            // 해당 월 스케줄인지 확인
+            String scheduleMonth = schedule.getWorkDate()
+                    .format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            if (scheduleMonth.equals(yearMonth)) {
+                schedule.setWorkScheduleDetailId(groupSchedule.getWorkScheduleDetailId());
+                workScheduleRepository.save(schedule);
+            }
         }
-
     }
 
     @Override
     @Transactional
     public GroupCreateResponse createGroup(Long memberId, GroupCreatRequest request) {
+
         // 해당 유저 확인
         Member member = authRepository.findById((memberId))
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
@@ -89,6 +94,22 @@ public class GroupServiceImpl implements GroupService {
 
         // 그룹 저장
         Group savedGroup = groupRepository.save(group);
+
+        // ID 발급 후 딥링크 생성 및 업데이트
+        String deepLink = GroupDeepLinkUtil.createGroupDeepLink(savedGroup.getGroupInviteLink());
+        savedGroup.setGroupDeepLink(deepLink);
+        savedGroup = groupRepository.save(savedGroup);
+
+        // 현재 월의 group_schedule 생성
+        GroupSchedule groupSchedule = GroupSchedule.builder()
+                .groupId(savedGroup.getGroupId())
+                .scheduleMonth(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM")))
+                .build();
+        GroupSchedule savedGroupSchedule = groupScheduleRepository.save(groupSchedule);
+        log.info("Group schedule created: scheduleId={}, groupId={}, month={}",
+                savedGroupSchedule.getWorkScheduleDetailId(),
+                savedGroupSchedule.getGroupId(),
+                savedGroupSchedule.getScheduleMonth());
 
         // 생성자 그룹 참여자로 추가
         GroupParticipation participation = GroupParticipation.builder()
@@ -109,6 +130,10 @@ public class GroupServiceImpl implements GroupService {
         log.info("Group created: groupId={}, groupName={}, creator={}",
                 savedGroup.getGroupId(), group.getGroupName(), member.getLoginId());
 
+        // 그룹 생성 직후 현재 월의 스케줄 연동
+        String currentYearMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+        linkMemberSchedulesToGroup(savedGroup.getGroupId(), memberId, currentYearMonth);
+
         // Response
         return GroupCreateResponse.builder()
                 .groupId(savedGroup.getGroupId())
@@ -116,6 +141,7 @@ public class GroupServiceImpl implements GroupService {
                 .groupIconType(savedGroup.getGroupIconType())
                 .groupMemberCount(savedGroup.getGroupMemberCount())
                 .groupInviteLink(savedGroup.getGroupInviteLink())
+                .groupDeepLink(savedGroup.getGroupDeepLink()) // 딥링크 추가
                 .build();
 
     }
@@ -195,6 +221,19 @@ public class GroupServiceImpl implements GroupService {
 
     }
 
+    // 초대 링크로 그룹 딥링크 조회
+    @Override
+    public GroupPublicInviteLinkResponse getGroupInviteLinkByCode(String inviteLink) {
+
+        Group group = groupRepository.findByGroupInviteLink(inviteLink)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_GROUP));
+
+        return GroupPublicInviteLinkResponse.builder()
+                .groupDeepLink(group.getGroupDeepLink())
+                .build();
+
+    }
+
     @Override
     @Transactional
     public GroupLeaveResponse getGroupLeave(Long memberId, Long groupId) {
@@ -254,19 +293,15 @@ public class GroupServiceImpl implements GroupService {
         linkMemberSchedulesToGroup(groupId, memberId, currentYearMonth);
 
         // 업데이트 이후 목록 반환
-        List<GroupParticipation> participations = groupParticipationRepository.findByGroupId(groupId);
+        List<Group> groups = groupRepository.findGroupByMemberId(memberId);
 
-        return  participations.stream()
-                .map(p -> {
-                    Member memberDto = authRepository.findById(p.getMemberId())
-                            .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
-                    return GroupAcceptResponse.builder()
-                            .loginId(memberDto.getLoginId())
-                            .name(memberDto.getName())
-                            .hospital(memberDto.getHospital())
-                            .ward(memberDto.getWard())
-                            .build();
-                })
+        return groups.stream()
+                .map(g -> GroupAcceptResponse.builder()
+                        .groupId(g.getGroupId())
+                        .groupName(g.getGroupName())
+                        .groupIconType(g.getGroupIconType())
+                        .groupMemberCount(g.getGroupMemberCount())
+                        .build())
                 .collect(Collectors.toList());
 
     }
