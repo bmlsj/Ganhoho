@@ -11,9 +11,6 @@
         @input="filterMedicineList"
         @keyup.enter="search"
       />
-      <button @click="triggerCamera" class="search-button">
-        <img :src="frameIcon" alt="검색 아이콘" class="search-icon" />
-      </button>
       <input 
         ref="fileInput" 
         type="file" 
@@ -46,6 +43,10 @@
     <div v-else class="no-results">
       <p>검색 결과가 없습니다.</p>
     </div>
+    <!-- ✅ 플로팅 버튼 -->
+    <button class="floating-button" @click="triggerCamera">
+      <img :src="PhotoIcon" alt="검색 아이콘" class="search-icon" />
+    </button>
   </div>
 </template>
 
@@ -55,7 +56,7 @@ import { useRouter } from "vue-router"
 import { useApiStore } from "@/stores/apiRequest"
 import PillInformation from "@/components/PillInformation.vue"
 import maskGroup from '@/assets/mask-group0.svg'
-import frameIcon from '@/assets/frame0.svg'
+import PhotoIcon from '@/assets/PhotoIcon.png'
 
 const apiStore = useApiStore()
 const router = useRouter()
@@ -273,5 +274,23 @@ const openCamera = async (event) => {
   font-size: 12px;
   color: #888;
   line-height: 1.2; /* 줄 간격 축소 */
+}
+.floating-button {
+  position: fixed;
+  bottom: 3vh; /* ✅ 뷰포트 기준 상대적인 위치 */
+  right: 8vw; /* ✅ 뷰포트 기준 상대적인 위치 */
+  width: clamp(50px, 5vw, 60px); /* ✅ 화면 크기에 따라 버튼 크기 조정 */
+  height: clamp(50px, 5vw, 60px);
+  background-color: #FFFFFF;
+  color: white;
+  border: 2px solid #E9E9F1;
+  border-radius: 50%;
+  font-size: 24px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
