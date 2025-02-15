@@ -59,5 +59,6 @@ public class JWTFilter extends OncePerRequestFilter {
                 path.startsWith("/webjars/") ||
                 path.equals("/api/notifications/button-patterns") ||
                 path.startsWith("/api/groups/invite");
+                path.equals("/api/group/link");
     }
 }
