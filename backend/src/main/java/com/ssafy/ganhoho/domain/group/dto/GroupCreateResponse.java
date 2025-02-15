@@ -23,4 +23,7 @@ public class GroupCreateResponse {
 
     @Schema(description = "그룹 초대 링크", example = "abc123de")
     private String groupInviteLink;
+
+    @Schema(description = "그룹 딥링크", example = "[스킴]://[호스트]/[경로]?[파라미터]")
+    private String groupDeepLink;
 }
