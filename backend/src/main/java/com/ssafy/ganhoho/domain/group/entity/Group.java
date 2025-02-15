@@ -27,6 +27,9 @@ public class Group {
     @Column(name = "group_invite_link", length = 50)
     private String groupInviteLink;
 
+    @Column(name = "group_deep_link", length = 500)
+    private String groupDeepLink;
+
     @Column(name = "group_member_count")
     private Integer groupMemberCount;
 

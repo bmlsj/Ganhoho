@@ -161,7 +161,8 @@ public class OCRScheduleServiceImpl implements OCRScheduleService {
                                     schedule.getYear(),
                                     schedule.getMonth(),
                                     day.getDay(),
-                                    0, 0
+                                    15, 0
+                                    //UTC로 밀리는거 방지
                             )
                     );
 

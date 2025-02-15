@@ -26,6 +26,9 @@ public interface GroupService {
     // 그룹원 월별 스케줄 조회
     List<GroupScheduleResponse> getGroupSchedules(Long memberId, Long groupId, String yearMonth);
 
+    // 초대 링크로 그룹 딥링크 조회 (그룹 회원아닌경우)
+    GroupPublicInviteLinkResponse getGroupInviteLinkByCode(String inviteLink);
+
     // 멤버 근무 스케줄을 그룹 스케줄과 연결
     void linkMemberSchedulesToGroup(Long groupId, Long memberId, String yearMonth);
 }
