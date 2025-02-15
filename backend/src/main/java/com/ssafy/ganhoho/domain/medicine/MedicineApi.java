@@ -26,10 +26,42 @@ import java.util.ArrayList;
 @Component
 public class MedicineApi {
     private static final String BASE_URL = "https://apis.data.go.kr/1471000/DrugPrdtPrmsnInfoService06/getDrugPrdtPrmsnDtlInq05";
+    private static final String IMAGE_URL = "http://apis.data.go.kr/1471000/MdcinGrnIdntfcInfoService01/getMdcinGrnIdntfcInfoList01";
     private static final String SERVICE_KEY = "7hw6itQ0XsLQvJpbmMEBmRnN48OXxRf3SzUE5FpM3zb/FY0N2Q45MR5PUMk1PeNNhJJm9omcPNWHShD9Hs/G6g==";
 
     @Value("${fastapi.server.url}")
     private String fastApiServerUrl;
+
+    private String getImageUrl(String itemName) {
+        try {
+            String encodedItemName = URLEncoder.encode(itemName, StandardCharsets.UTF_8);
+            String imageUrlStr = IMAGE_URL + "?"
+                    + "serviceKey=" + SERVICE_KEY
+                    + "&pageNo=1"
+                    + "&numOfRows=1"
+                    + "&type=json"
+                    + "&item_name=" + encodedItemName;
+
+            RestTemplate restTemplate = new RestTemplate();
+            restTemplate.getMessageConverters()
+                    .add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
+
+            ResponseEntity<String> response = restTemplate.getForEntity(imageUrlStr, String.class);
+            
+            if (response.getStatusCode().is2xxSuccessful()) {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode rootNode = mapper.readTree(response.getBody());
+                JsonNode items = rootNode.path("body").path("items");
+                
+                if (items.isArray() && items.size() > 0) {
+                    return items.get(0).path("ITEM_IMAGE").asText();
+                }
+            }
+        } catch (Exception e) {
+            log.error("이미지 URL 조회 중 오류 발생: {}", e.getMessage(), e);
+        }
+        return "";
+    }
 
     @GetMapping("/api/medicines/{itemSeq}")
     public ResponseEntity<Object> getMedicineById(@PathVariable String itemSeq) {
@@ -67,6 +99,9 @@ public class MedicineApi {
                 medicineData.put("STORAGE_METHOD", item.path("STORAGE_METHOD").asText());
                 medicineData.put("VALID_TERM", item.path("VALID_TERM").asText());
                 medicineData.put("NEWDRUG_CLASS_NAME", item.path("NEWDRUG_CLASS_NAME").asText());
+                String itemName = item.path("ITEM_NAME").asText();
+                String imageUrl = getImageUrl(itemName);
+                medicineData.put("ITEM_IMAGE", imageUrl);
                 
                 // 문서 데이터
                 medicineData.put("EE_DOC_DATA", item.path("EE_DOC_DATA").asText());
@@ -127,6 +162,9 @@ public class MedicineApi {
                     medicineData.put("STORAGE_METHOD", item.path("STORAGE_METHOD").asText());
                     medicineData.put("VALID_TERM", item.path("VALID_TERM").asText());
                     medicineData.put("NEWDRUG_CLASS_NAME", item.path("NEWDRUG_CLASS_NAME").asText());
+                    String medicineName = item.path("ITEM_NAME").asText();
+                    String imageUrl = getImageUrl(medicineName);
+                    medicineData.put("ITEM_IMAGE", imageUrl);
                     
                     // 문서 데이터
                     medicineData.put("EE_DOC_DATA", item.path("EE_DOC_DATA").asText());
@@ -160,7 +198,7 @@ public class MedicineApi {
             log.info("1. FastAPI 이미지 분석 시작");
             
             RestTemplate restTemplate = new RestTemplate();
-            String fastApiUrl = fastApiServerUrl + "/predict/";
+            String fastApiUrl = fastApiServerUrl + "/fastapi/";
             log.info("2. FastAPI URL: {}", fastApiUrl);
             
             ByteArrayResource imageResource = new ByteArrayResource(imageFile.getBytes()) {
@@ -240,6 +278,7 @@ public class MedicineApi {
                     medicineInfo.put("STORAGE_METHOD", item.path("STORAGE_METHOD").asText());
                     medicineInfo.put("VALID_TERM", item.path("VALID_TERM").asText());
                     medicineInfo.put("NEWDRUG_CLASS_NAME", item.path("NEWDRUG_CLASS_NAME").asText());
+                    medicineInfo.put("ITEM_IMAGE", item.path("ITEM_IMAGE").asText());
                     medicineInfo.put("EE_DOC_DATA", item.path("EE_DOC_DATA").asText());
                     medicineInfo.put("UD_DOC_DATA", item.path("UD_DOC_DATA").asText());
                     medicineInfo.put("NB_DOC_DATA", item.path("NB_DOC_DATA").asText());

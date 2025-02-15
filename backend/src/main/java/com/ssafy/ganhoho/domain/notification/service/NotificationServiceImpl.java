@@ -82,6 +82,7 @@ public class NotificationServiceImpl implements NotificationService {
         List<Member> members = memberRepository.findMembersByHospitalAndWard(notificationSendRequestBody.getHospital(), notificationSendRequestBody.getWard());
         sendFcmToServer(deviceGroup.getNotificationKey(), notificationSendRequestBody.getTitle(), notificationSendRequestBody.getMessage());
         for (Member member : members) {
+            log.warn("notification member : {}",member);
             Notification notification = Notification.builder()
                     .type(notificationSendRequestBody.getType())
                     .message(notificationSendRequestBody.getMessage())
