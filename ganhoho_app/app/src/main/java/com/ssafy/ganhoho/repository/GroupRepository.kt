@@ -3,7 +3,6 @@ package com.ssafy.ganhoho.data.repository
 
 import android.util.Log
 import com.ssafy.ganhoho.data.model.dto.group.GroupDto
-import com.ssafy.ganhoho.data.model.dto.group.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.response.group.GroupInviteLinkResponse
 import com.ssafy.ganhoho.data.model.response.group.GroupMemberResponse
 import com.ssafy.ganhoho.data.model.response.group.MemberMonthlyScheduleResponse
@@ -73,30 +72,6 @@ class GroupRepository {
         }
     }
 
-
-    // 그룹원 월별 스케줄 조회
-    suspend fun getEachMemberMonthlySchedule(token: String, groupId: Int, yearMonth: String): Result<List<MemberMonthlyScheduleResponse>> {
-        val formattedYearMonth = yearMonth  // "2025-02" -> "202502"
-
-        val response = RetrofitUtil.groupService.getEachMemberMonthlySchedule(
-            "Bearer $token", groupId, formattedYearMonth
-        )
-
-        if (response.isSuccessful) {
-            val responseBody = response.body()
-            if (responseBody != null) {
-                return Result.success(responseBody)
-            } else {
-                return Result.failure(Exception("Empty response body"))
-            }
-        } else {
-            val errorBody = response.errorBody()?.string()
-            Log.e("GroupRepository", "API Error Response: $errorBody")
-            return Result.failure(Exception("API Request Failed: ${response.code()}"))
-        }
-    }
-
-
     // 그룹 탈퇴
     suspend fun leaveGroup(token: String, groupId: Int): Result<Boolean> {
         return try {
@@ -117,23 +92,5 @@ class GroupRepository {
         }
     }
 
-
-    // 그룹 멤버 개인 근무 스케줄
-    suspend fun getMemberWorkSchedule(token: String, memberId: Long?): Result<List<WorkScheduleDto>> {
-        return try {
-            val response = RetrofitUtil.groupService.getMemberWorkSchedule("Bearer $token", memberId)
-
-            if (response.isSuccessful) {
-                response.body()?.let {
-                    Result.success(it)
-                } ?: Result.failure(Exception("Empty response"))
-            } else {
-                val errorBody = response.errorBody()?.string()
-                Result.failure(Exception("API Error: ${response.code()} - $errorBody"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
 
 }

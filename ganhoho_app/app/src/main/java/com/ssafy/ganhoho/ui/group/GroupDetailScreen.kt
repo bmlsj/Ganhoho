@@ -393,10 +393,10 @@ fun getFirstDayOfWeek(year: Int, month: Int): Int {
 // 근무 유형별 배경색 설정
 fun getShiftColor(shift: String): Color {
     return when (shift) {
-        "Nig" -> Color(0xFFDDD4CE) // 밤 근무 (회색)
-        "Off" -> Color(0xFFFCD6C8) // 휴무 (연한 빨강)
-        "Eve" -> Color(0xFFE4C7F1) // 저녁 근무 (보라색)
-        "Day" -> Color(0xFFFFF8BF) // 낮 근무 (노란색)
+        "N" -> Color(0xFFDDD4CE) // 밤 근무 (회색)
+        "OF" -> Color(0xFFFCD6C8) // 휴무 (연한 빨강)
+        "E" -> Color(0xFFE4C7F1) // 저녁 근무 (보라색)
+        "D" -> Color(0xFFFFF8BF) // 낮 근무 (노란색)
         else -> Color.Transparent
     }
 }

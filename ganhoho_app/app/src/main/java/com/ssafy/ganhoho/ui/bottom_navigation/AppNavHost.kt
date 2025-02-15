@@ -23,15 +23,19 @@ import com.ssafy.ganhoho.viewmodel.BottomNavViewModel
 import com.ssafy.ganhoho.viewmodel.GroupViewModel
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
     val bottomNavViewModel: BottomNavViewModel = viewModel()
     val groupRepository = GroupRepository()
 
+    val yearMonth: String = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"))
+
     NavHost(
         navController = navController,
-        startDestination = "home" //todo: 다른 걸로 바꿨을 시 다시 home으로 돌려놓기
+        startDestination = "home"
     ) {
         composable("work") { WorkScreen(navController) }
         composable("pill") { PillScreen(navController) }
@@ -47,7 +51,8 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         composable("friend") { FriendScreen(navController) }
 
         composable("group/{groupIconType}") { backStackEntry ->
-            val groupIconType = backStackEntry.arguments?.getString("groupIconType")?.toIntOrNull() ?: 1
+            val groupIconType =
+                backStackEntry.arguments?.getString("groupIconType")?.toIntOrNull() ?: 1
             val groupViewModel: GroupViewModel = viewModel()
 
             GroupScreen(
@@ -83,17 +88,21 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
                     repository = GroupRepository(),
                     tokenManager = TokenManager,
                     groupId = group.groupId,
-                    yearMonth = "2025-02"
+                    yearMonth = yearMonth
                 )
             } else {
                 Log.e("Navigation", "group이 null이므로 EachGroupScreen을 열 수 없음")
             }
         }
 
-
         composable("group/{groupId}") { backStackEntry ->
-            val groupId = backStackEntry.arguments?.getString("groupId")?.toIntOrNull() ?: return@composable
-            val groupViewModel: GroupViewModel = viewModel()
+            val groupId = backStackEntry.arguments?.getString("groupId")?.toIntOrNull()
+            if (groupId == null) {
+                Log.e("DEBUG_NAV", "groupId가 null이므로 네비게이션 실패")
+                return@composable
+            }
+
+            Log.d("DEBUG_NAV", "EachGroupScreen으로 이동 - groupId: $groupId")
 
             EachGroupScreen(
                 navController = navController,
@@ -102,9 +111,8 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
                 repository = groupRepository,
                 tokenManager = TokenManager,
                 groupId = groupId,
-                yearMonth = "2025-02"
+                yearMonth = yearMonth
             )
         }
-
     }
 }

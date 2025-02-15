@@ -1,7 +1,6 @@
 package com.ssafy.ganhoho.data.remote
 
 import com.ssafy.ganhoho.data.model.dto.group.GroupDto
-import com.ssafy.ganhoho.data.model.dto.group.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.response.group.GroupInviteLinkResponse
 import com.ssafy.ganhoho.data.model.response.group.GroupMemberResponse
 import com.ssafy.ganhoho.data.model.response.group.LeaveGroupResponse
@@ -60,11 +59,5 @@ interface GroupService {
         @Path("groupId") groupId: Int
     ): Response<LeaveGroupResponse>
 
-    // 멤버별 개인 근무 일정 조회
-    @GET("api/schedules/work/{memberId}")
-    suspend fun getMemberWorkSchedule(
-        @Header("Authorization") token: String,
-        @Path("memberId") memberId: Long?
-    ): Response<List<WorkScheduleDto>>
 
 }

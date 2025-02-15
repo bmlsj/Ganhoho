@@ -99,7 +99,7 @@ class GroupViewModel (
             val token = tokenManager.getAccessToken() ?: return@launch
             Log.d("API_REQUEST", "Fetching schedule for groupId: $groupId, yearMonth: $yearMonth")
 
-            val result = repository.getEachMemberMonthlySchedule(token, groupId, yearMonth)
+            val result = repository.getMemberSchedules(token, groupId, yearMonth)
             result.onSuccess {
                 _memberSchedules.value = it
             }.onFailure {
