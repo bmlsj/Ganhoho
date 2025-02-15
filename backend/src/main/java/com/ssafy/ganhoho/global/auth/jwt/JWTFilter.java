@@ -57,6 +57,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 path.startsWith("/v3/api-docs") ||
                 path.startsWith("/swagger-resources/") ||
                 path.startsWith("/webjars/") ||
-                path.equals("/api/notifications/button-patterns");
+                path.equals("/api/notifications/button-patterns") ||
+                path.equals("/api/group/link");
     }
 }
