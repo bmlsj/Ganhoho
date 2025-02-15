@@ -29,4 +29,11 @@ public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Long
     List<WorkSchedule> findByMemberIdAndMonthYear(
             @Param("memberId") Long memberId,
             @Param("yearMonth") String yearMonth);
+
+    // 특정회원의 null 근무스케줄 조회
+    @Query("SELECT ws FROM WorkSchedule ws " +
+            "WHERE ws.memberId = :memberId " +
+            "AND ws.workScheduleDetailId IS NULL")
+    List<WorkSchedule> findByMemberIdAndWorkScheduleDetailIdIsNull(
+            @Param("memberId") Long memberId);
 }

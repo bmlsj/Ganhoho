@@ -62,6 +62,21 @@ public class GroupServiceImpl implements GroupService {
             groupSchedule = groupScheduleRepository.save(newSchedule);
         }
 
+        // 그룹과 연결되지 않은(work_schedule_detail_id가 null인) 이전 스케줄들 처리
+        List<WorkSchedule> nullDetailSchedules = workScheduleRepository
+                .findByMemberIdAndWorkScheduleDetailIdIsNull(memberId);
+        for (WorkSchedule schedule : nullDetailSchedules) {
+            // 해당 월 스케줄인지 확인
+            String scheduleMonth = schedule.getWorkDate()
+                    .format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            if (scheduleMonth.equals(yearMonth)) {
+                schedule.setWorkScheduleDetailId(groupSchedule.getWorkScheduleDetailId());
+                workScheduleRepository.save(schedule);
+            }
+
+        }
+
+
         // 해당 멤버 월 근무스케줄 찾아서 그룹 스케줄과 연결
         List<WorkSchedule> memberSchedules = workScheduleRepository
                 .findByMemberIdAndMonthYear(memberId, yearMonth);
