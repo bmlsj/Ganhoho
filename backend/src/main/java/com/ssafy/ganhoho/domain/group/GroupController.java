@@ -1,6 +1,7 @@
 package com.ssafy.ganhoho.domain.group;
 
 import com.ssafy.ganhoho.domain.group.dto.*;
+import com.ssafy.ganhoho.domain.group.entity.Group;
 import com.ssafy.ganhoho.global.auth.SecurityUtil;
 import com.ssafy.ganhoho.global.constant.ErrorCode;
 import com.ssafy.ganhoho.global.error.CustomException;
@@ -30,6 +31,7 @@ import java.util.List;
 public class GroupController {
 
     private final GroupService groupService;
+    private final GroupRepository groupRepository;
 
     @Operation(summary = "그룹 생성", description = "새로운 그룹을 생성하고 생성자를 멤버로 추가")
     @ApiResponses(value = {
@@ -170,11 +172,16 @@ public class GroupController {
             @ApiResponse(responseCode = "409", description = "이미 가입된 그룹입니다.(해당 그룹에 이미 가입된 회원일 시)"),
             @ApiResponse(responseCode = "500", description = "서버 내부 오류가 발생햇습니다. 다시 시도해주세요(서버 오류 발생시")
     })
-    @PostMapping("/{groupId}")
-    public ResponseEntity<?> acceptGroupInvitation(@PathVariable Long groupId) {
+    @PostMapping("/{inviteLink}")
+    public ResponseEntity<?> acceptGroupInvitation(@PathVariable String inviteLink) {
         try {
             Long memberId = SecurityUtil.getCurrentMemberId();
-            List<GroupAcceptResponse> responses = groupService.acceptGroupInvitation(memberId, groupId);
+
+            // inviteLink로 그룹 찾기 추가
+            Group group = groupRepository.findByGroupInviteLink(inviteLink)
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_GROUP));
+
+            List<GroupAcceptResponse> responses = groupService.acceptGroupInvitation(memberId, group.getGroupId());
             return ResponseEntity.ok(responses);
         } catch (CustomException e) {
             if (e.getErrorCode().equals(ErrorCode.ACCES_DENIED)) {
