@@ -13,6 +13,8 @@ public class SignUpRequest {
     private String name;
     private String hospital;
     private String ward;
+    private Double hospitalLat;
+    private Double hospitalLng;
     private String fcmToken;
     private int deviceType; // 0이 앱, 1이 워치
 

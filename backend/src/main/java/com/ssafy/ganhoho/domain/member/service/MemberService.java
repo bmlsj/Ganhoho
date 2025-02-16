@@ -14,5 +14,5 @@ public interface MemberService {
 
     void withdrawal(Long memberId);
 
-    MemberInfoResponse updateHospitalWard(Long memberId, String hospital, String ward);
+    MemberInfoResponse updateHospitalWard(Long memberId, HospitalWardRequestBody hospitalWardRequestBody);
 }
