@@ -78,18 +78,20 @@ fun GroupLeaveDialog(
 
                     Button(
                         onClick = {
-                            groupViewModel.leaveGroup(
-                                group.groupId,
-                                onSuccess = {
-                                    Log.d("GroupLeaveDialog", "✅ 그룹 탈퇴 성공! 홈 화면으로 이동")
-                                    navController.navigate("group") // 🔹 탈퇴 성공 시 그룹 목록으로 이동
-                                    onConfirm() // 다이얼로그 닫기
-                                },
-                                onFailure = { errorMessage ->
-                                    Log.e("GroupLeaveDialog", "❌ 그룹 탈퇴 실패: $errorMessage")
-                                    onDismiss() // 실패 시 다이얼로그 닫기
-                                }
-                            )
+                            group.groupId?.let {
+                                groupViewModel.leaveGroup(
+                                    it,
+                                    onSuccess = {
+                                        Log.d("GroupLeaveDialog", "✅ 그룹 탈퇴 성공! 홈 화면으로 이동")
+                                        navController.navigate("group") // 🔹 탈퇴 성공 시 그룹 목록으로 이동
+                                        onConfirm() // 다이얼로그 닫기
+                                    },
+                                    onFailure = { errorMessage ->
+                                        Log.e("GroupLeaveDialog", "❌ 그룹 탈퇴 실패: $errorMessage")
+                                        onDismiss() // 실패 시 다이얼로그 닫기
+                                    }
+                                )
+                            }
                         },
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF79C7E3)),
                         modifier = Modifier

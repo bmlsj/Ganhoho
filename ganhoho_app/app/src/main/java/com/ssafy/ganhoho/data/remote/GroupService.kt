@@ -24,6 +24,11 @@ interface GroupService {
     ): Response<GroupDto>
 
     // 그룹 초대 수락
+    @POST("api/groups/{groupId}")
+    suspend fun joinGroupByInviteCode(
+        @Header("Authorization") token: String,
+        @Path("groupId") groupId: Int
+    ): Response<Unit>
 
     // 그룹 목록 조회
     @GET("api/groups")
@@ -33,14 +38,14 @@ interface GroupService {
     @GET("api/groups/link/{groupId}")
     suspend fun getGroupInviteLink(
         @Header("Authorization") token: String,
-        @Path("groupId") groupId: Long
+        @Path("groupId") groupId: Int
     ): Response<GroupInviteLinkResponse>
 
     // 그룹원 리스트 조회
     @GET("api/groups/members/{groupId}")
     suspend fun getGroupMemberInfo(
         @Header("Authorization") token: String,
-        @Path("groupId") groupId: Long
+        @Path("groupId") groupId: Int
     ): Response<List<GroupMemberResponse>>
 
     // 그룹원 월별 스케쥴 조회

@@ -80,7 +80,6 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
                     factory = GroupViewModelFactory(groupRepository, TokenManager)
                 )
 
-
                 EachGroupScreen(
                     navController = navController,
                     group = group,
@@ -96,7 +95,7 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         }
 
         composable("group/{groupId}") { backStackEntry ->
-            val groupId = backStackEntry.arguments?.getString("groupId")?.toIntOrNull()
+            var groupId = backStackEntry.arguments?.getString("groupId")?.toIntOrNull()
             if (groupId == null) {
                 Log.e("DEBUG_NAV", "groupId가 null이므로 네비게이션 실패")
                 return@composable

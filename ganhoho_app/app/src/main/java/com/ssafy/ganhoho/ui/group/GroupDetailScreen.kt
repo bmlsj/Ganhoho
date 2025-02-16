@@ -32,6 +32,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,7 +66,7 @@ fun EachGroupScreen(
     groupMember: List<GroupMemberResponse>,
     repository:GroupRepository,
     tokenManager:TokenManager,
-    groupId: Int,
+    groupId: Int?,
     yearMonth: String
     ) {
 
@@ -87,10 +88,48 @@ fun EachGroupScreen(
     var isDialogVisible by remember { mutableStateOf(false) } // 다이얼로그 상태 추가
 
     val memberSchedules by viewModel.memberSchedules.collectAsState()
+    var inviteLink by rememberSaveable { mutableStateOf("") }
 
-    LaunchedEffect(Unit) {
-        viewModel.fetchMemberSchedules(groupId, yearMonth)
-        Log.d("DEBUG", "Fetching schedules for groupId: $groupId, yearMonth: $yearMonth")
+
+    LaunchedEffect(groupId) {
+        if(groupId != 0){
+            if (groupId != null) {
+                viewModel.fetchMemberSchedules(groupId, yearMonth)
+            }
+            Log.d("DEBUG", "Fetching schedules for groupId: $groupId, yearMonth: $yearMonth")
+            if (groupId != null) {
+                viewModel.fetchMemberList(groupId)
+            }
+        }else{
+            val inviteCode = navController.currentBackStackEntry?.arguments?.getString("inviteCode")
+            if(inviteCode.isNullOrEmpty()){
+                Log.d("group_invite", "초대 코드 감지: $inviteCode")
+
+//                viewModel.joinGroupByInviteCode(inviteCode,
+//                    onSuccess = { id ->
+//                        Log.d("DeepLink", "초대 수락 성공! groupId: $id")
+//                        groupId = id
+//                        viewModel.fetchMemberList(groupId)
+//                        viewModel.fetchMemberSchedules(groupId, LocalDate.now().format(
+//                            DateTimeFormatter.ofPattern("yyyy-MM")))
+//                    },
+//                    onFailure = { error ->
+//                        Log.e("DeepLink",  "초대 수락 실패: $error")
+//                    }
+//                )
+
+                val token = tokenManager.getAccessToken() ?: return@LaunchedEffect
+                viewModel.fetchGroupInviteLink(token, groupId,
+                    onSuccess = { link ->
+                        inviteLink = "ssafyd209://ganhoho/group?groupCode=$link"
+                    },
+                    onFailure = { error ->
+                        Log.e("GroupMemberScreen", "초대 링크 불러오기 실패: $error")
+                    })
+            }
+
+        }
+
 
     }
 
@@ -131,8 +170,9 @@ fun EachGroupScreen(
                                     modifier = Modifier
                                         .padding(bottom = 2.dp)
                                         .clickable {
-                                            if (!isMemberScreenVisible) { // ✅ 이미 열려 있으면 다시 변경하지 않음
+                                            if (!isMemberScreenVisible) { // 이미 열려 있으면 다시 변경하지 않음
                                                 Log.d("EachGroupScreen", "🔄 그룹원 목록 열기")
+
                                                 isMemberScreenVisible = true
                                             }
                                         }
@@ -300,20 +340,22 @@ fun EachGroupScreen(
                         .zIndex(2f)
                 ) {
                     // 사이드 메뉴 (그룹원 리스트)
-                    GroupMemberScreen(
-                        members = groupMember,
-                        isVisible = isMemberScreenVisible,
-                        onClose = {
-                            isMemberScreenVisible = false
-                        },
+                    group.groupId?.let {
+                        GroupMemberScreen(
+                            members = groupMember,
+                            isVisible = isMemberScreenVisible,
+                            onClose = {
+                                isMemberScreenVisible = false
+                            },
 
-                        navController = navController,
-                        groupId = group.groupId,
-                        viewModel = viewModel,
-                        repository = repository,
-                        tokenManager = TokenManager,
-                        group = group
-                    )
+                            navController = navController,
+                            groupId = it,
+                            viewModel = viewModel,
+                            repository = repository,
+                            tokenManager = TokenManager,
+                            group = group
+                        )
+                    }
 
                     // 다이얼로그 (그룹 탈퇴)
                     GroupLeaveDialog(

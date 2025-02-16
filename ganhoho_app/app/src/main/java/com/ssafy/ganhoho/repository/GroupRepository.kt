@@ -23,7 +23,7 @@ class GroupRepository {
     }
     
     // 그룹 초대 링크 조회
-    suspend fun getGroupInviteLink(token: String, groupId: Long): Result<GroupInviteLinkResponse> {
+    suspend fun getGroupInviteLink(token: String, groupId: Int): Result<GroupInviteLinkResponse> {
         return try{
             val response = RetrofitUtil.groupService.getGroupInviteLink("Bearer $token", groupId)
             handleResponse(response)
@@ -36,7 +36,7 @@ class GroupRepository {
     // 그룹원 정보 가져오기
     suspend fun getGroupMembers(token: String, groupId: Int): Result<List<GroupMemberResponse>> {
         return try {
-            val response = RetrofitUtil.groupService.getGroupMemberInfo("Bearer $token", groupId.toLong())
+            val response = RetrofitUtil.groupService.getGroupMemberInfo("Bearer $token", groupId)
             handleResponse(response)
         } catch (e: Exception) {
             Log.e("GroupRepository", "Error fetching group members", e)
@@ -92,5 +92,22 @@ class GroupRepository {
         }
     }
 
+    // 초대 링크로 그룹 가입
+    suspend fun joinGroupByInviteCode(token: String, groupId: Int): Result<Int> {
+        return try {
+            val response = RetrofitUtil.groupService.joinGroupByInviteCode("Bearer $token", groupId)
+            if (response.isSuccessful) {
+                Log.d("GroupRepository", "초대 수락 성공, groupId: $groupId")
+                Result.success(groupId)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Log.e("GroupRepository", "초대 수락 실패: ${response.code()} - $errorBody")
+                Result.failure(Exception("초대 코드가 유효하지 않음"))
+            }
+        } catch (e: Exception) {
+            Log.e("GroupRepository", "초대 코드 요청 중 오류 발생", e)
+            Result.failure(e)
+        }
+    }
 
 }

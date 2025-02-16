@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.ui.group
 
+import android.content.Intent
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
@@ -34,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -61,11 +63,24 @@ fun GroupMemberScreen(
     group: GroupDto
 ) {
     val yearMonth: String = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"))
+    var inviteLink by rememberSaveable { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         viewModel.fetchMemberSchedules(groupId, yearMonth) // 스케줄 불러오기
         viewModel.fetchMemberList(groupId) // 그룹원 리스트 불러오기
+
+        // 초대 링크 가져오기
+        val token = tokenManager.getAccessToken() ?: return@LaunchedEffect
+        viewModel.fetchGroupInviteLink(token, groupId,
+            onSuccess = { link ->
+                inviteLink = "ssafyd209://ganhoho/group?groupCode=$link"
+                Log.d("초대링크", "초대링크 가져오기 성공!~ : $inviteLink")
+            },
+            onFailure = { error ->
+                Log.e("초대링크", "초대 링크 불러오기 실패: $error")
+            })
     }
+
 
     var isDialogVisible by rememberSaveable { mutableStateOf(false) } // 다이얼로그 상태 유지
     val groupMembers by viewModel.groupMembers.collectAsState()
@@ -123,7 +138,8 @@ fun GroupMemberScreen(
                                 MemberCard(
                                     member = member,
                                     onClick = {
-                                        navController.navigate("GroupMemberSchedule/${member.loginId}")
+//                                        navController.navigate("GroupMemberSchedule/${member.loginId}")
+
                                     }
                                 )
                             }
@@ -132,8 +148,25 @@ fun GroupMemberScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
+                    val context = LocalContext.current
+
                     Button(
-                        onClick = { /* 초대 링크 공유 기능 추가 예정 */ },
+                        onClick = {
+                            // 초대링크 공유
+                            if (inviteLink.isNotEmpty()) {
+                                val sendIntent = Intent().apply {
+                                    action = Intent.ACTION_SEND
+                                    val inviteLinkUrl = inviteLink.substringAfter("groupCode=")
+
+                                    putExtra(Intent.EXTRA_TEXT, inviteLinkUrl)
+                                    type = "text/plain"
+                                }
+                                context.startActivity(Intent.createChooser(sendIntent, "초대 링크 공유하기"))
+                            }else {
+                                Log.e("초대링크", "초대 링크가 존재하지 않음")
+                            }
+
+                        },
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF79C7E3)),
                         modifier = Modifier
                             .fillMaxWidth()

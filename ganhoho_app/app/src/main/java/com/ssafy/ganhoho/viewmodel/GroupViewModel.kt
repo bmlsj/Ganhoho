@@ -123,8 +123,35 @@ class GroupViewModel (
         }
     }
 
+    // 그룹 초대 링크 가져오기
+    fun fetchGroupInviteLink(token: String, groupId: Int, onSuccess: (String) -> Unit, onFailure: (String) -> Unit) {
+        viewModelScope.launch {
+            val result = repository.getGroupInviteLink(token, groupId)
+            result.onSuccess { response ->
+                onSuccess(response.groupInviteLink)
+            }.onFailure { error ->
+                Log.e("GroupViewModel", "초대 링크 가져오기 실패: $error")
+                onFailure("초대 링크를 불러올 수 없습니다.")
+            }
+        }
+    }
 
+    // 그룹 초대 코드로 가입하기
+    fun joinGroupByInviteCode(token: String?, groupId: Int, onSuccess: (Int) -> Unit, onFailure: (String) -> Unit) {
+        if (token == null) {
+            onFailure("토큰이 없습니다. 로그인 후 다시 시도해주세요.")
+            return
+        }
 
-
-
+        viewModelScope.launch {
+            val result = repository.joinGroupByInviteCode(token, groupId)
+            result.onSuccess { groupId ->
+                Log.d("GroupViewModel", "그룹 초대 수락 성공! groupId = $groupId")
+                onSuccess(groupId)
+            }.onFailure { error ->
+                Log.e("GroupViewModel", "그룹 초대 수락 실패: ${error.message}")
+                onFailure(error.localizedMessage ?: "초대 수락 실패")
+            }
+        }
+    }
 }
