@@ -146,4 +146,5 @@ public class CustomExceptionHandler {
         ErrorResponse error = new ErrorResponse(ErrorCode.UNAUTHORIZED);
         return new ResponseEntity<>(error, ErrorCode.UNAUTHORIZED.getHttpStatus());
     }
+
 } 
