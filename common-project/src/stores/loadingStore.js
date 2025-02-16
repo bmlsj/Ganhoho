@@ -11,10 +11,12 @@ export const useLoadingStore = defineStore('loading', {
   actions: {
     startLoading() {
       this.loadingCount++;
+      console.log("로딩 시작, 현재 카운트:", this.loadingCount);
     },
     stopLoading() {
       if (this.loadingCount > 0) {
         this.loadingCount--;
+        console.log("로딩 종료, 현재 카운트:", this.loadingCount);
       }
     },
     resetLoading() {
