@@ -169,7 +169,7 @@ export const useApiStore = defineStore('api', () => {
           name: item.ITEM_NAME || '',
           content: item.STORAGE_METHOD || '',
           expiry: item.VALID_TERM || '',
-          imageSrc: item.CHART || '',
+          imageSrc: item.ITEM_IMAGE || '',
           company: item.ENTP_NAME || '',
           type: item.ETC_OTC_CODE || '',
         }));

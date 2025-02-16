@@ -1,4 +1,4 @@
-<!-- WorkScheduleLayout.vue -->
+<!--FullWorkScheduleView.vue -->
 <template>
   <div class="work-schedule-layout">
     <div class="header">
@@ -191,7 +191,6 @@ const isWeekly = computed(() => route.name === 'WeeklySchedule')
   flex: 1;  
   display: flex;
   flex-direction: column;
-  overflow: hidden; 
   margin-top: 8px;
 }
 

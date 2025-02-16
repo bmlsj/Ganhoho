@@ -1,3 +1,4 @@
+<!--WeeklySchedule.vue-->
 <template>
   <div class="weekly-schedule">
     <div class="header-row">
@@ -8,7 +9,6 @@
       <div :class="{'overlay': tutorialStep === 1 && isFirstVisit}"></div> <!-- 블러처리 -->
       <button class="nav-button" @click="nextWeek">▶</button>
     </div>
-    <!-- 기존에 있던 요일 표시 부분 제거 -->
     <div v-if="store.people.length === 0" class="empty-state">
       <p>현재 등록된 일정이 없습니다.</p>
     </div>
@@ -138,7 +138,6 @@ onMounted(() => {
   font-weight: bold;
 }
 
-/* 요일 관련 스타일은 제거됨 */
 
 /* 캘린더 영역: 남은 공간을 모두 사용하고 스크롤 가능하게 */
 .weekly-schedule .calendar-body {
