@@ -61,22 +61,33 @@ fun FriendRequestList(
             authViewModel.loadTokens(context)
         }
     }
+
     var successDialog by remember { mutableStateOf(false) }
-
-
     // 수락 성공 시
     val friendInviteResponse = friendViewModel.friendResponse.collectAsState().value
+    val updatedResponse by rememberUpdatedState(friendInviteResponse)
 
-    LaunchedEffect(friendInviteResponse) {
-        friendInviteResponse?.let {
-            if (friendInviteResponse.isSuccess) {
+    LaunchedEffect(updatedResponse) {
+        updatedResponse?.let {
+            if (it.isSuccess) {
                 Log.d("friend", "friend add success")
-                successDialog = true
+                successDialog = true // ✅ 다이얼로그 열기
             } else {
                 Log.d("friend", "friend add failed")
             }
         }
     }
+
+//    LaunchedEffect(friendInviteResponse) {
+//        friendInviteResponse?.let {
+//            if (friendInviteResponse.isSuccess) {
+//                Log.d("friend", "friend add success")
+//                successDialog = true // ✅ 다이얼로그 열기
+//            } else {
+//                Log.d("friend", "friend add failed")
+//            }
+//        }
+//    }
 
     Box(
         modifier = Modifier
@@ -182,13 +193,13 @@ fun FriendRequestList(
                 }
             }
 
-            // 즐겨찾기 아이콘
-            Icon(
-                imageVector =
-                Icons.Default.Close, contentDescription = "close",
-                tint = Color.Gray,
-                modifier = Modifier.size(18.dp)
-            )
+            // 삭제 아이콘
+//            Icon(
+//                imageVector =
+//                Icons.Default.Close, contentDescription = "close",
+//                tint = Color.Gray,
+//                modifier = Modifier.size(18.dp)
+//            )
 
         }
     }
