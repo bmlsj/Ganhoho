@@ -17,7 +17,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException e) {
-        log.warn("runtime Exception error : {}", e.getMessage());
+        log.warn("runtime ception error : {}", e.getMessage());
         ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
