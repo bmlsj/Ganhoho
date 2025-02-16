@@ -13,6 +13,13 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.core.io.ByteArrayResource;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Parameter;
 
 import java.nio.charset.StandardCharsets;
 import java.net.URLEncoder;
@@ -22,6 +29,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 @Slf4j
+@Tag(name = "Medicine", description = "의약품 API")
 @RestController
 @Component
 public class MedicineApi {
@@ -32,8 +40,34 @@ public class MedicineApi {
     @Value("${fastapi.server.url}")
     private String fastApiServerUrl;
 
+    @Operation(summary = "의약품 상세 조회", description = "의약품 일련번호로 상세 정보 조회")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "조회 성공",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(example = """
+                    {
+                        "ITEM_SEQ": "201603045",
+                        "ITEM_NAME": "피타로틴정2밀리그램(피타바스타틴칼슘)",
+                        "ENTP_NAME": "(주)셀트리온제약",
+                        "ETC_OTC_CODE": "전문의약품",
+                        "CHART": "분홍색의 원형 필름코팅정",
+                        "STORAGE_METHOD": "차광기밀용기, 실온(1~30℃)보관",
+                        "VALID_TERM": "제조일로부터 24 개월",
+                        "ITEM_IMAGE": "https://nedrug.mfds.go.kr/pbp/cmn/itemImageDownload/154176795981900027",
+                        "EE_DOC_DATA": "효능효과 정보...",
+                        "UD_DOC_DATA": "용법용량 정보..."
+                    }
+                    """))),
+        @ApiResponse(responseCode = "500", description = "서버 오류",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(example = """
+                    {
+                        "error": "검색 중 오류 발생: 상세 에러 메시지"
+                    }
+                    """)))
+    })
     @GetMapping("/api/medicines/{itemSeq}")
-    public ResponseEntity<Object> getMedicineById(@PathVariable String itemSeq) {
+    public ResponseEntity<Object> getMedicineById(@Parameter(description = "의약품 일련번호") @PathVariable String itemSeq) {
         try {
             log.info("의약품 일련번호로 검색 시작: {}", itemSeq);
             
@@ -92,8 +126,38 @@ public class MedicineApi {
         }
     }
 
+    @Operation(summary = "의약품 검색", description = "의약품 이름으로 검색")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "검색 성공",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(example = """
+                    {
+                        "items": [
+                            {
+                        "ITEM_SEQ": "201603045",
+                        "ITEM_NAME": "피타로틴정2밀리그램(피타바스타틴칼슘)",
+                        "ENTP_NAME": "(주)셀트리온제약",
+                        "ETC_OTC_CODE": "전문의약품",
+                        "CHART": "분홍색의 원형 필름코팅정",
+                        "STORAGE_METHOD": "차광기밀용기, 실온(1~30℃)보관",
+                        "VALID_TERM": "제조일로부터 24 개월",
+                        "ITEM_IMAGE": "https://nedrug.mfds.go.kr/pbp/cmn/itemImageDownload/154176795981900027",
+                        "EE_DOC_DATA": "효능효과 정보...",
+                        "UD_DOC_DATA": "용법용량 정보..."
+                            }
+                        ]
+                    }
+                    """))),
+        @ApiResponse(responseCode = "500", description = "서버 오류",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(example = """
+                    {
+                        "error": "검색 중 오류 발생: 상세 에러 메시지"
+                    }
+                    """)))
+    })
     @GetMapping("/api/medicines/search")
-    public ResponseEntity<Object> searchMedicineByName(@RequestParam String itemName) {
+    public ResponseEntity<Object> searchMedicineByName(@Parameter(description = "검색할 의약품 이름") @RequestParam String itemName) {
         try {
             log.info("의약품 검색 시작: {}", itemName);
             String encodedItemName = URLEncoder.encode(itemName, StandardCharsets.UTF_8);
@@ -159,8 +223,56 @@ public class MedicineApi {
         }
     }
 
+    @Operation(summary = "이미지로 의약품 검색", description = "의약품 이미지를 업로드하여 검색")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "이미지 분석 및 검색 성공",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(example = """
+                    {
+                        "success": true,
+                        "aiResult": {
+                            "success": true,
+                            "message": "Prediction successful",
+                            "detections": {
+                                "name": "피타로틴정 2mg"
+                            }
+                        },
+                        "medicineInfo": [
+                            {
+                                "ITEM_SEQ": "201603044",
+                                "ITEM_NAME": "피타로틴정2밀리그램(피타바스타틴칼슘)",
+                                "ENTP_NAME": "(주)셀트리온제약",
+                                "ETC_OTC_CODE": "전문의약품",
+                                "CHART": "분홍색의 원형 필름코팅정",
+                                "STORAGE_METHOD": "차광기밀용기, 실온(1~30℃)보관",
+                                "VALID_TERM": "제조일로부터 36 개월",
+                                "ITEM_IMAGE": "https://nedrug.mfds.go.kr/pbp/cmn/itemImageDownload/154176795981900021"
+                            }
+                        ],
+                        "detectedName": "피타로틴정2"
+                    }
+                    """))),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(example = """
+                    {
+                        "success": false,
+                        "error": "파일이 업로드되지 않았습니다."
+                    }
+                    """))),
+        @ApiResponse(responseCode = "500", description = "서버 오류",
+            content = @Content(mediaType = "application/json",
+                schema = @Schema(example = """
+                    {
+                        "success": false,
+                        "error": "이미지 처리 중 오류 발생: 상세 에러 메시지"
+                    }
+                    """)))
+    })
     @PostMapping("/api/medicines/upload-image")
-    public ResponseEntity<Map<String, Object>> uploadMedicineImage(@RequestParam("imageFile") MultipartFile imageFile) {
+    public ResponseEntity<Map<String, Object>> uploadMedicineImage(
+            @Parameter(description = "업로드할 의약품 이미지 파일") 
+            @RequestParam("imageFile") MultipartFile imageFile) {
         if (imageFile.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "파일이 업로드되지 않았습니다."));
         }
