@@ -3,19 +3,32 @@ import FullWorkScheduleView from '@/views/FullWorkScheduleView.vue'
 import PillSearchView from '@/views/PillSearchView.vue'
 import PillDetailView from '@/views/PillDetailView.vue'
 import InvitationLinkView from '@/views/InvitationLinkView.vue'
-
 import DefaultView from '@/views/DefaultView.vue'
 import IdentificationView from '@/views/IdentificationView.vue'
 import EfficacyView from '@/views/EfficacyView.vue'
 import PrecautionsView from '@/views/PrecautionsView.vue'
 
+import FullWorkSchedule from '@/components/FullWorkSchedule.vue'
+import WeeklySchedule from '@/components/WeeklySchedule.vue'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
       path: '/fullworkscheduleview',
       name: 'FullWorkScheduleView',
-      component: FullWorkScheduleView
+      component: FullWorkScheduleView,
+      children:[
+        {
+          path: '',
+          name: 'FullWorkSchedule',
+          component: FullWorkSchedule
+        },
+        {
+          path: '/weekly',
+          name: 'WeeklySchedule',
+          component: WeeklySchedule
+        },
+      ]
     },
     {
       path: '/pillsearch',

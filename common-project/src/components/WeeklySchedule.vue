@@ -1,43 +1,34 @@
+<!-- WeeklySchedule.vue -->
 <template>
-  <div class="calendar-wrapper">
-    <div class="calendar-header">
-      <div class="header-row">
-        <button class="nav-button" @click="prevWeek">◀</button>
-        <div class="year-month">
-          {{ store.currentYear || defaultYear }}년 {{ store.currentMonth || defaultMonth }}월 {{ getCurrentWeekRange }}
-        </div>
-        <button class="nav-button" @click="nextWeek">▶</button>
+  <div class="weekly-schedule">
+    <div class="header-row">
+      <button class="nav-button" @click="prevWeek">◀</button>
+      <div class="year-month">
+        {{ store.currentYear || defaultYear }}년 {{ store.currentMonth || defaultMonth }}월 {{ getCurrentWeekRange }}
       </div>
-
-      <div class="weekdays">
-        <span 
-          v-for="(day, index) in [''].concat(weekDays)" 
-          :key="index" 
-          :class="{ sunday: index === 1 }">
-          {{ day }}
-        </span>
-      </div>
+      <div :class="{'overlay': tutorialStep === 1 && isFirstVisit}"></div> <!-- 블러처리 -->
+      <button class="nav-button" @click="nextWeek">▶</button>
     </div>
-
+    <div class="weekdays">
+      <span
+        v-for="(day, index) in [''].concat(weekDays)"
+        :key="index"
+        :class="{ sunday: index === 1 }"
+      >
+        {{ day }}
+      </span>
+    </div>
     <div v-if="store.people.length === 0" class="empty-state">
       <p>현재 등록된 일정이 없습니다.</p>
     </div>
-
     <div v-else class="calendar-body">
       <div class="week">
         <div class="dates">
-          <div 
-            v-for="(day, dayIndex) in currentWeek" 
-            :key="dayIndex" 
-            class="date">
+          <div v-for="(day, dayIndex) in currentWeek" :key="dayIndex" class="date">
             {{ day || '' }}
           </div>
         </div>
-
-        <div 
-          v-for="person in store.people" 
-          :key="person.name" 
-          class="person-row">
+        <div v-for="person in store.people" :key="person.name" class="person-row">
           <div class="person-name">{{ person.name }}</div>
           <div class="person-schedule">
             <div
@@ -45,7 +36,8 @@
               :key="dayIndex"
               class="schedule-box"
               :class="person.schedule[day]?.toLowerCase()"
-              :style="{ visibility: day === null ? 'hidden' : 'visible' }">
+              :style="{ visibility: day === null ? 'hidden' : 'visible' }"
+            >
               {{ person.schedule[day] || '-' }}
             </div>
           </div>
@@ -73,7 +65,6 @@ const weeks = computed(() => {
   const year = store.currentYear || defaultYear
   const firstDayOfMonth = new Date(year, month - 1, 1).getDay()
   const lastDateOfMonth = new Date(year, month, 0).getDate()
-
   let weeksArr = []
   let currentWeek = [null, ...new Array(7).fill(null)]
   let dayCounter = 1
@@ -96,9 +87,7 @@ const weeks = computed(() => {
 })
 
 // 현재 선택된 주
-const currentWeek = computed(() => {
-  return weeks.value[currentWeekIndex.value] || []
-})
+const currentWeek = computed(() => weeks.value[currentWeekIndex.value] || [])
 
 // 현재 주의 날짜 범위 (예: "15일 - 21일")
 const getCurrentWeekRange = computed(() => {
@@ -127,37 +116,17 @@ onMounted(() => {
     }
   })
   currentWeekIndex.value = targetIndex
-  console.log(`오늘(${today})이 포함된 주 인덱스: ${targetIndex}`)
 })
 </script>
 
 <style scoped>
-.calendar-wrapper {
-  font-family: Arial, sans-serif;
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 16px;
-}
-
-.calendar-header {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 16px;
-  position: sticky;
-  top: 0;
-  background-color: white;
-  z-index: 10;
-  border-bottom: 1px solid #ddd;
-}
-
-.header-row {
+.weekly-schedule .header-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
 }
-
-.nav-button {
+.weekly-schedule .nav-button {
   background-color: #f1f1f1;
   border: none;
   padding: 6px 10px;
@@ -165,13 +134,11 @@ onMounted(() => {
   border-radius: 4px;
   font-size: 16px;
 }
-
-.year-month {
+.weekly-schedule .year-month {
   font-size: 18px;
   font-weight: bold;
 }
-
-.weekdays {
+.weekly-schedule .weekdays {
   display: grid;
   grid-template-columns: 55px repeat(7, 1fr);
   align-items: center;
@@ -179,35 +146,29 @@ onMounted(() => {
   column-gap: 2px;
   text-align: center;
 }
-
-.sunday {
+.weekly-schedule .sunday {
   color: red;
 }
-
-.calendar-body {
+.weekly-schedule .calendar-body {
   display: flex;
   flex-direction: column;
 }
-
-.dates {
+.weekly-schedule .dates {
   display: grid;
   grid-template-columns: 55px repeat(7, 1fr);
   column-gap: 2px;
 }
-
-.date {
+.weekly-schedule .date {
   text-align: center;
   font-weight: bold;
   font-size: 13px;
 }
-
-.person-row {
+.weekly-schedule .person-row {
   display: flex;
   align-items: center;
   margin-bottom: 8px;
 }
-
-.person-name {
+.weekly-schedule .person-name {
   width: 55px;
   height: 23px;
   flex-shrink: 0;
@@ -216,13 +177,11 @@ onMounted(() => {
   font-weight: bold;
   font-size: 13px;
 }
-
-.person-schedule {
+.weekly-schedule .person-schedule {
   flex: 1;
   display: flex;
 }
-
-.schedule-box {
+.weekly-schedule .schedule-box {
   flex: 1;
   text-align: center;
   padding: 4px 6px;
@@ -232,22 +191,22 @@ onMounted(() => {
   font-size: 12px;
   line-height: 1;
 }
-
-/* 기존 일정 스타일 유지 */
 .schedule-box.nig {
   background-color: #DDD4cD;
 }
+/* Day 일정 스타일 */
 .schedule-box.day {
   background-color: #fff8bf;
 }
+/* Eve 일정 스타일 */
 .schedule-box.eve {
   background-color: #e4c7f1;
 }
+/* Off 일정 스타일 */
 .schedule-box.off {
   background-color: #fcd6c8;
 }
-
-.empty-state {
+.weekly-schedule .empty-state {
   text-align: center;
   font-size: 16px;
   color: gray;

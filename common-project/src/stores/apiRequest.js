@@ -21,6 +21,8 @@ export const useApiStore = defineStore('api', () => {
   const token = ref(localStorage.getItem("token") || null);
   const refreshToken = ref(localStorage.getItem("refresh_token") || null);
 
+  token.value ="eyJhbGciOiJIUzI1NiJ9.eyJtZW1iZXJJZCI6OCwiaWF0IjoxNzM5NjgzMjYzLCJleHAiOjE3Mzk3Njk2NjN9.5KmPHuxwU_GMkUXFENU3EU_FfHRHU6FeGM04kse40Mc"
+
   const setToken = (access_token, refresh_token) => {
     token.value = access_token;
     refreshToken.value = refresh_token;
