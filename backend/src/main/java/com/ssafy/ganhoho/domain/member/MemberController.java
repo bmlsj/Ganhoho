@@ -41,7 +41,7 @@ public class MemberController {
     @PutMapping("/mypage/hospital-ward")
     public ResponseEntity<MemberInfoResponse> updateHospitalWard(@RequestBody HospitalWardRequestBody hospitalWardRequestBody) {
         Long memberId = getCurrentMemberId();
-        MemberInfoResponse memberInfoResponse = memberService.updateHospitalWard(memberId, hospitalWardRequestBody.getHospital(), hospitalWardRequestBody.getWard());
+        MemberInfoResponse memberInfoResponse = memberService.updateHospitalWard(memberId, hospitalWardRequestBody);
         return ResponseEntity.ok(memberInfoResponse);
     }
 }

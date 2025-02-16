@@ -9,4 +9,6 @@ import lombok.*;
 public class HospitalWardRequestBody {
     private String hospital;
     private String ward;
+    private Double hospitalLat;
+    private Double hospitalLng;
 }
