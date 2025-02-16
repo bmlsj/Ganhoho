@@ -12,13 +12,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -122,9 +125,9 @@ fun FriendScreen(navController: NavController) {
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
 
-            MenuItem("list", "친구목록", currentScreen)
-            MenuItem("request", "친구요청", currentScreen)
-            MenuItem("search", "친구검색", currentScreen)
+            MenuItem("list", "친구목록", currentScreen, friendInvite.size)
+            MenuItem("request", "친구요청", currentScreen, friendInvite.size)
+            MenuItem("search", "친구검색", currentScreen, friendInvite.size)
 
         }
 
@@ -255,26 +258,33 @@ fun FriendScreen(navController: NavController) {
 
 // 메뉴 아이템
 @Composable
-fun MenuItem(screen: String, title: String, currentScreen: MutableState<String>) {
+fun MenuItem(screen: String, title: String, currentScreen: MutableState<String>, friendRequestCount: Int) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.clickable { currentScreen.value = screen }
     ) {
-        Text(
-            text = title,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            color = if (currentScreen.value == screen) Color.Black else Color.Gray
-        )
+        if (title == "친구요청") {
+
+            FriendRequestBadge(friendRequestCount)
+        } else {
+            Text(
+                text = title,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (currentScreen.value == screen) Color.Black else Color.Gray
+            )
+        }
 
         Spacer(modifier = Modifier.height(3.dp))
         if (currentScreen.value == screen) {
+
             Box(
                 modifier = Modifier
                     .width(75.dp)
                     .height(3.dp)
                     .background(Color(0xff35A6CC))
             )
+
         }
     }
 }
@@ -287,4 +297,36 @@ fun ScreenPreivew() {
     val navController = rememberNavController()
     FriendScreen(navController)
 
+}
+
+@Composable
+fun FriendRequestBadge(friendRequestCount: Int) {
+    Box { // 외부 Box
+        // 친구 요청 아이콘 (예제 아이콘)
+        Text(
+            "친구 요청",
+            fontSize = 20.sp,
+            modifier = Modifier.padding(top = 2.dp, end = 8.dp),
+            fontWeight = FontWeight.Bold
+        )
+
+        // 🔴 빨간 알림 배지 (알림 개수가 0보다 클 때만 표시)
+        if (friendRequestCount > 0) {
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .background(Color.Red, shape = CircleShape)
+                    .align(Alignment.TopEnd), // 오른쪽 상단 정렬
+                contentAlignment = Alignment.Center
+            ) {
+
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun FriendRequestBadgePreview() {
+    FriendRequestBadge(friendRequestCount = 3) // 🔥 예제: 친구 요청 3개
 }
