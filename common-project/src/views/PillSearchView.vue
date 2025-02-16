@@ -98,9 +98,9 @@ onMounted(async () => {
       window.webkit.messageHandlers.openCamera.postMessage(null);
     }
     // Android: 웹뷰에 주입된 인터페이스(예: AndroidInterface)를 통한 호출
-    else if (window.AndroidInterface && typeof window.AndroidInterface.openCamera === 'function') {
+    else if (window.AndroidCameraInterface && typeof window.AndroidCameraInterface.openCamera === 'function') {
       console.log("Android 네이티브 openCamera 호출");
-      window.AndroidInterface.openCamera();
+      window.AndroidCameraInterface.openCamera();
     }
     else {
       console.error("네이티브 카메라 인터페이스가 제공되지 않았습니다.");
