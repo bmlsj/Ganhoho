@@ -73,9 +73,15 @@ class ScheduleViewModel() : ViewModel() {
     // 내 근무 스케줄 수정
     fun updateMyWorkSchedule(token: String, workScheduleId: Long, request: WorkScheduleDto) {
         viewModelScope.launch {
-            repository.updateMyWorkSchedule(token, workScheduleId, request)
+            val response = repository.updateMyWorkSchedule(token, workScheduleId, request)
+            if (response.isSuccess) {
+                Log.d("ScheduleViewModel", "✅ 근무 일정 수정 성공: ${response.getOrNull()}")
+            } else {
+                Log.e("ScheduleViewModel", "❌ 근무 일정 수정 실패: ${response.exceptionOrNull()?.message}")
+            }
         }
     }
+
 
     // 개인 스케줄 조회
     fun getMySchedule(token: String) {

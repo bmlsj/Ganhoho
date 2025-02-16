@@ -19,7 +19,6 @@ class FriendRepository {
     suspend fun getFriendList(token: String): Result<List<FriendDto>> {
         return try {
             val response = RetrofitUtil.friendService.getFriendList("Bearer $token")
-            Log.d("repo test", "test")
             handleResponse(response)
         } catch (e: Exception) {
             Result.failure(e)
@@ -85,6 +84,4 @@ class FriendRepository {
             Result.failure(e)
         }
     }
-
-
 }
