@@ -12,6 +12,8 @@ public class LoginResponse {
     private String name;
     private String hospital;
     private String ward;
+    private Double hospitalLng;
+    private Double hospitalLat;
     private String accessToken;
     private String refreshToken;
 }

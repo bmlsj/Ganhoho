@@ -34,6 +34,8 @@ public class AuthServiceImpl implements AuthService {
                         .hospital(signUpRequest.getHospital())
                         .ward(signUpRequest.getWard())
                         .appFcmToken(signUpRequest.getFcmToken())
+                        .hospitalLng(signUpRequest.getHospitalLng())
+                        .hospitalLat(signUpRequest.getHospitalLat())
                         .build();
 
                 authRepository.save(member);
@@ -68,6 +70,8 @@ public class AuthServiceImpl implements AuthService {
                     .ward(member.getWard())
                     .accessToken(jwtToken.getAccessToken())
                     .refreshToken(jwtToken.getRefreshToken())
+                    .hospitalLat(member.getHospitalLat())
+                    .hospitalLng(member.getHospitalLng())
                     .build();
         } else {
             throw new CustomException(ErrorCode.AUTH_FAILURE);

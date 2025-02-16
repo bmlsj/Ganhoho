@@ -39,10 +39,14 @@ public class MemberServiceImpl implements MemberService{
     }
 
     @Override
-    public MemberInfoResponse updateHospitalWard(Long memberId, String hospital, String ward) {
+    public MemberInfoResponse updateHospitalWard(Long memberId, HospitalWardRequestBody requestBody) {
         Member member = memberRepository.findByMemberId(memberId).orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
-        if(hospital != null) member.setHospital(hospital);
-        if(ward != null) member.setWard(ward);
+        if(requestBody.getHospital() != null) {
+            member.setHospital(requestBody.getHospital());
+            member.setHospitalLng(requestBody.getHospitalLng());
+            member.setHospitalLat(requestBody.getHospitalLat());
+        }
+        if(requestBody.getWard() != null) member.setWard(requestBody.getWard());
 
         memberRepository.save(member);
         return MemberMapper.INSTANCE.memberInfoToMemberInfoResponse(member);

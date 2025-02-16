@@ -27,6 +27,12 @@ public class Member {
     private String hospital;
     private String ward;
 
+    @Column(name = "hospital_lat")
+    private Double hospitalLat;
+
+    @Column(name = "hospital_lng")
+    private Double hospitalLng;
+
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
     private LocalDateTime createdAt;
