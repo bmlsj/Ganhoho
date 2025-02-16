@@ -69,7 +69,7 @@ watch(searchQuery, async (newQuery) => {
 })
 
 onMounted(async () => {
-  console.log(apiStore.token)
+  console.log("onMounted: 토큰 확인", apiStore.token)
   try {
     if (!apiStore.token) {
       console.error("토큰이 없습니다. 로그인이 필요합니다.");
@@ -91,12 +91,15 @@ onMounted(async () => {
 
   // ① 네이티브 앱에게 카메라를 열도록 요청하는 함수 등록
   window.openNativeCamera = function() {
+    console.log("window.openNativeCamera 호출됨");
     // iOS: WKWebView의 messageHandler 호출 예시
     if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.openCamera) {
+      console.log("iOS 네이티브 openCamera 호출");
       window.webkit.messageHandlers.openCamera.postMessage(null);
     }
     // Android: 웹뷰에 주입된 인터페이스(예: AndroidInterface)를 통한 호출
     else if (window.AndroidInterface && typeof window.AndroidInterface.openCamera === 'function') {
+      console.log("Android 네이티브 openCamera 호출");
       window.AndroidInterface.openCamera();
     }
     else {
@@ -107,16 +110,19 @@ onMounted(async () => {
   // ② 네이티브 앱에서 사진 촬영 후 호출할 콜백 함수 등록  
   // 전달받은 imageData는 보통 base64 형식의 문자열(예: "iVBORw0KGgoAAAANSUhEUgAA...")이라고 가정합니다.
   window.onImageCaptured = function(imageData) {
+    console.log("window.onImageCaptured 호출됨, imageData:", imageData);
     // imageData가 dataURL 전체라면 그대로 사용, 아니라면 dataURL 접두어를 붙입니다.
     let dataUrl = imageData.startsWith("data:image/")
       ? imageData
       : "data:image/png;base64," + imageData;
+    console.log("변환된 dataUrl:", dataUrl);
     // dataURL을 File 객체로 변환
     const file = dataURLtoFile(dataUrl, "captured.png");
     if (!file) {
       console.error("이미지 파일 변환 실패");
       return;
     }
+    console.log("파일 객체 생성됨:", file);
     // 네이티브 앱에서 전달받은 파일을 바로 업로드
     apiStore.uploadMedicineImage(file);
   }
@@ -149,8 +155,10 @@ const goToDetailPage = (medicineId) => {
   }
   router.push(`/pill-detail/${medicineId}`);
 };
-// ✅ 카메라 버튼 클릭 시 숨겨진 input 실행
+
+// ✅ 카메라 버튼 클릭 시 네이티브 함수 호출
 const triggerCamera = () => {
+  console.log("triggerCamera 호출됨");
   if (window.openNativeCamera && typeof window.openNativeCamera === "function") {
     window.openNativeCamera();
   } else {
