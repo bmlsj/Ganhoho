@@ -7,6 +7,7 @@ import com.ssafy.ganhoho.data.model.dto.schedule.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.response.schedule.MyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.schedule.AddMyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.schedule.FriendPersonalResponse
+import com.ssafy.ganhoho.data.model.response.schedule.MyWorkResponse
 import com.ssafy.ganhoho.data.model.response.schedule.ScheduleUpdateResponse
 import retrofit2.Response
 import retrofit2.http.Body

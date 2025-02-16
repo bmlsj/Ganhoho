@@ -10,6 +10,7 @@ import com.ssafy.ganhoho.data.model.dto.schedule.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.response.schedule.MyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.schedule.AddMyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.schedule.FriendPersonalResponse
+import com.ssafy.ganhoho.data.model.response.schedule.MyWorkResponse
 import com.ssafy.ganhoho.data.model.response.schedule.ScheduleUpdateResponse
 import com.ssafy.ganhoho.repository.ScheduleRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -57,7 +58,15 @@ class ScheduleViewModel() : ViewModel() {
     // 내 근무 스케줄 조회
     fun getMyWorkSchedule(token: String) {
         viewModelScope.launch {
-            _myWorkSchedule.value = repository.getMyWorkSchedule(token)
+            val response = repository.getMyWorkSchedule(token)
+            _myWorkSchedule.value = response
+            if (response.isSuccess) {
+                response
+            } else {
+                Log.e("API_ERROR", "서버 오류 발생: ${response.exceptionOrNull()?.message}")
+                Result.failure(Exception("서버에서 일정을 불러오지 못했습니다. 잠시 후 다시 시도해주세요."))
+            }
+            Log.d("ScheduleViewModel", "📌 개인 근무 스케줄 API 응답: $response")
         }
     }
 
@@ -72,7 +81,7 @@ class ScheduleViewModel() : ViewModel() {
     fun getMySchedule(token: String) {
         viewModelScope.launch {
             val response = repository.getMySchedule(token)
-            Log.d("ScheduleViewModel", "📌 개인 스케줄 API 응답: $response $token")
+            Log.d("ScheduleViewModel", "📌 개인 스케줄 API 응답: $response")
             _mySchedule.value = response
         }
     }

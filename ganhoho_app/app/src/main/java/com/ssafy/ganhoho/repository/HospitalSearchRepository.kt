@@ -12,7 +12,7 @@ class HospitalSearchRepository {
         y: String
     ): Result<List<SearchResultItem>> {
         return try {
-            val response = RetrofitUtil.kakaoSearchAApi.searchHospital(query, x, y)
+            val response = RetrofitUtil.kakaoSearchApi.searchHospital(query, x, y)
             if (response.isSuccessful) {
                 Log.d("KakaoMap", "병원 검색 성공! 검색어: $query")
                 val hospitalList = response.body()?.places ?: emptyList()

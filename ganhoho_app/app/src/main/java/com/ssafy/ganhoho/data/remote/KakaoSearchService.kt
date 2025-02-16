@@ -12,7 +12,6 @@ interface KakaoSearchService {
         @Query("query") query: String,  // 검색어 (ex: "병원")
         @Query("x") x: String,          // 경도 (Longitude)
         @Query("y") y: String,          // 위도 (Latitude)
-        @Query("radius") radius: Int = 20000,  // 검색 반경
         @Query("category_group_code") category: String = "HP8"  // 병원 카테고리 코드
     ): Response<KakaoSearchResponse>
 
