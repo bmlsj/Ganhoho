@@ -139,17 +139,17 @@ class GroupViewModel (
     }
 
     // 그룹 초대 코드로 가입하기
-    fun joinGroupByInviteCode(token: String?, groupId: Int, onSuccess: (Int) -> Unit, onFailure: (String) -> Unit) {
+    fun joinGroupByInviteCode(token: String?, inviteLink: String, onSuccess: (String) -> Unit, onFailure: (String) -> Unit) {
         if (token == null) {
             onFailure("토큰이 없습니다. 로그인 후 다시 시도해주세요.")
             return
         }
 
         viewModelScope.launch {
-            val result = repository.joinGroupByInviteCode(token, groupId)
-            result.onSuccess { groupId ->
-                Log.d("GroupViewModel", "그룹 초대 수락 성공! groupId = $groupId")
-                onSuccess(groupId)
+            val result = repository.joinGroupByInviteCode(token, inviteLink)
+            result.onSuccess { inviteLink ->
+                Log.d("GroupViewModel", "그룹 초대 수락 성공! inviteLink = $inviteLink")
+                onSuccess(inviteLink)
             }.onFailure { error ->
                 Log.e("GroupViewModel", "그룹 초대 수락 실패: ${error.message}")
                 onFailure(error.localizedMessage ?: "초대 수락 실패")

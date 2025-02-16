@@ -93,12 +93,12 @@ class GroupRepository {
     }
 
     // 초대 링크로 그룹 가입
-    suspend fun joinGroupByInviteCode(token: String, groupId: Int): Result<Int> {
+    suspend fun joinGroupByInviteCode(token: String, inviteLink: String): Result<String> {
         return try {
-            val response = RetrofitUtil.groupService.joinGroupByInviteCode("Bearer $token", groupId)
+            val response = RetrofitUtil.groupService.joinGroupByInviteCode("Bearer $token", inviteLink)
             if (response.isSuccessful) {
-                Log.d("GroupRepository", "초대 수락 성공, groupId: $groupId")
-                Result.success(groupId)
+                Log.d("GroupRepository", "초대 수락 성공, groupId: $inviteLink")
+                Result.success(inviteLink)
             } else {
                 val errorBody = response.errorBody()?.string()
                 Log.e("GroupRepository", "초대 수락 실패: ${response.code()} - $errorBody")

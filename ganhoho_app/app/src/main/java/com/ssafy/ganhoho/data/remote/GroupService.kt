@@ -24,10 +24,10 @@ interface GroupService {
     ): Response<GroupDto>
 
     // 그룹 초대 수락
-    @POST("api/groups/{groupId}")
+    @POST("api/groups/{inviteLink}")
     suspend fun joinGroupByInviteCode(
         @Header("Authorization") token: String,
-        @Path("groupId") groupId: Int
+        @Path("inviteLink") inviteLink: String
     ): Response<Unit>
 
     // 그룹 목록 조회

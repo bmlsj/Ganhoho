@@ -16,15 +16,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ssafy.ganhoho.base.TokenManager
+import com.ssafy.ganhoho.data.model.response.group.GroupViewModelFactory
+import com.ssafy.ganhoho.data.repository.GroupRepository
 import com.ssafy.ganhoho.ui.auth.AuthDataStore
 import com.ssafy.ganhoho.ui.auth.LoginScreen
 import com.ssafy.ganhoho.ui.bottom_navigation.CustomBottomNavigation
 import com.ssafy.ganhoho.ui.theme.GANHOHOTheme
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
+import com.ssafy.ganhoho.viewmodel.GroupViewModel
 
 class MainActivity : ComponentActivity() {
 
@@ -33,8 +37,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val authDataStore = AuthDataStore(applicationContext) //DataStore 생성
 
+        val tokenManager = TokenManager
+        val repository = GroupRepository()
+
         // 앱 실행 시 딥링크 처리
-        handleDeepLink(intent)
+        val groupViewModel: GroupViewModel = ViewModelProvider(
+            this,
+            GroupViewModelFactory(repository, tokenManager)
+        ).get(GroupViewModel::class.java)
+
+        handleDeepLink(intent, groupViewModel)
 
         // 저장된 토큰 불러오기
         authViewModel.loadTokens(this)
@@ -79,13 +91,9 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        handleDeepLink(intent) // 앱이 이미 실행 중일때 새로운 딥링크 처리
-    }
 
     // 딥링크 관리
-    private fun handleDeepLink(intent: Intent) {
+    private fun handleDeepLink(intent: Intent, viewModel: GroupViewModel) {
         val data: Uri? = intent.data
         data?.let { uri ->
             val inviteCode = uri.getQueryParameter("groupCode")
@@ -96,23 +104,22 @@ class MainActivity : ComponentActivity() {
 
                 if (token != null) {
                     // 로그인 되어 있다면 초대 코드로 그룹 가입 처리 후 그룹 화면으로 이동
-//                    val viewModel: GroupViewModel = ViewModelProvider(this)[GroupViewModel::class.java]
-//
-//                    viewModel.joinGroupByInviteCode(token, inviteCode,
-//                        onSuccess = { groupId ->
-//                            Log.d("DeepLink", "✅ 초대 수락 성공! groupId: $groupId")
-//
-//                            // 그룹 리스트 화면으로 이동
-//                            val groupIntent = Intent(this, MainActivity::class.java).apply {
-//                                putExtra("navigateTo", "group")
-//                            }
-//                            startActivity(groupIntent)
-//                            finish() // 현재 액티비티 종료 (기존 화면이 남아 있지 않도록)
-//                        },
-//                        onFailure = { error ->
-//                            Log.e("DeepLink", "초대 수락 실패: $error")
-//                        }
-//                    )
+
+                    viewModel.joinGroupByInviteCode(token, inviteCode,
+                        onSuccess = { inviteLink ->
+                            Log.d("DeepLink", "초대 수락 성공! inviteLink: $inviteLink")
+
+                            // 그룹 리스트 화면으로 이동
+                            val groupIntent = Intent(this, MainActivity::class.java).apply {
+                                putExtra("navigateTo", "group")
+                            }
+                            startActivity(groupIntent)
+                            finish() // 현재 액티비티 종료 (기존 화면이 남아 있지 않도록)
+                        },
+                        onFailure = { error ->
+                            Log.e("DeepLink", "초대 수락 실패: $error")
+                        }
+                    )
                 } else {
                     // 로그인 상태가 아니라면 로그인 화면으로 이동
                     Log.e("DeepLink", "토큰 없음. 로그인 필요")
@@ -123,8 +130,7 @@ class MainActivity : ComponentActivity() {
                     finish()
                 }
 
-                // 뷰모델을 사용하여 초대 수락 API 호출
-                
+
             }
         }
     }
