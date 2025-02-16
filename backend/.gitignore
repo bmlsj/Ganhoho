@@ -21,6 +21,9 @@ bin/
 ### OCR ###
 src/main/resources/application-ocr.yml
 
+### inviteLink ###
+src/main/resources/application-invite.yml
+
 ### IntelliJ IDEA ###
 .idea
 *.iws
