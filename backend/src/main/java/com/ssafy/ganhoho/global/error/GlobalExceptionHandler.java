@@ -1,11 +1,12 @@
 package com.ssafy.ganhoho.global.error;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
-
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(CustomException.class)
@@ -16,6 +17,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException e) {
+        log.warn("runtime Exception error : {}", e.getMessage());
         ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
@@ -26,6 +28,7 @@ public class GlobalExceptionHandler {
     }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
+        log.warn("exception error : {}", e.getMessage());
         ErrorResponse error = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
