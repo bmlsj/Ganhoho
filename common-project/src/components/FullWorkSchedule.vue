@@ -42,34 +42,42 @@ const calendarBodyRef = ref(null)
 
 onMounted(async () => {
   // 1) 캘린더 데이터 생성
-  store.generateCalendar()
+  store.generateCalendar();
+  console.log("📢 generateCalendar 호출 후:", store.calendar);
 
   // 2) DOM 업데이트 후 처리
-  await nextTick()
-  const today = new Date().getDate()
-  let targetWeekIndex = 0
-  store.calendar.forEach((week, index) => {
-    if (week.includes(today)) {
-      targetWeekIndex = index
+  await nextTick();
+  
+  // setTimeout으로 100ms 지연 후 실행
+  setTimeout(() => {
+    const today = new Date().getDate();
+    let targetWeekIndex = 0;
+    store.calendar.forEach((week, index) => {
+      if (week.includes(today)) {
+        targetWeekIndex = index;
+      }
+    });
+    console.log("📢 targetWeekIndex:", targetWeekIndex);
+    
+    if (calendarBodyRef.value) {
+      const weekElements = calendarBodyRef.value.querySelectorAll('.week');
+      if (weekElements.length > targetWeekIndex) {
+        const targetElement = weekElements[targetWeekIndex];
+        const headerEl = document.querySelector('.header');
+        const headerHeight = headerEl ? headerEl.offsetHeight : 0;
+        const scrollPosition = targetElement.offsetTop - headerHeight;
+        console.log("📢 scrollPosition:", scrollPosition);
+        calendarBodyRef.value.scrollTo({
+          top: scrollPosition,
+          behavior: 'smooth'
+        });
+      } else {
+        console.warn("⚠️ weekElements의 수가 targetWeekIndex보다 작습니다.");
+      }
+    } else {
+      console.warn("⚠️ calendarBodyRef가 유효하지 않습니다.");
     }
-  })
-
-  // 3) 헤더 높이 동적 보정 후 스크롤 이동
-  if (calendarBodyRef.value) {
-    const weekElements = calendarBodyRef.value.querySelectorAll('.week')
-    if (weekElements.length > targetWeekIndex) {
-      const targetElement = weekElements[targetWeekIndex]
-      // 헤더 요소의 실제 높이 읽기 (예: .header)
-      const headerEl = document.querySelector('.header')
-      const headerHeight = headerEl ? headerEl.offsetHeight : 0
-      // 타겟 요소의 offsetTop에서 헤더 높이만큼 빼줌
-      const scrollPosition = targetElement.offsetTop - headerHeight
-      calendarBodyRef.value.scrollTo({
-        top: scrollPosition,
-        behavior: 'smooth'
-      })
-    }
-  }
+  }, 100); // 100ms 딜레이, 필요 시 조정
 })
 </script>
 
@@ -79,7 +87,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   flex: 1; /* 부모에서 넘겨준 공간 전부 사용 */
-  overflow: hidden; /* 내부에서 스크롤 처리 */
+  overflow-y:auto;
 }
 
 
@@ -88,6 +96,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  max-height:100vh;
 }
 
 .week {

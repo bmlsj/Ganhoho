@@ -1,11 +1,34 @@
 <!--FullWorkScheduleView.vue -->
 <template>
-  <div class="work-schedule-layout">
+  <div class="container">
     <div class="header">
       <div class="header-row">
         <div class="year-month">
           {{ store.currentYear || defaultYear }}년 {{ store.currentMonth || defaultMonth }}월
         </div>
+        <!-- 플로팅 메뉴를 헤더 내부에 배치 -->
+      <div class="fab-container">
+        <div class="fab-menu">
+          <button
+            class="fab-main"
+            :class="{ 'fab-open': isOpen }"
+            @click="toggleMenu"
+          >
+            +
+          </button>
+          <transition-group name="fab" tag="div" class="fab-sub-container">
+            <button
+              v-if="isOpen"
+              v-for="(btn, index) in subButtons"
+              :key="btn.id"
+              class="fab-sub"
+              @click="handleSubButton(btn)"
+            >
+              {{ btn.label }}
+            </button>
+          </transition-group>
+        </div>
+      </div>
         <!-- 튜토리얼 시 배경 블러 -->
         <div :class="{'overlay': tutorialStep === 1 && isFirstVisit}"></div>
       </div>
@@ -16,32 +39,6 @@
         </span>
       </div>
     </div>
-
-    <!-- 플로팅 메뉴: 메인 + 버튼 및 서브 버튼들 -->
-    <div class="fab-container">
-      <!-- 메인 버튼 -->
-      <button
-        class="fab-main"
-        :class="{ 'fab-open': isOpen }"
-        @click="toggleMenu"
-      >
-        +
-      </button>
-
-      <!-- 서브 버튼들 (가로로 나타남) -->
-      <transition-group name="fab" tag="div" class="fab-sub-container">
-        <button
-          v-if="isOpen"
-          v-for="(btn, index) in subButtons"
-          :key="btn.id"
-          class="fab-sub"
-          @click="onSubButtonClick(btn)"
-        >
-          {{ btn.label }}
-        </button>
-      </transition-group>
-    </div>
-
 
     <!-- 콘텐츠 영역 -->
     <div class="content">
@@ -63,7 +60,8 @@
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useApiStore } from '@/stores/apiRequest'
-
+import gallery from '@/assets/gallery.png'
+import change from '@/assets/change.png'
 /* 스토어 & 기본값 */
 const store = useApiStore()
 const defaultYear = new Date().getFullYear()
@@ -115,26 +113,25 @@ const isWeekly = computed(() => route.name === 'WeeklySchedule')
 const isOpen = ref(false)
 const subButtons = [
   // 서브 버튼 1: 이미지 등록
-  { id: 'gallery', label: '이미지등록' },
+  { id: 'gallery', label: gallery },
   // 서브 버튼 2: 주 단위 보기
-  { id: 'toggle', label: '주 단위 보기' },
+  { id: 'toggle', label: change },
 ]
 
 const toggleMenu = () => {
   isOpen.value = !isOpen.value
 }
 
-/* 서브 버튼 클릭 분기 */
-const onSubButtonClick = (btn) => {
+// 서브 버튼 클릭 핸들러: 기능 수행 후 메뉴 닫기
+const handleSubButton = (btn) => {
   if (btn.id === 'gallery') {
-    // 이미지 등록
     openGallery()
   } else if (btn.id === 'toggle') {
-    // 주 단위 보기
     toggleView()
   }
+  // 서브 버튼 클릭 후 메뉴 닫기
+  isOpen.value = false
 }
-
 /* onMounted: 튜토리얼/캘린더 로직 */
 onMounted(async () => {
   console.log("📢 캘린더 업데이트 실행!")
@@ -163,124 +160,123 @@ onUnmounted(() => {
 
 
 <style scoped>
-.work-schedule-layout {
-  position: relative;
-  font-family: Arial, sans-serif;
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 16px;
+/* 부모 컨테이너: 전체 화면을 사용 */
+.container {
   display: flex;
   flex-direction: column;
-  height: 100vh; /* 전체 화면 사용 */
+  height: 100vh;
 }
 
-/* 헤더 */
+/* 헤더 영역: 헤더는 고정되지 않고, 콘텐츠 영역과 별도로 분리 */
 .header {
-  position: sticky;
-  top: 0;
+  flex: 0 0 auto;  /* 자연스럽게 콘텐츠 앞에 위치 */
   background-color: white;
-  z-index: 10;
   border-bottom: 1px solid #ddd;
+  /* 헤더의 높이는 내용에 따라 결정됨 */
 }
+
+/* 헤더 내부 */
 .header-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  padding: 8px 16px;
 }
 .year-month {
   font-size: 18px;
   font-weight: bold;
-  margin-left: 18px;
 }
+
+/* 요일 헤더 */
 .weekdays {
   display: grid;
   grid-template-columns: 55px repeat(7, 1fr);
   align-items: center;
   justify-items: center;
-  column-gap: 2px;
-  text-align: center;
+  gap: 2px;
   padding: 4px 0;
 }
 .sunday {
   color: red;
 }
 
-/* 메인 컨텐츠 */
+/* 콘텐츠 영역: 헤더 아래에서 스크롤 */
 .content {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  margin-top: 8px;
+  overflow-y: auto;
 }
 
-/* 플로팅 버튼 컨테이너 */
+/* 플로팅 메뉴 컨테이너: 헤더 내부에서 오른쪽에 위치 */
 .fab-container {
-  position: fixed;
-  top: 20px; /* 원하는 위치 */
-  right: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  z-index: 9999;
+  position: absolute;
+  top: 5%;  /* 헤더 높이의 중간 정도 */
+  right: 10px; /* 헤더 우측에서 16px 떨어짐 */
+  transform: translateY(-50%); /* 중앙 정렬 */
+  z-index: 20;
 }
 
-/* 메인 + 버튼: 기본 상태 */
+/* fab-menu: 플로팅 메뉴 내부, 버튼들을 가로로 배치 */
+.fab-menu {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+/* 메인 버튼 (기본 크기 30px) */
 .fab-main {
-  width: 30px;
-  height: 30px;
+  width: 25px;
+  height: 25px;
   border-radius: 50%;
   background-color: #DCEAF7;
-  color: #000000;
+  color: #000;
   font-size: 24px;
   border: none;
   cursor: pointer;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
 }
 
-/* .fab-open 시 커지고 색상 변경 */
+/* 메인 버튼이 열렸을 때: 왼쪽으로 슬라이드, 크기 커짐 */
 .fab-main.fab-open {
-  width: 40px;
-  height: 40px;
+  transform: translateX(-5px) rotate(45deg);
+  width: 30px;
+  height: 30px;
   background-color: #0056b3;
   font-size: 28px;
-  transform: rotate(45deg);
 }
 
-/* 서브 버튼 컨테이너 */
+/* 서브 버튼 컨테이너: 가로 정렬 */
 .fab-sub-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  margin-top: 10px;
+  gap: 8px;
+  margin-left: 10px;
 }
 
 /* 서브 버튼 */
 .fab-sub {
   width: 30px;
-  height:30px;
+  height: 30px;
   border-radius: 50%;
   border: none;
   cursor: pointer;
   background-color: #dceaf7;
   color: #333;
   font-size: 14px;
-  box-shadow: 0px 2px 5px rgba(0,0,0,0.15);
-  margin-top: 10px;
   transition: transform 0.3s;
 }
 .fab-sub:hover {
   transform: scale(1.1);
 }
 
-/* transition-group 애니메이션 */
+/* Transition-group 애니메이션: 수평 슬라이드 효과 */
 .fab-enter-from,
 .fab-leave-to {
   opacity: 0;
-  transform: translateY(-10px) scale(0.8);
+  transform: translateX(10px) scale(0.8);
 }
 .fab-enter-active,
 .fab-leave-active {
