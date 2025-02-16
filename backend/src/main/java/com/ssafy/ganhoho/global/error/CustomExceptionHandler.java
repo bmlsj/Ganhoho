@@ -147,10 +147,4 @@ public class CustomExceptionHandler {
         return new ResponseEntity<>(error, ErrorCode.UNAUTHORIZED.getHttpStatus());
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleException(Exception ex) {
-        log.error("exception : {}", ex.getMessage());
-        ErrorResponse error = new ErrorResponse(ErrorCode.SERVER_ERROR);
-        return new ResponseEntity<>(error, ErrorCode.SERVER_ERROR.getHttpStatus());
-    }
 } 

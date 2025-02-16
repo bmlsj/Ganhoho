@@ -8,7 +8,7 @@ spring:
     name: Ganhoho
   datasource:
     url: jdbc:mysql://localhost:3306/ganhoho?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
-    username: d209
+    username: root
     password: d209
   servlet:
     multipart:
