@@ -35,7 +35,7 @@ public class JWTUtil {
     public String getJwtFromRequest(HttpServletRequest request) {
         String authorization = request.getHeader("Authorization");
         if (authorization == null || !authorization.startsWith("Bearer ")) {
-            throw new CustomException(ErrorCode.BAD_REQUEST);
+            throw new CustomException(ErrorCode.INVALID_TOKEN_FORM);
         }
         String token = authorization.split(" ")[1];
         return token;
