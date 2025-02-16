@@ -17,7 +17,7 @@
     "vite": "^6.0.11"
   },
   "scripts": {
-  "dev": "vite --mode development",
+  "dev": "vite --host",
   "build": "vite build --mode production",
   "serve": "vite preview --mode production",
   "lint": "eslint .",
