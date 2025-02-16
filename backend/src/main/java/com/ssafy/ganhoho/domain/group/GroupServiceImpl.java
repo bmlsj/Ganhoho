@@ -247,17 +247,36 @@ public class GroupServiceImpl implements GroupService {
             throw new CustomException(ErrorCode.ACCES_DENIED);
         }
 
-        // 그룹 참여 정보 삭제
-        groupParticipationRepository.deleteByMemberIdAndGroupId(memberId, groupId);
+        try {
+            // 현재 월 근무 스케줄 조회
+            String currentYearMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            Optional<GroupSchedule> groupSchedule = groupScheduleRepository
+                    .findByGroupIdAndYearMonth(groupId, currentYearMonth);
+            // 해당 그룹의 workscheduleDetail을 가진 탈퇴회원의 스케줄 모두 null 로 변경.
+            if(groupSchedule.isPresent()) {
+                // 그룹 스케줄 조회해서 현재 그룹의 스케줄인지 확인
+               workScheduleRepository.updateWorkScheduleDetailIdToNull(
+                       memberId,
+                       groupSchedule.get().getWorkScheduleDetailId()
+               );
 
-        // 그룹 멤버 수 감소
-        group.setGroupMemberCount(group.getGroupMemberCount() - 1);
-        groupRepository.save(group);
+            }
+            // 그룹 참여 정보 삭제
+            groupParticipationRepository.deleteByMemberIdAndGroupId(memberId, groupId);
+            // 그룹 멤버 수 감소
+            group.setGroupMemberCount(group.getGroupMemberCount() - 1);
+            groupRepository.save(group);
 
-        // 로그 생성
-        log.info("User left group: memberId={}, groupId={}", memberId, groupId);
+            // 로그 생성
+            log.info("User left group: memberId={}, groupId={}", memberId, groupId);
 
-        return GroupLeaveResponse.builder().build();
+            return GroupLeaveResponse.builder().build();
+        } catch (Exception e) {
+            log.error("Failed to get group leave" + e.getMessage());
+            throw new CustomException(ErrorCode.SERVER_ERROR);
+        }
+
+
     }
 
     @Override
