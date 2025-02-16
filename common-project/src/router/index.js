@@ -10,6 +10,8 @@ import PrecautionsView from '@/views/PrecautionsView.vue'
 
 import FullWorkSchedule from '@/components/FullWorkSchedule.vue'
 import WeeklySchedule from '@/components/WeeklySchedule.vue'
+
+import { useLoadingStore } from '@/stores/loadingStore';
 const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -71,5 +73,19 @@ const router = createRouter({
     }
   ]
 })
+
+// 라우터 전환 시작 시 로딩 시작
+router.beforeEach((to, from, next) => {
+  const loadingStore = useLoadingStore();
+  loadingStore.startLoading();
+  next();
+});
+
+// 라우터 전환 완료 후 로딩 종료
+router.afterEach(() => {
+  const loadingStore = useLoadingStore();
+  loadingStore.stopLoading();
+});
+
 
 export default router

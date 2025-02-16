@@ -2,12 +2,6 @@
 <template>
   <div class="weekly-schedule">
     <div class="header-row">
-      <button class="nav-button" @click="prevWeek">◀</button>
-      <div class="year-month">
-        {{ store.currentYear || defaultYear }}년 {{ store.currentMonth || defaultMonth }}월 {{ getCurrentWeekRange }}
-      </div>
-      <div :class="{'overlay': tutorialStep === 1 && isFirstVisit}"></div> <!-- 블러처리 -->
-      <button class="nav-button" @click="nextWeek">▶</button>
     </div>
     <div v-if="store.people.length === 0" class="empty-state">
       <p>현재 등록된 일정이 없습니다.</p>
@@ -114,7 +108,8 @@ onMounted(() => {
 .weekly-schedule {
   display: flex;
   flex-direction: column;
-  height: 100%; /* 부모 컨테이너 높이를 모두 사용 (상위 레이아웃에서 height가 설정되어 있어야 함) */
+  flex: 1; /* 부모에서 넘겨준 공간 전부 사용 */
+  overflow-y:auto;
 }
 
 .weekly-schedule .header-row {

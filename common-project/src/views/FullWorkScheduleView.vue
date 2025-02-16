@@ -6,29 +6,14 @@
         <div class="year-month">
           {{ store.currentYear || defaultYear }}년 {{ store.currentMonth || defaultMonth }}월
         </div>
-        <!-- 플로팅 메뉴를 헤더 내부에 배치 -->
-      <div class="fab-container">
-        <div class="fab-menu">
-          <button
-            class="fab-main"
-            :class="{ 'fab-open': isOpen }"
-            @click="toggleMenu"
-          >
-            +
+        <div class="button-group">
+          <button class="btn-gallery" @click="openGallery">
+            <img class=gallery-image :src="gallery" alt="이미지 등록" />
           </button>
-          <transition-group name="fab" tag="div" class="fab-sub-container">
-            <button
-              v-if="isOpen"
-              v-for="(btn, index) in subButtons"
-              :key="btn.id"
-              class="fab-sub"
-              @click="handleSubButton(btn)"
-            >
-              {{ btn.label }}
-            </button>
-          </transition-group>
+          <button class="btn-toggle" @click="toggleView">
+            <img class=toggle-image :src="isWeekly ? toggleon : toggleoff" alt="주 단위 보기" />
+          </button>
         </div>
-      </div>
         <!-- 튜토리얼 시 배경 블러 -->
         <div :class="{'overlay': tutorialStep === 1 && isFirstVisit}"></div>
       </div>
@@ -61,7 +46,9 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useApiStore } from '@/stores/apiRequest'
 import gallery from '@/assets/gallery.png'
-import change from '@/assets/change.png'
+import toggleon from '@/assets/toggleon.png'
+import toggleoff from '@/assets/toggleoff.png'
+
 /* 스토어 & 기본값 */
 const store = useApiStore()
 const defaultYear = new Date().getFullYear()
@@ -71,6 +58,14 @@ const weekDays = ['일', '월', '화', '수', '목', '금', '토']
 /* 튜토리얼 관련 */
 const tutorialStep = ref(1)
 const isFirstVisit = ref(localStorage.getItem('visitedFullWorkSchedule') !== 'true')
+const isWeekly = computed(() => route.name === 'WeeklySchedule')
+
+/* 라우터 관련 */
+const router = useRouter()
+const route = useRoute()
+
+/* 파일 업로드용 */
+const galleryInput = ref(null)
 
 const nextTutorialStep = async () => {
   if (tutorialStep.value === 1) {
@@ -82,12 +77,6 @@ const nextTutorialStep = async () => {
   }
 }
 
-/* 라우터 관련 */
-const router = useRouter()
-const route = useRoute()
-
-/* 파일 업로드용 */
-const galleryInput = ref(null)
 const openGallery = () => {
   galleryInput.value.click()
 }
@@ -97,8 +86,6 @@ const handleFileSelection = async (event) => {
     await store.sendImageToAPI(files[0])
   }
 }
-
-/* 기존 toggleView 로직: 라우트 전환 */
 const toggleView = () => {
   if (route.name === 'FullWorkSchedule') {
     router.push({ name: 'WeeklySchedule' })
@@ -106,32 +93,7 @@ const toggleView = () => {
     router.push({ name: 'FullWorkSchedule' })
   }
 }
-/* isWeekly 계산 */
-const isWeekly = computed(() => route.name === 'WeeklySchedule')
 
-/* 플로팅 버튼 (메뉴) 관련 */
-const isOpen = ref(false)
-const subButtons = [
-  // 서브 버튼 1: 이미지 등록
-  { id: 'gallery', label: gallery },
-  // 서브 버튼 2: 주 단위 보기
-  { id: 'toggle', label: change },
-]
-
-const toggleMenu = () => {
-  isOpen.value = !isOpen.value
-}
-
-// 서브 버튼 클릭 핸들러: 기능 수행 후 메뉴 닫기
-const handleSubButton = (btn) => {
-  if (btn.id === 'gallery') {
-    openGallery()
-  } else if (btn.id === 'toggle') {
-    toggleView()
-  }
-  // 서브 버튼 클릭 후 메뉴 닫기
-  isOpen.value = false
-}
 /* onMounted: 튜토리얼/캘린더 로직 */
 onMounted(async () => {
   console.log("📢 캘린더 업데이트 실행!")
@@ -162,31 +124,63 @@ onUnmounted(() => {
 <style scoped>
 /* 부모 컨테이너: 전체 화면을 사용 */
 .container {
+  position: relative;
+  font-family: Arial, sans-serif;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100vh; /* 전체 화면 사용 */
 }
 
 /* 헤더 영역: 헤더는 고정되지 않고, 콘텐츠 영역과 별도로 분리 */
 .header {
-  flex: 0 0 auto;  /* 자연스럽게 콘텐츠 앞에 위치 */
+  position: sticky;
+  top: 0;
   background-color: white;
+  z-index: 10;
   border-bottom: 1px solid #ddd;
-  /* 헤더의 높이는 내용에 따라 결정됨 */
 }
 
 /* 헤더 내부 */
 .header-row {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: auto auto; /* 첫 번째 컬럼: 년월, 두 번째 컬럼: 버튼 그룹 */
+  column-gap: 175px;  /* 원하는 간격 조절 */
   align-items: center;
-  padding: 8px 16px;
+  padding: 8px 8px;
 }
 .year-month {
+  padding-left:8px;
   font-size: 18px;
   font-weight: bold;
 }
-
+.button-group button {
+  padding-left: 3px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: transparent;
+}
+.gallery-image {
+  width: 28px;  
+  height: auto;
+  display: block;
+}
+.toggle-image {
+  width:28px;
+  height:auto;
+  display:block;
+}
+.btn-gallery,
+.btn-toggle {
+  padding-left: 6px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1px;
+}
 /* 요일 헤더 */
 .weekdays {
   display: grid;
@@ -204,83 +198,6 @@ onUnmounted(() => {
 .content {
   flex: 1;
   overflow-y: auto;
-}
-
-/* 플로팅 메뉴 컨테이너: 헤더 내부에서 오른쪽에 위치 */
-.fab-container {
-  position: absolute;
-  top: 5%;  /* 헤더 높이의 중간 정도 */
-  right: 10px; /* 헤더 우측에서 16px 떨어짐 */
-  transform: translateY(-50%); /* 중앙 정렬 */
-  z-index: 20;
-}
-
-/* fab-menu: 플로팅 메뉴 내부, 버튼들을 가로로 배치 */
-.fab-menu {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-/* 메인 버튼 (기본 크기 30px) */
-.fab-main {
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  background-color: #DCEAF7;
-  color: #000;
-  font-size: 24px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* 메인 버튼이 열렸을 때: 왼쪽으로 슬라이드, 크기 커짐 */
-.fab-main.fab-open {
-  transform: translateX(-5px) rotate(45deg);
-  width: 30px;
-  height: 30px;
-  background-color: #0056b3;
-  font-size: 28px;
-}
-
-/* 서브 버튼 컨테이너: 가로 정렬 */
-.fab-sub-container {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-  margin-left: 10px;
-}
-
-/* 서브 버튼 */
-.fab-sub {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  background-color: #dceaf7;
-  color: #333;
-  font-size: 14px;
-  transition: transform 0.3s;
-}
-.fab-sub:hover {
-  transform: scale(1.1);
-}
-
-/* Transition-group 애니메이션: 수평 슬라이드 효과 */
-.fab-enter-from,
-.fab-leave-to {
-  opacity: 0;
-  transform: translateX(10px) scale(0.8);
-}
-.fab-enter-active,
-.fab-leave-active {
-  transition: all 0.3s ease;
 }
 
 /* 튜토리얼 배경 블러 */
