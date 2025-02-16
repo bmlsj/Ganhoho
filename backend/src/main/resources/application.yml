@@ -3,6 +3,7 @@ spring:
     include:
       - server
       - ocr
+      - invite
   application:
     name: Ganhoho
   datasource:

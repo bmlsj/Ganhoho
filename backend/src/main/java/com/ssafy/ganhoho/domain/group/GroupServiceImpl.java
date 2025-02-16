@@ -15,6 +15,7 @@ import com.ssafy.ganhoho.global.error.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.jdbc.Work;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class GroupServiceImpl implements GroupService {
+
+
+    @Value("${app.invite.base-url}")
+    private String inviteLinkBaseUrl;
 
     private final GroupRepository groupRepository;
     private final GroupParticipationRepository groupParticipationRepository;
@@ -181,8 +186,12 @@ public class GroupServiceImpl implements GroupService {
             groupRepository.save(group);
         }
 
+        // 초대링크 만들기
+
+        String inviteLinkUrl = inviteLinkBaseUrl + group.getGroupInviteLink();
+
         return GroupInviteLinkResponse.builder()
-                .groupInviteLink(group.getGroupInviteLink())
+                .groupInviteLink(inviteLinkUrl)
                 .build();
 
     }
