@@ -205,7 +205,11 @@ public class MedicineApi {
                 ));
             }
             
-            log.info("5. 의약품 정보 검색 시작. 의약품 이름: {}", itemName);
+            // mg 제거하고 모든 공백 제거
+            itemName = itemName.replaceAll("\\s*[mM][gG]\\b", "")  // mg 제거
+                              .replaceAll("\\s+", "");  // 모든 공백 제거
+            
+            log.info("5. 의약품 정보 검색 시작. 정제된 의약품 이름: {}", itemName);
             
             String encodedItemName = URLEncoder.encode(itemName, StandardCharsets.UTF_8);
             String urlStr = BASE_URL + "?"
