@@ -76,7 +76,7 @@ fun LoginScreen(navController: NavController) {
     // ✅ 로그인 성공 시 메인 화면 이동
     LaunchedEffect(userInfo) {
         userInfo?.let {
-            Toast.makeText(context, "${it.name}님 자동 로그인 성공!", Toast.LENGTH_SHORT).show()
+            // Toast.makeText(context, "${it.name}님 자동 로그인 성공!", Toast.LENGTH_SHORT).show()
             navController.navigate("main") {
                 popUpTo("login") { inclusive = true }
             }
