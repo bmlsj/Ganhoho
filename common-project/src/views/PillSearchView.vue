@@ -11,23 +11,16 @@
         @input="filterMedicineList"
         @keyup.enter="search"
       />
-      <input 
-        ref="fileInput" 
-        type="file" 
-        accept="image/*" 
-        capture="camera" 
-        class="hidden-input" 
-        @change="openCamera"
-      />
     </div>
-
 
     <!-- 약 정보 목록 -->
     <div v-if="filteredMedicineList.length > 0" class="pill-list">
-      <div v-for="(pill, index) in filteredMedicineList" 
-           :key="index" 
-           class="pill-card"
-           @click="goToDetailPage(pill.id)">
+      <div
+        v-for="(pill, index) in filteredMedicineList" 
+        :key="index" 
+        class="pill-card"
+        @click="goToDetailPage(pill.id)"
+      >
         <div class="pill-image-container">
           <img :src="pill.imageSrc || defaultImage" :alt="pill.name" class="pill-image" />
         </div>
@@ -38,92 +31,125 @@
         </div>
       </div>
     </div>
-
-    <!-- 검색 결과 없음 -->
     <div v-else class="no-results">
       <p>검색 결과가 없습니다.</p>
     </div>
-    <!-- ✅ 플로팅 버튼 -->
-    <button class="floating-button" @click="triggerCamera">
-      <img :src="PhotoIcon" alt="검색 아이콘" class="search-icon" />
+
+    <!-- 플로팅 버튼: 카메라 모달 열기 -->
+    <button class="floating-button" @click="openCameraModal">
+      <img :src="PhotoIcon" alt="카메라 아이콘" class="search-icon" />
     </button>
+
+    <!-- 카메라 모달 -->
+    <div v-if="showCameraModal" class="camera-modal">
+      <div class="camera-container">
+        <video ref="videoRef" autoplay playsinline class="camera-video"></video>
+        <div class="button-group">
+          <button @click="capturePhoto">Capture Photo</button>
+          <button @click="closeCameraModal">Cancel</button>
+        </div>
+        <!-- 캡쳐한 이미지가 필요할 경우 hidden canvas 사용 -->
+        <canvas ref="canvasRef" style="display: none;"></canvas>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue"
-import { useRouter } from "vue-router"
-import { useApiStore } from "@/stores/apiRequest"
-import PillInformation from "@/components/PillInformation.vue"
-import maskGroup from '@/assets/mask-group0.svg'
-import PhotoIcon from '@/assets/PhotoIcon.png'
+import { ref, onMounted, watch } from "vue";
+import { useRouter } from "vue-router";
+import { useApiStore } from "@/stores/apiRequest";
+import maskGroup from '@/assets/mask-group0.svg';
+import PhotoIcon from '@/assets/PhotoIcon.png';
 
-const apiStore = useApiStore()
-const router = useRouter()
-const searchQuery = ref("")
-const fileInput = ref(null)
-const filteredMedicineList = ref([])
+const apiStore = useApiStore();
+const router = useRouter();
 
-// 검색어 변경 시 API 호출
+const searchQuery = ref("");
+const filteredMedicineList = ref([]);
+const showCameraModal = ref(false);
+const videoRef = ref(null);
+const canvasRef = ref(null);
+let stream = null;
+
+// 예시: 검색어 변경 및 목록 업데이트 (원래 코드에 맞게 수정)
 watch(searchQuery, async (newQuery) => {
-  if (newQuery.length >= 1) { // 1글자 이상일 때만 검색
-    console.log("검색 시작:", newQuery);
+  if (newQuery.length >= 1) {
     const success = await apiStore.fetchMedicineList(newQuery);
-    if (success) {
-      filteredMedicineList.value = apiStore.medicineList;
-    } else {
-      filteredMedicineList.value = [];
-    }
+    filteredMedicineList.value = success ? apiStore.medicineList : [];
   } else {
     filteredMedicineList.value = [];
   }
-})
+});
 
-onMounted(async () => {
-  console.log(apiStore.token)
-  try {
-    if (!apiStore.token) {
-      console.error("토큰이 없습니다. 로그인이 필요합니다.");
-      return;
-    }
-    // 초기 로딩 시에는 빈 목록으로 시작
-    filteredMedicineList.value = [];
-  } catch (error) {
-    console.error("초기화 중 오류 발생:", error);
-    filteredMedicineList.value = [];
-  }
-
-  // ✅ 앱에서 호출할 전역 함수 등록
-  document.addEventListener('tokenReceived', (e) => {
-    const { access_token, refresh_token } = e.detail
-    console.log("Component - Token received via event:", access_token)
-    apiStore.setToken(access_token, refresh_token)
-  })
-})
-
-// ✅ 약 상세 페이지 이동
+// 약 상세 페이지 이동
 const goToDetailPage = (medicineId) => {
-  console.log("📢 이동할 약 ID:", medicineId); // ✅ 콘솔에서 확인
   if (!medicineId) {
-    console.error("🚨 오류! 전달된 medicineId 값이 없음!");
+    console.error("medicineId 값이 없습니다!");
     return;
   }
   router.push(`/pill-detail/${medicineId}`);
 };
-// ✅ 카메라 버튼 클릭 시 숨겨진 input 실행
-const triggerCamera = () => {
-  fileInput.value.click();
+
+// 카메라 모달 열기: getUserMedia API 사용
+const openCameraModal = async () => {
+  try {
+    // 후면 카메라 사용(facingMode: "environment") - 모바일에서 주로 사용
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" },
+      audio: false,
+    });
+    if (videoRef.value) {
+      videoRef.value.srcObject = stream;
+    }
+    showCameraModal.value = true;
+  } catch (error) {
+    console.error("카메라 접근 오류:", error);
+  }
 };
 
-// ✅ 파일 선택 시 실행될 함수
-const openCamera = async (event) => {
-  const file = event.target.files[0];
+// 캡쳐 버튼: video의 현재 프레임을 canvas에 그린 후 업로드
+const capturePhoto = () => {
+  if (!videoRef.value || !canvasRef.value) return;
 
-  if (!file) return;
+  const video = videoRef.value;
+  const canvas = canvasRef.value;
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
 
-  console.log("선택된 파일:", file);
+  const context = canvas.getContext("2d");
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-  await apiStore.uploadMedicineImage(file);
+  // 캔버스 이미지를 DataURL로 변환
+  const dataUrl = canvas.toDataURL("image/png");
+  // DataURL을 File 객체로 변환
+  const file = dataURLtoFile(dataUrl, "captured.png");
+
+  // 업로드 함수 호출
+  apiStore.uploadMedicineImage(file);
+  closeCameraModal();
+};
+
+// DataURL을 File 객체로 변환하는 함수
+function dataURLtoFile(dataurl, filename) {
+  const arr = dataurl.split(',');
+  const mime = arr[0].match(/:(.*?);/)[1];
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new File([u8arr], filename, { type: mime });
+}
+
+// 모달 닫기: 스트림 정리 및 모달 숨김
+const closeCameraModal = () => {
+  showCameraModal.value = false;
+  if (stream) {
+    stream.getTracks().forEach((track) => track.stop());
+    stream = null;
+  }
 };
 </script>
 

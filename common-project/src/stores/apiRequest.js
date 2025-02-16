@@ -173,7 +173,7 @@ export const useApiStore = defineStore('api', () => {
           company: item.ENTP_NAME || '',
           type: item.ETC_OTC_CODE || '',
         }));
-        
+                
         console.log("최종 의약품 목록:", medicineList.value);
         return medicineList.value.length > 0;
       }
