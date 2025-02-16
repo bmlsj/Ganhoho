@@ -118,4 +118,7 @@ dependencies {
 
     implementation ("com.kakao.sdk:v2-all:2.20.6") // 전체 모듈 설치, 2.11.0 버전부터 지원
 
+    // lottie
+    implementation ("com.airbnb.android:lottie-compose:6.6.2")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
 }
