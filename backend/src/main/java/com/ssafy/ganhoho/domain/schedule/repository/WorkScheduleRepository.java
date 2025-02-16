@@ -3,6 +3,7 @@ package com.ssafy.ganhoho.domain.schedule.repository;
 import com.ssafy.ganhoho.domain.schedule.entity.WorkSchedule;
 import org.hibernate.jdbc.Work;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -36,4 +37,14 @@ public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Long
             "AND ws.workScheduleDetailId IS NULL")
     List<WorkSchedule> findByMemberIdAndWorkScheduleDetailIdIsNull(
             @Param("memberId") Long memberId);
+
+    // 근무스케줄Id로 해당 회원의 근무 스케줄 수정
+    @Modifying
+    @Query("UPDATE WorkSchedule ws SET ws.workScheduleDetailId = NULL " +
+            "WHERE ws.memberId = :memberId " +
+            "AND ws.workScheduleDetailId = :workScheduleDetailId")
+    void updateWorkScheduleDetailIdToNull(
+            @Param("memberId") Long memberId,
+            @Param("workScheduleDetailId") Long workScheduleDetailId);
+
 }
