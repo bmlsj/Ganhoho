@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import com.ssafy.ganhoho.ui.auth.JoinScreen
 import com.ssafy.ganhoho.ui.auth.LoginScreen
 import com.ssafy.ganhoho.ui.auth.SearchHospital
+import com.ssafy.ganhoho.ui.splash.AnimatedSplashScreen
 import com.ssafy.ganhoho.ui.theme.GANHOHOTheme
 
 @Composable
@@ -17,28 +18,19 @@ fun MainNavHost() {
 
     NavHost(
         navController = navController,
-        startDestination = "login"
+        startDestination = "splash"
     ) {
 
+        // 스플래시 화면
+        composable("splash") { AnimatedSplashScreen(navController)}
         // 로그인 화면
-        composable("login") {
-            LoginScreen(navController)
-        }
-
+        composable("login") { LoginScreen(navController) }
         // 메인 화면
-        composable("main") {
-            MainScreen()
-        }
-
+        composable("main") { MainScreen() }
         // 회원 가입 화면
-        composable("join") {
-            JoinScreen(navController)
-        }
-
+        composable("join") { JoinScreen(navController) }
         // 병원 정보 화면
-        composable("hospitalInfo") {
-            SearchHospital(navController)
-        }
+        composable("hospitalInfo") { SearchHospital(navController) }
     }
 }
 
