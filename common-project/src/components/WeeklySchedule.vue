@@ -1,4 +1,3 @@
-<!-- WeeklySchedule.vue -->
 <template>
   <div class="weekly-schedule">
     <div class="header-row">
@@ -9,15 +8,7 @@
       <div :class="{'overlay': tutorialStep === 1 && isFirstVisit}"></div> <!-- 블러처리 -->
       <button class="nav-button" @click="nextWeek">▶</button>
     </div>
-    <div class="weekdays">
-      <span
-        v-for="(day, index) in [''].concat(weekDays)"
-        :key="index"
-        :class="{ sunday: index === 1 }"
-      >
-        {{ day }}
-      </span>
-    </div>
+    <!-- 기존에 있던 요일 표시 부분 제거 -->
     <div v-if="store.people.length === 0" class="empty-state">
       <p>현재 등록된 일정이 없습니다.</p>
     </div>
@@ -54,7 +45,7 @@ import { useApiStore } from '@/stores/apiRequest'
 const store = useApiStore()
 const defaultYear = new Date().getFullYear()
 const defaultMonth = new Date().getMonth() + 1
-const weekDays = ['일', '월', '화', '수', '목', '금', '토']
+const weekDays = ['일', '월', '화', '수', '목', '금', '토'] // (더 이상 표시하지 않더라도 내부 계산에 사용 가능)
 
 // 현재 주 인덱스 (자동 설정)
 const currentWeekIndex = ref(0)
@@ -120,12 +111,19 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.weekly-schedule {
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* 부모 컨테이너 높이를 모두 사용 (상위 레이아웃에서 height가 설정되어 있어야 함) */
+}
+
 .weekly-schedule .header-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
 }
+
 .weekly-schedule .nav-button {
   background-color: #f1f1f1;
   border: none;
@@ -134,40 +132,40 @@ onMounted(() => {
   border-radius: 4px;
   font-size: 16px;
 }
+
 .weekly-schedule .year-month {
   font-size: 18px;
   font-weight: bold;
 }
-.weekly-schedule .weekdays {
-  display: grid;
-  grid-template-columns: 55px repeat(7, 1fr);
-  align-items: center;
-  justify-items: center;
-  column-gap: 2px;
-  text-align: center;
-}
-.weekly-schedule .sunday {
-  color: red;
-}
+
+/* 요일 관련 스타일은 제거됨 */
+
+/* 캘린더 영역: 남은 공간을 모두 사용하고 스크롤 가능하게 */
 .weekly-schedule .calendar-body {
+  flex: 1;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
+
 .weekly-schedule .dates {
   display: grid;
   grid-template-columns: 55px repeat(7, 1fr);
   column-gap: 2px;
 }
+
 .weekly-schedule .date {
   text-align: center;
   font-weight: bold;
   font-size: 13px;
 }
+
 .weekly-schedule .person-row {
   display: flex;
   align-items: center;
   margin-bottom: 8px;
 }
+
 .weekly-schedule .person-name {
   width: 55px;
   height: 23px;
@@ -177,10 +175,12 @@ onMounted(() => {
   font-weight: bold;
   font-size: 13px;
 }
+
 .weekly-schedule .person-schedule {
   flex: 1;
   display: flex;
 }
+
 .weekly-schedule .schedule-box {
   flex: 1;
   text-align: center;
@@ -191,21 +191,23 @@ onMounted(() => {
   font-size: 12px;
   line-height: 1;
 }
+
 .schedule-box.nig {
   background-color: #DDD4cD;
 }
-/* Day 일정 스타일 */
+
 .schedule-box.day {
   background-color: #fff8bf;
 }
-/* Eve 일정 스타일 */
+
 .schedule-box.eve {
   background-color: #e4c7f1;
 }
-/* Off 일정 스타일 */
+
 .schedule-box.off {
   background-color: #fcd6c8;
 }
+
 .weekly-schedule .empty-state {
   text-align: center;
   font-size: 16px;

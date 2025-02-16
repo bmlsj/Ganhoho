@@ -1,18 +1,10 @@
 <!-- FullWorkSchedule.vue -->
 <template>
   <div class="full-work-schedule">
-    <div class="weekdays">
-      <span
-        v-for="(day, index) in [''].concat(weekDays)"
-        :key="index"
-        :class="{ sunday: index === 1 }"
-      >
-        {{ day }}
-      </span>
-    </div>
     <div v-if="store.people.length === 0" class="empty-state">
       <p>현재 등록된 일정이 없습니다.</p>
     </div>
+    <!-- 자동 스크롤 대상이 되는 캘린더 영역 -->
     <div v-else class="calendar-body" ref="calendarBodyRef">
       <div v-for="(week, weekIndex) in store.calendar" :key="weekIndex" class="week">
         <div class="dates">
@@ -44,14 +36,16 @@ import { ref, onMounted, nextTick } from 'vue'
 import { useApiStore } from '@/stores/apiRequest'
 
 const store = useApiStore()
-const weekDays = ['일', '월', '화', '수', '목', '금', '토']
+
+// 스크롤 대상 요소
 const calendarBodyRef = ref(null)
 
 onMounted(async () => {
-  await nextTick()
+  // 1) 캘린더 데이터 생성
   store.generateCalendar()
+
+  // 2) DOM 업데이트 후 처리
   await nextTick()
-  // 오늘이 포함된 주로 부드럽게 스크롤
   const today = new Date().getDate()
   let targetWeekIndex = 0
   store.calendar.forEach((week, index) => {
@@ -59,52 +53,67 @@ onMounted(async () => {
       targetWeekIndex = index
     }
   })
+
+  // 3) 헤더 높이 동적 보정 후 스크롤 이동
   if (calendarBodyRef.value) {
     const weekElements = calendarBodyRef.value.querySelectorAll('.week')
     if (weekElements.length > targetWeekIndex) {
-      weekElements[targetWeekIndex].scrollIntoView({ behavior: 'smooth', block: 'start' })
+      const targetElement = weekElements[targetWeekIndex]
+      // 헤더 요소의 실제 높이 읽기 (예: .header)
+      const headerEl = document.querySelector('.header')
+      const headerHeight = headerEl ? headerEl.offsetHeight : 0
+      // 타겟 요소의 offsetTop에서 헤더 높이만큼 빼줌
+      const scrollPosition = targetElement.offsetTop - headerHeight
+      calendarBodyRef.value.scrollTo({
+        top: scrollPosition,
+        behavior: 'smooth'
+      })
     }
   }
 })
 </script>
 
 <style scoped>
-.full-work-schedule .weekdays {
-  display: grid;
-  grid-template-columns: 55px repeat(7, 1fr);
-  align-items: center;
-  justify-items: center;
-  column-gap: 2px;
-  text-align: center;
-}
-.full-work-schedule .sunday {
-  color: red;
-}
-.full-work-schedule .calendar-body {
+.full-work-schedule {
+  /* 자식 컴포넌트도 flex 컨테이너로 */
   display: flex;
   flex-direction: column;
-  max-height: 70vh;
+  flex: 1; /* 부모에서 넘겨준 공간 전부 사용 */
+  overflow: hidden; /* 내부에서 스크롤 처리 */
+}
+
+
+.calendar-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
 }
-.full-work-schedule .week {
+
+.week {
   margin-bottom: 16px;
 }
-.full-work-schedule .dates {
+
+.dates {
   display: grid;
+  /* 55px은 person-name 열과 동일하게 설정 */
   grid-template-columns: 55px repeat(7, 1fr);
   column-gap: 2px;
 }
-.full-work-schedule .date {
+
+.date {
   text-align: center;
   font-weight: bold;
   font-size: 13px;
 }
-.full-work-schedule .person-row {
+
+.person-row {
   display: flex;
   align-items: center;
   margin-bottom: 8px;
 }
-.full-work-schedule .person-name {
+
+.person-name {
   width: 55px;
   height: 23px;
   flex-shrink: 0;
@@ -113,11 +122,13 @@ onMounted(async () => {
   font-weight: bold;
   font-size: 13px;
 }
-.full-work-schedule .person-schedule {
+
+.person-schedule {
   flex: 1;
   display: flex;
 }
-.full-work-schedule .schedule-box {
+
+.schedule-box {
   flex: 1;
   text-align: center;
   padding: 4px 6px;
@@ -127,22 +138,22 @@ onMounted(async () => {
   font-size: 12px;
   line-height: 1;
 }
+
+/* 일정별 색상 유지 */
 .schedule-box.nig {
   background-color: #DDD4cD;
 }
-/* Day 일정 스타일 */
 .schedule-box.day {
   background-color: #fff8bf;
 }
-/* Eve 일정 스타일 */
 .schedule-box.eve {
   background-color: #e4c7f1;
 }
-/* Off 일정 스타일 */
 .schedule-box.off {
   background-color: #fcd6c8;
 }
-.full-work-schedule .empty-state {
+
+.empty-state {
   text-align: center;
   font-size: 16px;
   color: gray;

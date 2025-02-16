@@ -8,6 +8,15 @@ export default defineConfig({
   plugins: [
     vue(),
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://i12d209.p.ssafy.io',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
   define: {
     __VUE_OPTIONS_API__: true,
     __VUE_PROD_DEVTOOLS__: false,

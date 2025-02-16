@@ -129,12 +129,12 @@ const isWeekly = computed(() => route.name === 'WeeklySchedule')
   max-width: 100%;
   margin: 0 auto;
   padding: 16px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* 전체 화면 사용 */
 }
 
 .header {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 16px;
   position: sticky;
   top: 0;
   background-color: white;
@@ -146,7 +146,7 @@ const isWeekly = computed(() => route.name === 'WeeklySchedule')
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 8px;
 }
 
 .year-month {
@@ -154,65 +154,7 @@ const isWeekly = computed(() => route.name === 'WeeklySchedule')
   font-weight: bold;
   margin-left: 18px;
 }
-.button-wrapper {
-  position: relative; 
-  display: flex; 
-}
-.floating-add-button {
-  position: fixed;
-  bottom: 3vh; /* ✅ 뷰포트 기준 상대적인 위치 */
-  right: 8vw; /* ✅ 뷰포트 기준 상대적인 위치 */
-  width: clamp(50px, 5vw, 60px); /* ✅ 화면 크기에 따라 버튼 크기 조정 */
-  height: clamp(50px, 5vw, 60px);
-  background-color: #007bff;
-  color: white;
-  font-size: 24px;
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.2s ease-in-out;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-}
-.tuto-button {
-  width: 30px;
-  height: 30px;
-  position: relative;
-  z-index: 200;
-  background-color: #dceaf7;
-  padding: 10px;
-  border-radius: 50%;
-  animation: dungdung 1.0s linear alternate infinite;
-}
-.tuto-text {
-  z-index: 200;
-  animation: dungdung 1.0s linear alternate infinite;
-}
-@keyframes dungdung {
-  from {
-    transform: translateY(-5px);
-  }
-  to {
-    transform: translateY(5px);
-  }
-}
-.target {
-  position: relative;
-  z-index: 200;
-  background: white;
-  padding: 10px;
-  border-radius: 10px;
-  margin-right: 12px;
-}
-.target-circle {
-  position: relative;
-  z-index: 200;
-  background: #dceaf7;
-  padding: 10px;
-  border-radius: 50%;
-}
+
 .view-toggle button {
   background-color: #dceaf7;
   flex-shrink: 0;
@@ -230,12 +172,83 @@ const isWeekly = computed(() => route.name === 'WeeklySchedule')
   background-color: #bbb;
 }
 
+.weekdays {
+  display: grid;
+  grid-template-columns: 55px repeat(7, 1fr);
+  align-items: center;
+  justify-items: center;
+  column-gap: 2px;
+  text-align: center;
+  padding: 4px 0;
+}
+
+.sunday {
+  color: red;
+}
+
+/* 콘텐츠 영역: router-view가 차지할 공간 */
+.content {
+  flex: 1;  
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; 
+  margin-top: 8px;
+}
+
+.button-wrapper {
+  position: relative;
+  display: flex;
+}
+
+.floating-add-button {
+  position: fixed;
+  bottom: 3vh; /* 뷰포트 기준 상대 위치 */
+  right: 8vw;
+  width: clamp(50px, 5vw, 60px);
+  height: clamp(50px, 5vw, 60px);
+  background-color: #007bff;
+  color: white;
+  font-size: 24px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.tuto-button {
+  width: 30px;
+  height: 30px;
+  position: relative;
+  z-index: 200;
+  background-color: #dceaf7;
+  padding: 10px;
+  border-radius: 50%;
+  animation: dungdung 1.0s linear alternate infinite;
+}
+
+.tuto-text {
+  z-index: 200;
+  animation: dungdung 1.0s linear alternate infinite;
+}
+
+@keyframes dungdung {
+  from {
+    transform: translateY(-5px);
+  }
+  to {
+    transform: translateY(5px);
+  }
+}
+
 .add-schedule-text {
   font-size: 12px;
   font-weight: bold;
   color: #007bff;
   background: white;
-  
   border-radius: 8px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
   white-space: nowrap;
@@ -246,14 +259,14 @@ const isWeekly = computed(() => route.name === 'WeeklySchedule')
 .add-schedule-text::after {
   content: "";
   position: absolute;
-  top: 30%;              /* 말풍선 높이의 40% 위치 (원하는 위치로 조정) */
-  right: -20px;          /* 말풍선 바깥쪽에 위치 */
+  top: 30%;
+  right: -20px;
   width: 40px;
   height: 40px;
-  background: white;     /* 말풍선 배경색과 동일 */
-  /* 아래 clip-path 경로는 예시입니다. 디자인에 따라 경로 값을 조정하세요. */
+  background: white;
   clip-path: path('M0,20 Q30,0 40,0 Q20,20 0,20 Z');
 }
+
 .overlay {
   position: fixed;
   top: 0;
