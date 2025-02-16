@@ -323,6 +323,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public List<GroupScheduleResponse> getGroupSchedules(Long memberId, Long groupId, String yearMonth) {
         // 사용자가 실제로 있는지
         Member member = authRepository.findById(memberId)
@@ -338,36 +339,49 @@ public class GroupServiceImpl implements GroupService {
             throw new CustomException(ErrorCode.ACCES_DENIED);
         }
 
-        // 해당 그룹 월 스케줄 조회
-        List<WorkSchedule> workSchedules = groupScheduleRepository.findWorkScheduleByGroupIdAndYearMonth(groupId, yearMonth);
+        try {
+            // 그룹 멤버 목록 조회
+            List<GroupParticipation> participations = groupParticipationRepository.findByGroupId(groupId);
 
-        // 그룹 멤버 목록 조회
-        List<GroupParticipation> participations = groupParticipationRepository.findByGroupId(groupId);
+            // 각 멤버의 스케줄을 현재 그룹과 연ruf
+            for (GroupParticipation participation : participations) {
+                linkMemberSchedulesToGroup(groupId, participation.getMemberId(), yearMonth);
+            }
 
-        // 멤버별 스케줄 정보 매핑
-        return participations.stream()
-                .map(participation -> {
-                    Member memberDto = authRepository.findById(participation.getMemberId())
-                            .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
-                    // 그룹 멤버 스케줄 정보만 필터링하고, ScheduleInfo 형태로 변환
-                    List<GroupScheduleResponse.ScheduleInfo> schedules = workSchedules.stream()
-                            .filter(ws -> ws.getMemberId().equals(participation.getMemberId()))
-                            .map(ws -> GroupScheduleResponse.ScheduleInfo.builder()
-                                    .workDate(ws.getWorkDate())
-                                    .workType(ws.getWorkType())
-                                    .build())
-                            .collect(Collectors.toList());
+            // 연결 후 스케줄 조회
+            List<WorkSchedule> workSchedules = groupScheduleRepository.findWorkScheduleByGroupIdAndYearMonth(groupId, yearMonth);
 
-                    return GroupScheduleResponse.builder()
-                            .memberId(memberDto.getMemberId())
-                            .name(memberDto.getName())
-                            .loginId(memberDto.getLoginId())
-                            .hospital(memberDto.getHospital())
-                            .ward(memberDto.getWard())
-                            .schedules(schedules)
-                            .build();
-                })
-                .collect(Collectors.toList());
+            // 멤버별 스케줄 정보 매핑
+            return participations.stream()
+                    .map(participation -> {
+                        Member memberDto = authRepository.findById(participation.getMemberId())
+                                .orElseThrow(() -> new CustomException(ErrorCode.NOT_EXIST_MEMBER));
+                        // 그룹 멤버 스케줄 정보만 필터링하고, ScheduleInfo 형태로 변환
+                        List<GroupScheduleResponse.ScheduleInfo> schedules = workSchedules.stream()
+                                .filter(ws -> ws.getMemberId().equals(participation.getMemberId()))
+                                .map(ws -> GroupScheduleResponse.ScheduleInfo.builder()
+                                        .workDate(ws.getWorkDate())
+                                        .workType(ws.getWorkType())
+                                        .build())
+                                .collect(Collectors.toList());
+
+                        return GroupScheduleResponse.builder()
+                                .memberId(memberDto.getMemberId())
+                                .name(memberDto.getName())
+                                .loginId(memberDto.getLoginId())
+                                .hospital(memberDto.getHospital())
+                                .ward(memberDto.getWard())
+                                .schedules(schedules)
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+            log.error("Failed to get group schedules" + e.getMessage());
+            throw new CustomException(ErrorCode.SERVER_ERROR);
+        }
+
+
 
     }
 
