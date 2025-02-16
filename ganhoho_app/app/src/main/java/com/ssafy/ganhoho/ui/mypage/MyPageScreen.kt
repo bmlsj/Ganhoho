@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.ui.mypage
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,14 +35,18 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.gson.JsonObject
 import com.ssafy.ganhoho.R
 import com.ssafy.ganhoho.base.SecureDataStore
 import com.ssafy.ganhoho.data.model.response.member.MyPageResponse
+import com.ssafy.ganhoho.ui.MainActivity
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.MemberViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody
 
 @Composable
 fun MyPageScreen(navController: NavController) {
@@ -174,7 +179,18 @@ fun MyPageScreen(navController: NavController) {
                 icon = R.drawable.logout, // 로그아웃 아이콘
                 text = "로그아웃",
                 onClick = { // 로그아웃 기능
-                    authViewModel.logout(context)
+                    val jsonObject = JsonObject().apply {
+                        addProperty("isSubscribed", false)
+                    }
+                    val requestBody = RequestBody.create("application/json".toMediaTypeOrNull(), jsonObject.toString())
+                    if(token != null) {
+                        authViewModel.logout(token, context, requestBody)
+
+                        // 🔥 모든 화면 스택 제거 후 로그인 화면으로 이동
+                        val intent = Intent(context, MainActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        context.startActivity(intent)
+                    }
                 }
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -186,6 +202,11 @@ fun MyPageScreen(navController: NavController) {
                     if (token != null) {
                         authViewModel.withdrawalMember(token, context)
                     }
+
+                    // 🔥 모든 화면 스택 제거 후 로그인 화면으로 이동
+                    val intent = Intent(context, MainActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    context.startActivity(intent)
                 }
             )
 

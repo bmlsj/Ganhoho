@@ -12,7 +12,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -41,8 +40,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.firebase.messaging.FirebaseMessaging
+import com.kakao.vectormap.KakaoMapSdk
+import com.ssafy.ganhoho.BuildConfig.KAKAO_NATIVE_APP_KEY
 import com.ssafy.ganhoho.R
-import com.ssafy.ganhoho.repository.LocationWorker
+import com.ssafy.ganhoho.fcm.LocationWorker
 import com.ssafy.ganhoho.ui.bottom_navigation.AppNavHost
 import com.ssafy.ganhoho.ui.bottom_navigation.CustomBottomNavigation
 import com.ssafy.ganhoho.ui.theme.GANHOHOTheme
@@ -60,16 +61,18 @@ class MainActivity : ComponentActivity() {
 
         // 저장된 토큰 불러오기
         authViewModel.loadTokens(this)
-
-        val workManager = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES).build() // 최소 단위가 15분으로 일정 시간마다 일 하는 기능
-        WorkManager.getInstance(this).enqueue(workManager)
+        // 카카오 맵
+        KakaoMapSdk.init(
+            this@MainActivity,
+            KAKAO_NATIVE_APP_KEY
+        )
 
         setContent {
             GANHOHOTheme {
                 Surface(
                     color = MaterialTheme.colorScheme.background
                 ) {
-                   // MainScreen()
+                    // MainScreen()
                     MainNavHost()
                 }
             }
@@ -91,7 +94,7 @@ fun MainScreen() {
 
     // 알림 권한 요청
     NotificationPermission()
-    
+
     BoxWithConstraints {
         val screenWidth = with(LocalDensity.current) { constraints.maxWidth.toDp() }
         val itemWidth = screenWidth / 5   // 네비게이션 버튼 5개 기준
@@ -148,7 +151,7 @@ fun MainScreen() {
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun CheckPermissionAndInitFCM() {
-    val permissions = arrayOf(Manifest.permission.POST_NOTIFICATIONS)
+    val permissions = arrayOf(Manifest.permission.POST_NOTIFICATIONS, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
     val context = LocalContext.current // ✅ LocalContext 가져오기
 
     var permissionGranted by remember { mutableStateOf(false) } // ✅ 올바른 선언

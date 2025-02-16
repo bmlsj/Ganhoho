@@ -32,6 +32,8 @@ object SecureDataStore {
             prefs[USER_NAME_KEY] = response.name
             response.hospital?.let { prefs[HOSPITAL_KEY] = it }
             response.ward?.let { prefs[WARD_KEY] = it }
+            response.hospitalLat?.let { prefs[HOSPITAL_LOCATION_LAT] = it }
+            response.hospitalLng?.let { prefs[HOSPITAL_LOCATION_LNG] = it }
         }
     }
 
@@ -72,6 +74,8 @@ object SecureDataStore {
             val name = prefs[USER_NAME_KEY] ?: return@map null
             val hospital = prefs[HOSPITAL_KEY]
             val ward = prefs[WARD_KEY]
+            val hospitalLat = prefs[HOSPITAL_LOCATION_LAT]
+            val hospitalLng = prefs[HOSPITAL_LOCATION_LNG]
 
             LoginResponse(
                 memberId,
@@ -80,7 +84,9 @@ object SecureDataStore {
                 hospital,
                 ward,
                 prefs[ACCESS_TOKEN_KEY] ?: "",
-                prefs[REFRESH_TOKEN_KEY] ?: ""
+                prefs[REFRESH_TOKEN_KEY] ?: "",
+                hospitalLat,
+                hospitalLng
             )
         }
 

@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
@@ -34,10 +36,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -55,6 +60,7 @@ import com.ssafy.ganhoho.ui.theme.FieldGray
 import com.ssafy.ganhoho.ui.theme.FieldLightGray
 import com.ssafy.ganhoho.ui.theme.PrimaryBlue
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
+import kotlin.math.sin
 
 @Composable
 fun LoginScreen(navController: NavController) {
@@ -72,6 +78,8 @@ fun LoginScreen(navController: NavController) {
     val token = authViewModel.accessToken.collectAsState().value
     // val loginResult = authViewModel.loginResult.collectAsState().value
     val userInfo = authViewModel.userInfo.collectAsState().value
+
+    val focusManager = LocalFocusManager.current
 
     LaunchedEffect(loginResult, token) {
         loginResult?.onSuccess {
@@ -93,7 +101,7 @@ fun LoginScreen(navController: NavController) {
     // ✅ 로그인 성공 시 메인 화면 이동
     LaunchedEffect(userInfo) {
         userInfo?.let {
-            Toast.makeText(context, "${it.name}님 자동 로그인 성공!", Toast.LENGTH_SHORT).show()
+            // Toast.makeText(context, "${it.name}님 자동 로그인 성공!", Toast.LENGTH_SHORT).show()
             navController.navigate("main") {
                 popUpTo("login") { inclusive = true }
             }
@@ -191,6 +199,11 @@ fun LoginScreen(navController: NavController) {
                         focusedContainerColor = Color.Transparent, // 내부 배경 투명
                         unfocusedContainerColor = Color.Transparent, // 내부 배경 투명
                         disabledContainerColor = Color.Transparent // 비활성화 상태도 투명
+                    ),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(
+                        onNext = { focusManager.moveFocus(FocusDirection.Next) }
                     )
                 )
 
@@ -243,6 +256,11 @@ fun LoginScreen(navController: NavController) {
                         focusedContainerColor = Color.Transparent, // 내부 배경 투명
                         unfocusedContainerColor = Color.Transparent, // 내부 배경 투명
                         disabledContainerColor = Color.Transparent // 비활성화 상태도 투명
+                    ),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(
+                        onDone = { focusManager.clearFocus() }
                     )
                 )
 
