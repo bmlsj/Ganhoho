@@ -26,7 +26,7 @@ const router = createRouter({
           component: FullWorkSchedule
         },
         {
-          path: '/weekly',
+          path: 'weekly',
           name: 'WeeklySchedule',
           component: WeeklySchedule
         },
