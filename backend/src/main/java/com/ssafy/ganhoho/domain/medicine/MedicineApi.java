@@ -27,6 +27,7 @@ import java.util.ArrayList;
 public class MedicineApi {
     private static final String BASE_URL = "https://apis.data.go.kr/1471000/DrugPrdtPrmsnInfoService06/getDrugPrdtPrmsnDtlInq05";
     private static final String SERVICE_KEY = "7hw6itQ0XsLQvJpbmMEBmRnN48OXxRf3SzUE5FpM3zb/FY0N2Q45MR5PUMk1PeNNhJJm9omcPNWHShD9Hs/G6g==";
+    private static final String IMAGE_URL = "http://apis.data.go.kr/1471000/MdcinGrnIdntfcInfoService01/getMdcinGrnIdntfcInfoList01";
 
     @Value("${fastapi.server.url}")
     private String fastApiServerUrl;
@@ -73,6 +74,10 @@ public class MedicineApi {
                 medicineData.put("UD_DOC_DATA", item.path("UD_DOC_DATA").asText());
                 medicineData.put("NB_DOC_DATA", item.path("NB_DOC_DATA").asText());
                 medicineData.put("PN_DOC_DATA", item.path("PN_DOC_DATA").asText());
+                
+                String itemName = item.path("ITEM_NAME").asText();
+                String imageUrl = getImageUrl(itemName);
+                medicineData.put("ITEM_IMAGE", imageUrl);
                 
                 return ResponseEntity.ok(medicineData);
             } else {
@@ -133,6 +138,10 @@ public class MedicineApi {
                     medicineData.put("UD_DOC_DATA", item.path("UD_DOC_DATA").asText());
                     medicineData.put("NB_DOC_DATA", item.path("NB_DOC_DATA").asText());
                     medicineData.put("PN_DOC_DATA", item.path("PN_DOC_DATA").asText());
+                    
+                    String medicineName = item.path("ITEM_NAME").asText();
+                    String imageUrl = getImageUrl(medicineName);
+                    medicineData.put("ITEM_IMAGE", imageUrl);
                     
                     medicineList.add(medicineData);
                 }
@@ -195,9 +204,9 @@ public class MedicineApi {
             }
             
             Map<String, String> detections = (Map<String, String>) responseBody.get("detections");
-            String itemName = detections.get("name");
+            String medicineName = detections.get("name");
             
-            if (itemName == null || itemName.isEmpty()) {
+            if (medicineName == null || medicineName.isEmpty()) {
                 return ResponseEntity.ok(Map.of(
                     "success", false,
                     "message", "의약품 이름을 추출하지 못했습니다.",
@@ -205,9 +214,13 @@ public class MedicineApi {
                 ));
             }
             
-            log.info("5. 의약품 정보 검색 시작. 의약품 이름: {}", itemName);
+            // mg 제거하고 모든 공백 제거
+            medicineName = medicineName.replaceAll("\\s*[mM][gG]\\b", "")  // mg 제거
+                              .replaceAll("\\s+", "");  // 모든 공백 제거
             
-            String encodedItemName = URLEncoder.encode(itemName, StandardCharsets.UTF_8);
+            log.info("5. 의약품 정보 검색 시작. 정제된 의약품 이름: {}", medicineName);
+            
+            String encodedItemName = URLEncoder.encode(medicineName, StandardCharsets.UTF_8);
             String urlStr = BASE_URL + "?"
                     + "serviceKey=" + SERVICE_KEY
                     + "&pageNo=1"
@@ -244,6 +257,7 @@ public class MedicineApi {
                     medicineInfo.put("UD_DOC_DATA", item.path("UD_DOC_DATA").asText());
                     medicineInfo.put("NB_DOC_DATA", item.path("NB_DOC_DATA").asText());
                     medicineInfo.put("PN_DOC_DATA", item.path("PN_DOC_DATA").asText());
+                    medicineInfo.put("ITEM_IMAGE", getImageUrl(item.path("ITEM_NAME").asText()));
                     medicineList.add(medicineInfo);
                 }
             }
@@ -252,7 +266,7 @@ public class MedicineApi {
             response.put("success", true);
             response.put("aiResult", responseBody);
             response.put("medicineInfo", medicineList);
-            response.put("detectedName", itemName);
+            response.put("detectedName", medicineName);
             
             return ResponseEntity.ok(response);
             
@@ -264,5 +278,36 @@ public class MedicineApi {
                     "error", "이미지 처리 중 오류 발생: " + e.getMessage()
                 ));
         }
+    }
+
+    private String getImageUrl(String itemName) {
+        try {
+            String encodedItemName = URLEncoder.encode(itemName, StandardCharsets.UTF_8);
+            String imageUrlStr = IMAGE_URL + "?"
+                    + "serviceKey=" + SERVICE_KEY
+                    + "&pageNo=1"
+                    + "&numOfRows=1"
+                    + "&type=json"
+                    + "&item_name=" + encodedItemName;
+
+            RestTemplate restTemplate = new RestTemplate();
+            restTemplate.getMessageConverters()
+                    .add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
+
+            ResponseEntity<String> response = restTemplate.getForEntity(imageUrlStr, String.class);
+            
+            if (response.getStatusCode().is2xxSuccessful()) {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode rootNode = mapper.readTree(response.getBody());
+                JsonNode items = rootNode.path("body").path("items");
+                
+                if (items.isArray() && items.size() > 0) {
+                    return items.get(0).path("ITEM_IMAGE").asText();
+                }
+            }
+        } catch (Exception e) {
+            log.error("이미지 URL 조회 중 오류 발생: {}", e.getMessage(), e);
+        }
+        return "";
     }
 }
