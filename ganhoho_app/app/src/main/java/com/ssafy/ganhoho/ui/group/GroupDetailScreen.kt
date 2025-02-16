@@ -153,10 +153,13 @@ fun EachGroupScreen(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalAlignment = Alignment.Bottom
                             ) {
+                                val groupIcon = getGroupIconResource(group.groupIconType)
+
                                 Image(
-                                    painter = painterResource(R.drawable.emoji_hospital),
+                                    painter = painterResource(groupIcon),
                                     contentDescription = "그룹 아이콘",
-                                    modifier = Modifier.size(30.dp)
+                                    modifier = Modifier.size(35.dp)
+                                        .padding(bottom = 5.dp)
                                 )
                                 Text(
                                     text = group.groupName,

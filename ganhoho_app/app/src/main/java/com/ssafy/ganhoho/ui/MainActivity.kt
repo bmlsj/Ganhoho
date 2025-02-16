@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.ssafy.ganhoho.base.TokenManager
 import com.ssafy.ganhoho.ui.auth.AuthDataStore
 import com.ssafy.ganhoho.ui.auth.LoginScreen
 import com.ssafy.ganhoho.ui.bottom_navigation.CustomBottomNavigation
@@ -90,6 +91,37 @@ class MainActivity : ComponentActivity() {
             val inviteCode = uri.getQueryParameter("groupCode")
             if (!inviteCode.isNullOrEmpty()) {
                 Log.d("DeepLink", "초대 코드 감지: $inviteCode")
+
+                val token = TokenManager.getAccessToken()
+
+                if (token != null) {
+                    // 로그인 되어 있다면 초대 코드로 그룹 가입 처리 후 그룹 화면으로 이동
+//                    val viewModel: GroupViewModel = ViewModelProvider(this)[GroupViewModel::class.java]
+//
+//                    viewModel.joinGroupByInviteCode(token, inviteCode,
+//                        onSuccess = { groupId ->
+//                            Log.d("DeepLink", "✅ 초대 수락 성공! groupId: $groupId")
+//
+//                            // 그룹 리스트 화면으로 이동
+//                            val groupIntent = Intent(this, MainActivity::class.java).apply {
+//                                putExtra("navigateTo", "group")
+//                            }
+//                            startActivity(groupIntent)
+//                            finish() // 현재 액티비티 종료 (기존 화면이 남아 있지 않도록)
+//                        },
+//                        onFailure = { error ->
+//                            Log.e("DeepLink", "초대 수락 실패: $error")
+//                        }
+//                    )
+                } else {
+                    // 로그인 상태가 아니라면 로그인 화면으로 이동
+                    Log.e("DeepLink", "토큰 없음. 로그인 필요")
+                    val loginIntent = Intent(this, MainActivity::class.java).apply {
+                        putExtra("navigateTo", "login")
+                    }
+                    startActivity(loginIntent)
+                    finish()
+                }
 
                 // 뷰모델을 사용하여 초대 수락 API 호출
                 
