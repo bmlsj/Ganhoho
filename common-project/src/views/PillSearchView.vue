@@ -277,7 +277,7 @@ const openCamera = async (event) => {
 }
 .floating-button {
   position: fixed;
-  bottom: 3vh; /* ✅ 뷰포트 기준 상대적인 위치 */
+  bottom: 15vh; /* ✅ 뷰포트 기준 상대적인 위치 */
   right: 7vw; /* ✅ 뷰포트 기준 상대적인 위치 */
   width: clamp(50px, 5vw, 60px); /* ✅ 화면 크기에 따라 버튼 크기 조정 */
   height: clamp(50px, 5vw, 60px);
