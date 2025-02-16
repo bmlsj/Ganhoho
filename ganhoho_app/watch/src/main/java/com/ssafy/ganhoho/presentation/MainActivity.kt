@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.presentation
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,6 +19,9 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.TimeText
+import androidx.wear.phone.interactions.notifications.BridgingConfig
+import androidx.wear.phone.interactions.notifications.BridgingManager
+import com.ssafy.ganhoho.presentation.notification.NotificationScreen
 import com.ssafy.ganhoho.presentation.theme.GANHOHOTheme
 
 
@@ -30,6 +34,7 @@ class MainActivity : ComponentActivity() {
         setTheme(android.R.style.Theme_DeviceDefault)
         setContent {
 //            WearApp("Android")
+            setAlarmBridge(this)
             NotificationScreen()
         }
     }
@@ -64,4 +69,11 @@ fun Greeting(greetingName: String) {
 @Composable
 fun DefaultPreview() {
     WearApp("Preview Android")
+}
+
+fun setAlarmBridge(context: Context){
+    BridgingManager.fromContext(context).setConfig(
+        BridgingConfig.Builder(context, true)
+            .build()
+    )
 }

@@ -2,29 +2,12 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-<<<<<<< HEAD
-=======
-      <SelectionState runConfigName="app">
-        <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-02-09T15:27:47.375313400Z">
-          <Target type="DEFAULT_BOOT">
-            <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\SSAFY\.android\avd\Copy_of_Medium_Phone_API_35.avd" />
-            </handle>
-          </Target>
-        </DropdownSelection>
-        <DialogSelection />
-      </SelectionState>
-      <SelectionState runConfigName="app.watch">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
->>>>>>> 8290f6c184f14914c95fba96fff85119b45669ad
       <SelectionState runConfigName="watch">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-02-15T08:12:03.254673Z">
+        <DropdownSelection timestamp="2025-02-16T06:01:27.854923Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=RFAT10XZ5XP" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=/Users/aoreo/.android/avd/Wear_OS_Small_Round_API_30.avd" />
             </handle>
           </Target>
         </DropdownSelection>
@@ -32,7 +15,7 @@
       </SelectionState>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-02-15T08:11:56.833179Z">
+        <DropdownSelection timestamp="2025-02-16T05:36:42.714754Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="PhysicalDevice" identifier="serial=RFAT10XZ5XP" />
