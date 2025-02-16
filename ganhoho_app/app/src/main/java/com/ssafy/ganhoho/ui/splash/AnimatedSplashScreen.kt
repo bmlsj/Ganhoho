@@ -27,7 +27,7 @@ fun AnimatedSplashScreen(navController: NavController) {
     LaunchedEffect(Unit) {
         scale.animateTo(1f, animationSpec = tween(1000)) // 1초 동안 확대
         delay(1000)
-        navController.navigate("main") {
+        navController.navigate("login") {
             popUpTo("splash") { inclusive = true }
         }
     }
