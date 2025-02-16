@@ -33,7 +33,9 @@ fun BasicTopAppBar(navController: NavController) {
         ),
         actions = {
 
-            IconButton(onClick = { /* TODO: 마이 페이지 버튼 기능 추가 */ }) {
+            IconButton(onClick = {
+                navController.navigate("mypage")
+            }) {
                 Icon(
                     painter = painterResource(id = R.drawable.mypage),
                     contentDescription = "마이 페이지",

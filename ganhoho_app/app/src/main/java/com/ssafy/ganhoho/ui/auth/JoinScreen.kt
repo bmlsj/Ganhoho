@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -64,13 +65,17 @@ fun JoinScreen(navController: NavController) {
     val authViewModel: AuthViewModel = viewModel()
     val context = LocalContext.current
 
+    // ✅ savedStateHandle을 사용하여 데이터 유지
+    val backStackEntry = navController.currentBackStackEntry
+    val savedStateHandle = backStackEntry?.savedStateHandle
+
     // 변수
-    var id by remember { mutableStateOf("") }
+    var id by remember { mutableStateOf(savedStateHandle?.get("id") ?: "") }
     var idCheck by remember { mutableStateOf(false) }
-    var password by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf(savedStateHandle?.get("password") ?: "") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var name by remember { mutableStateOf("") }
-    var hospital by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf(savedStateHandle?.get("name") ?: "") }
+    var hospital by remember { mutableStateOf(savedStateHandle?.get("selectedHospital") ?: "") }
     var ward by remember { mutableStateOf("") }
 
     // 아이디 중복 확인 결과
@@ -89,7 +94,14 @@ fun JoinScreen(navController: NavController) {
             val message = if (!isUsed) "사용 가능한 ID입니다." else "이미 사용 중인 ID입니다."
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }?.onFailure { error ->
-            Toast.makeText(context, "아이디 중복 확인 실패: ${error.message}", Toast.LENGTH_SHORT).show()
+            // Toast.makeText(context, "아이디 중복 확인 실패: ${error.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // ✅ 병원 선택값이 변경되면 업데이트
+    LaunchedEffect(savedStateHandle?.get<String>("selectedHospital")) {
+        savedStateHandle?.get<String>("selectedHospital")?.let {
+            hospital = it
         }
     }
 
@@ -99,7 +111,17 @@ fun JoinScreen(navController: NavController) {
             Toast.makeText(context, "회원가입 성공!", Toast.LENGTH_SHORT).show()
             navController.navigate("login") // ✅ 회원가입 성공하면 login 이동
         }?.onFailure { error ->
-            Toast.makeText(context, "회원가입 실패: ${error.message}", Toast.LENGTH_SHORT).show()
+            // Toast.makeText(context, "회원가입 실패: ${error.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // 병원 이름 받아오기
+    LaunchedEffect(navController.currentBackStackEntry) {
+        val hospitalName = navController.currentBackStackEntry
+            ?.savedStateHandle
+            ?.get<String>("selectedHospital")
+        if (hospitalName != null) {
+            hospital = hospitalName
         }
     }
 
@@ -153,7 +175,7 @@ fun JoinScreen(navController: NavController) {
                 // ID 입력
                 OutlinedTextField(
                     value = id,
-                    onValueChange = { id = it },
+                    onValueChange = { id = it; savedStateHandle?.set("id", it) },
                     label = { Text("ID", color = FieldGray) },
                     leadingIcon = {
                         Row {
@@ -168,9 +190,9 @@ fun JoinScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(30.dp),
                     colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Black,
+                        focusedIndicatorColor = Color.LightGray,
                         unfocusedIndicatorColor = Color(0xFFEFEFEF),
-                        cursorColor = Color.Blue,
+                        cursorColor = Color.Black,
                         focusedContainerColor = Color.Transparent, // 내부 배경 투명
                         unfocusedContainerColor = Color.Transparent, // 내부 배경 투명
                         disabledContainerColor = Color.Transparent // 비활성화 상태도 투명
@@ -192,8 +214,8 @@ fun JoinScreen(navController: NavController) {
                                     .background(
                                         color = when {
                                             idCheckResult == null -> Color.LightGray  // 버튼을 누르지 않은 상태
-                                            idCheck -> Color.Magenta  // 중복된 아이디(좀더 연하게)
-                                            else -> PrimaryBlue  // 사용 가능 아이디
+                                            idCheck -> Color.Magenta.copy(0.2f)  // 중복된 아이디(좀더 연하게)
+                                            else -> PrimaryBlue.copy(0.2f)  // 사용 가능 아이디
                                         }, shape = RoundedCornerShape(size = 5.dp)
                                     )
                             ) {
@@ -220,8 +242,9 @@ fun JoinScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // PW 입력
-                OutlinedTextField(value = password,
-                    onValueChange = { password = it },
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it; savedStateHandle?.set("password", it) },
                     label = {
                         Text(
                             "PW", color = Color(0xFFC0C0C0)
@@ -256,9 +279,9 @@ fun JoinScreen(navController: NavController) {
                     shape = RoundedCornerShape(30.dp),
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Black,
+                        focusedIndicatorColor = Color.LightGray,
                         unfocusedIndicatorColor = FieldLightGray,
-                        cursorColor = Color.Blue,
+                        cursorColor = Color.Black,
                         focusedContainerColor = Color.Transparent, // 내부 배경 투명
                         unfocusedContainerColor = Color.Transparent, // 내부 배경 투명
                         disabledContainerColor = Color.Transparent // 비활성화 상태도 투명
@@ -269,9 +292,10 @@ fun JoinScreen(navController: NavController) {
 
 
                 // Name 입력
-                OutlinedTextField(value = name,
-                    onValueChange = { name = it },
-                    label = { Text("Name", color = FieldGray) },
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it; savedStateHandle?.set("name", it) },
+                    label = { Text("이름", color = FieldGray) },
                     leadingIcon = {
                         Row {
                             Spacer(modifier = Modifier.width(12.dp))
@@ -285,9 +309,9 @@ fun JoinScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(30.dp),
                     colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Black,
+                        focusedIndicatorColor = Color.LightGray,
                         unfocusedIndicatorColor = FieldLightGray,
-                        cursorColor = Color.Blue,
+                        cursorColor = Color.Black,
                         focusedContainerColor = Color.Transparent, // 내부 배경 투명
                         unfocusedContainerColor = Color.Transparent, // 내부 배경 투명
                         disabledContainerColor = Color.Transparent // 비활성화 상태도 투명
@@ -299,11 +323,12 @@ fun JoinScreen(navController: NavController) {
                 // Hospital 선택
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    OutlinedTextField(value = hospital,
+                    OutlinedTextField(
+                        value = hospital,
                         onValueChange = { hospital = it },
-                        label = { Text("Hospital", color = FieldGray) },
+                        label = { Text("병원명", color = FieldGray) },
                         leadingIcon = {
                             Row {
                                 Spacer(modifier = Modifier.width(12.dp))
@@ -315,12 +340,14 @@ fun JoinScreen(navController: NavController) {
                                 )
                             }
                         },
-                        modifier = Modifier.width(200.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(IntrinsicSize.Min),
                         shape = RoundedCornerShape(30.dp),
                         colors = TextFieldDefaults.colors(
-                            focusedIndicatorColor = Color.Black,
+                            focusedIndicatorColor = Color.LightGray,
                             unfocusedIndicatorColor = FieldLightGray,
-                            cursorColor = Color.Blue,
+                            cursorColor = Color.Black,
                             focusedContainerColor = Color.Transparent, // 내부 배경 투명
                             unfocusedContainerColor = Color.Transparent, // 내부 배경 투명
                             disabledContainerColor = Color.Transparent // 비활성화 상태도 투명
@@ -329,13 +356,21 @@ fun JoinScreen(navController: NavController) {
                     Spacer(modifier = Modifier.width(6.dp))
                     Button(
                         onClick = {
+                            // ✅ 현재 입력된 데이터들을 저장 후 병원 찾기 화면으로 이동
+                            savedStateHandle?.set("id", id)
+                            savedStateHandle?.set("password", password)
+                            savedStateHandle?.set("name", name)
+
                             // 병원 찾기 페이지로 이동
                             navController.navigate("hospitalInfo")
-                        }, colors = ButtonDefaults.buttonColors(
+                        },
+                        colors = ButtonDefaults.buttonColors(
                             containerColor = PrimaryBlue
-                        )
+                        ),
+                        modifier = Modifier
+                            .height(IntrinsicSize.Min)
                     ) {
-                        Text(text = "병원 찾기")
+                        Text(text = "찾기")
                     }
                 }
 
@@ -343,9 +378,12 @@ fun JoinScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Ward 선택
-                OutlinedTextField(value = ward,
+                OutlinedTextField(
+                    value = ward,
                     onValueChange = { ward = it },
-                    label = { Text("Ward", color = FieldGray) },
+                    label = { Text("병동", color = FieldGray) },
+                    placeholder = { Text(text = "병동을 입력해주세요. ex) 일반, 긴급, 특수 등",
+                        color = Color.LightGray)},
                     leadingIcon = {
                         Row {
                             Spacer(modifier = Modifier.width(12.dp))
@@ -360,9 +398,9 @@ fun JoinScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(30.dp),
                     colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Black,
+                        focusedIndicatorColor = Color.LightGray,
                         unfocusedIndicatorColor = Color(0xFFEFEFEF),
-                        cursorColor = Color.Blue,
+                        cursorColor = Color.Black,
                         focusedContainerColor = Color.Transparent, // 내부 배경 투명
                         unfocusedContainerColor = Color.Transparent, // 내부 배경 투명
                         disabledContainerColor = Color.Transparent // 비활성화 상태도 투명
@@ -372,15 +410,15 @@ fun JoinScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Sign Up 버튼
-                Button(onClick = {
-                    val signUpRequest = SignUpRequest(id, password, name, hospital, ward)
-                    authViewModel.signUp(signUpRequest) // ✅ 회원가입 요청 보내기
-                },
+                Button(
+                    onClick = {
+                        val signUpRequest = SignUpRequest(id, password, name, hospital, ward)
+                        authViewModel.signUp(signUpRequest) // ✅ 회원가입 요청 보내기
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp)
                         .clickable {
-                            // TODO: 회원 가입 viewModel 부르기
                             val signUpRequest = SignUpRequest(id, password, name, hospital, ward)
                             authViewModel.signUp(signUpRequest = signUpRequest)
                         },
@@ -398,9 +436,9 @@ fun JoinScreen(navController: NavController) {
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "Already have an account?", color = Color.Gray, fontSize = 14.sp)
+                    Text(text = "이미 계정이 있으신가요?", color = Color.Gray, fontSize = 14.sp)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "Sign In",
+                    Text(text = "로그인",
                         color = Color.Red,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
