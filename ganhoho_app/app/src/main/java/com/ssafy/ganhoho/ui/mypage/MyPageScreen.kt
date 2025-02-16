@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.ui.mypage
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun MyPageScreen(navController: NavController) {
 
@@ -46,6 +48,7 @@ data class Notification(
     val message: String
 )
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun NotiDetail(notice: Notification) {
 

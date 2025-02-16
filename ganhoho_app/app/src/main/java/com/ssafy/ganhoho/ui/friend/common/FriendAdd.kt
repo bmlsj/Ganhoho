@@ -128,35 +128,31 @@ fun FriendAdd(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        member.hospital?.takeIf { it.isNotBlank() }?.let {
-                            Text(
-                                text = it,
-                                modifier = Modifier
-                                    .background(
-                                        Color(0xfff0f0f0),
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                                color = Color.Black,
-                                fontSize = 12.sp,
-                                textAlign = TextAlign.Center
-                            )
-                        }
+                        Text(
+                            text = member.hospital ?: "병원없음", // 데이터가 없으면 빈 문자열
+                            modifier = Modifier
+                                .background(
+                                    if (member.hospital.isNullOrBlank()) Color.Transparent else Color(0xfff0f0f0),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            color = if (member.hospital.isNullOrBlank()) Color.Transparent else Color.Black,
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center
+                        )
 
-                        member.hospital?.takeIf { it.isNotBlank() }?.let {
-                            Text(
-                                text = it,
-                                modifier = Modifier
-                                    .background(
-                                        Color(0xfff0f0f0),
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                                color = Color.Black,
-                                fontSize = 12.sp,
-                                textAlign = TextAlign.Center
-                            )
-                        }
+                        Text(
+                            text = member.ward ?: "병동없음", // 데이터가 없으면 "병동없음" 표시
+                            modifier = Modifier
+                                .background(
+                                    if (member.ward.isNullOrBlank()) Color.Transparent else Color(0xfff0f0f0),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            color = if (member.ward.isNullOrBlank()) Color.Transparent else Color.Black,
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center
+                        )
                     }
 
                     // ✅ 친구 목록에 이미 있는 경우 버튼을 회색으로 비활성화

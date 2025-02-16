@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -177,56 +179,76 @@ fun FriendScreen(navController: NavController) {
                 }
             }
 
-            // menu 별로 데이터 보여주기
-            when (currentScreen.value) {
-                "list" -> {  // 전체 친구 목록
-                    if (filteredFriendList.isNotEmpty()) {
-                        filteredFriendList.forEach { friend ->
-                            FriendList(
-                                friend = friend,
-                                onFavoriteClick = { friendMemberId, isFavorite ->
-                                    if (token != null) {
-                                        friendViewModel.updateFriendFavorite(
-                                            token,
-                                            friendMemberId,
-                                            isFavorite
-                                        )
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                // menu 별로 데이터 보여주기
+                when (currentScreen.value) {
+                    "list" -> {  // 전체 친구 목록
+                        if (filteredFriendList.isNotEmpty()) {
+                            items(filteredFriendList) { friend ->
+                                FriendList(
+                                    friend = friend,
+                                    onFavoriteClick = { friendMemberId, isFavorite ->
+                                        if (token != null) {
+                                            friendViewModel.updateFriendFavorite(
+                                                token,
+                                                friendMemberId,
+                                                isFavorite
+                                            )
+                                        }
                                     }
-                                }
-                            )
+                                )
+                            }
+                        } else {
+                            item {
+                                Spacer(modifier = Modifier.height(50.dp))
+                                Text(
+                                    text = "등록된 친구가 없습니다.",
+                                    fontSize = 16.sp,
+                                    color = Color.Gray
+                                )
+                            }
                         }
-                    } else {
-                        Spacer(modifier = Modifier.height(50.dp))
-                        Text(
-                            text = "등록된 친구가 없습니다.",
-                            fontSize = 16.sp,
-                            color = Color.Gray
-                        )
                     }
-                }
 
-                "request" -> {  // 친구 요청 리스트
-                    if (friendInvite.isNotEmpty()) {
-                        friendInvite.forEach { friend ->
-                            FriendRequestList(friend = friend)
+                    "request" -> {  // 친구 요청 리스트
+                        if (friendInvite.isNotEmpty()) {
+                            items(friendInvite) { friend ->
+                                FriendRequestList(friend = friend)
+                            }
+                        } else {
+                            item {
+                                Spacer(modifier = Modifier.height(50.dp))
+                                Text(
+                                    text = "친구 요청이 없습니다.",
+                                    fontSize = 16.sp,
+                                    color = Color.Gray
+                                )
+                            }
                         }
-                    } else {
-                        Spacer(modifier = Modifier.height(50.dp))
-                        Text(text = "친구 요청이 없습니다.", fontSize = 16.sp, color = Color.Gray)
                     }
-                }
 
-                "search" -> {  // 친구 추가를 위해 전체 회원 목록 검색
-                    if (searchText.value.isNotEmpty() && memberList.isNotEmpty()) {
-                        memberList.forEach { member ->
-                            FriendAdd(member = member, friendList = friendList)
+                    "search" -> {  // 친구 추가를 위해 전체 회원 목록 검색
+                        if (searchText.value.isNotEmpty() && memberList.isNotEmpty()) {
+                            items(memberList) { member ->
+                                FriendAdd(member = member, friendList = friendList)
+                            }
+                        } else {
+                            item {
+                                Spacer(modifier = Modifier.height(50.dp))
+                                Text(
+                                    text = "추가할 친구가 없습니다.",
+                                    fontSize = 16.sp,
+                                    color = Color.Gray
+                                )
+                            }
                         }
-                    } else {
-                        Spacer(modifier = Modifier.height(50.dp))
-                        Text(text = "추가할 친구가 없습니다.", fontSize = 16.sp, color = Color.Gray)
                     }
                 }
             }
+
         }
     }
 }
