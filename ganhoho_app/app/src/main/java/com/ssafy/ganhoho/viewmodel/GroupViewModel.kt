@@ -60,6 +60,8 @@ class GroupViewModel (
 
             result.onSuccess { newGroup ->
                 Log.d("GroupViewModel", "그룹 추가 성공")
+                fetchGroupList() // 그룹 추가하고 다시 목록을 불러와서 자동 새로고침!
+
             }.onFailure { error ->
                 Log.e("GroupViewModel", "그룹 추가 실패: ${error.message}")
             }
