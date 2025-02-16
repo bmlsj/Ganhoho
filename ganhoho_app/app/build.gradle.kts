@@ -115,4 +115,9 @@ dependencies {
     implementation ("androidx.datastore:datastore-preferences:1.1.2")
     implementation ("androidx.datastore:datastore-core:1.1.2")  // 코어 의존성 (필요 시)
 
+    // workmanager
+    implementation ("androidx.work:work-runtime-ktx:2.5.0")
+
+    // location
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 }

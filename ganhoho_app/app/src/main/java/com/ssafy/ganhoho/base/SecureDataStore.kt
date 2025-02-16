@@ -18,6 +18,9 @@ object SecureDataStore {
     private val USER_NAME_KEY = stringPreferencesKey("user_name")
     private val HOSPITAL_KEY = stringPreferencesKey("hospital")
     private val WARD_KEY = stringPreferencesKey("ward")
+    private val HOSPITAL_LOCATION_LAT = doublePreferencesKey("hospital_location_lat")
+    private val HOSPITAL_LOCATION_LNG = doublePreferencesKey("hospital_location_lng")
+    private val IS_SUBSCRIBED = booleanPreferencesKey("is_subscribed")
 
     // 🔹 JWT Access Token 저장
     suspend fun saveUserInfo(context: Context, response: LoginResponse) {
@@ -80,6 +83,40 @@ object SecureDataStore {
                 prefs[REFRESH_TOKEN_KEY] ?: ""
             )
         }
+
+    // 🔹 병원 위치 정보 저장
+    suspend fun saveHospitalLocation(context: Context, lat: Double, lng: Double) {
+        context.dataStore.edit { prefs ->
+            prefs[HOSPITAL_LOCATION_LAT] = lat
+            prefs[HOSPITAL_LOCATION_LNG] = lng
+        }
+    }
+
+    // 🔹 병원 lat 값 가져오기
+    fun getHospitalLocationLat(context: Context): Flow<Double?> {
+        return context.dataStore.data.map { preferences ->
+            preferences[HOSPITAL_LOCATION_LAT]
+        }
+    }
+
+    // 🔹 병원 lng 값 가져오기
+    fun getHospitalLocationLng(context: Context): Flow<Double?> {
+        return context.dataStore.data.map { preferences ->
+            preferences[HOSPITAL_LOCATION_LNG]
+        }
+    }
+
+    suspend fun saveSubscriptionInfo(context: Context, isSubscribed: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[IS_SUBSCRIBED] = isSubscribed
+        }
+    }
+
+    fun getSubscriptionInfo(context: Context): Flow<Boolean?>{
+        return context.dataStore.data.map {
+            it[IS_SUBSCRIBED]
+        }
+    }
 
     // ✅ 로그아웃 시 모든 데이터 삭제
     suspend fun clearAllUserData(context: Context) {

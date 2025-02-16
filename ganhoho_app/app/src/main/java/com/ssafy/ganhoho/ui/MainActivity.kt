@@ -38,14 +38,18 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.firebase.messaging.FirebaseMessaging
 import com.ssafy.ganhoho.R
+import com.ssafy.ganhoho.repository.LocationWorker
 import com.ssafy.ganhoho.ui.bottom_navigation.AppNavHost
 import com.ssafy.ganhoho.ui.bottom_navigation.CustomBottomNavigation
 import com.ssafy.ganhoho.ui.theme.GANHOHOTheme
 import com.ssafy.ganhoho.util.NotificationPermission
 import com.ssafy.ganhoho.util.PermissionChecker
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
+import java.util.concurrent.TimeUnit
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 class MainActivity : ComponentActivity() {
@@ -56,6 +60,9 @@ class MainActivity : ComponentActivity() {
 
         // 저장된 토큰 불러오기
         authViewModel.loadTokens(this)
+
+        val workManager = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES).build() // 최소 단위가 15분으로 일정 시간마다 일 하는 기능
+        WorkManager.getInstance(this).enqueue(workManager)
 
         setContent {
             GANHOHOTheme {
