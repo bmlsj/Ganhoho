@@ -78,7 +78,7 @@ class GroupRepository {
             val response = RetrofitUtil.groupService.leaveGroup("Bearer $token", groupId)
 
             if (response.isSuccessful) {
-                val success = response.body()?.success ?: false // ✅ DTO 사용하여 success 값 가져오기
+                val success = response.body()?.success ?: false // DTO 사용하여 success 값 가져오기
                 Log.d("GroupRepository", "그룹 탈퇴 성공: $success")
                 Result.success(success)
             } else {

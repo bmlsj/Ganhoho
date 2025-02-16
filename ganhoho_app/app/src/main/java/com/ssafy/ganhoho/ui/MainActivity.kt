@@ -1,6 +1,9 @@
 package com.ssafy.ganhoho.ui
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -29,6 +32,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val authDataStore = AuthDataStore(applicationContext) //DataStore 생성
 
+        // 앱 실행 시 딥링크 처리
+        handleDeepLink(intent)
+
         // 저장된 토큰 불러오기
         authViewModel.loadTokens(this)
         setContent {
@@ -50,6 +56,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
+
+
             // 로그인 여부가 결정될 때까지 로딩 화면을 표시
 //            if (isLoggedIn == null) {
 //                // 로딩 UI를 보여줄 수 있음 (예: 스플래시 화면)
@@ -69,6 +77,27 @@ class MainActivity : ComponentActivity() {
 //            }
         }
     }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleDeepLink(intent) // 앱이 이미 실행 중일때 새로운 딥링크 처리
+    }
+
+    // 딥링크 관리
+    private fun handleDeepLink(intent: Intent) {
+        val data: Uri? = intent.data
+        data?.let { uri ->
+            val inviteCode = uri.getQueryParameter("groupCode")
+            if (!inviteCode.isNullOrEmpty()) {
+                Log.d("DeepLink", "초대 코드 감지: $inviteCode")
+
+                // 뷰모델을 사용하여 초대 수락 API 호출
+                
+            }
+        }
+    }
+
+
 }
 //
 //@SuppressLint("UseOfNonLambdaOffsetOverload")
