@@ -26,6 +26,8 @@ android {
         versionName = "1.0"
 
         buildConfigField("String", "SERVER_URL", "\"${localProperties.getProperty("SERVER_URL", "")}\"")
+        buildConfigField("String", "WEBVIEW_PILL_URL", "\"${localProperties.getProperty("WEBVIEW_PILL_URL", "")}\"")
+        buildConfigField("String", "WEBVIEW_WORK_URL", "\"${localProperties.getProperty("WEBVIEW_WORK_URL", "")}\"")
         buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"${localProperties.getProperty("KAKAO_NATIVE_APP_KEY", "")}\"")
 
         manifestPlaceholders["KAKAO_NATIVE_APP_KEY"] = localProperties["KAKAO_NATIVE_APP_KEY"] ?: ""
@@ -79,6 +81,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.camera.view)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -121,4 +124,9 @@ dependencies {
     // lottie
     implementation ("com.airbnb.android:lottie-compose:6.6.2")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+
+    implementation("androidx.camera:camera-camera2:1.4.0-alpha02")
+    implementation("androidx.camera:camera-lifecycle:1.4.0-alpha02")
+    implementation ("androidx.camera:camera-view:1.4.0-alpha02")
+
 }

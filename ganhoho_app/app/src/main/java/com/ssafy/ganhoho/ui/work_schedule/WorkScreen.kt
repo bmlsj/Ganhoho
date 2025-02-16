@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.ssafy.ganhoho.BuildConfig.WEBVIEW_PILL_URL
+import com.ssafy.ganhoho.BuildConfig.WEBVIEW_WORK_URL
 import com.ssafy.ganhoho.util.WebViewWithToken
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 
@@ -44,9 +46,10 @@ fun WorkScreen(navController: NavController) {
     ) {
         if (token != null && refreshToken != null) {
             WebViewWithToken(
-                url = "https://i12d209.p.ssafy.io/fullworkscheduleview/",
+                url = WEBVIEW_WORK_URL,
                 token,
-                refreshToken
+                refreshToken,
+                enableCamera = false // ✅ 카메라 기능 비활성화
             )
         }
     }
