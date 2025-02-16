@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.ui.friend
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,12 +28,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,6 +54,7 @@ import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.FriendViewModel
 import com.ssafy.ganhoho.viewmodel.MemberViewModel
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun FriendScreen(navController: NavController) {
 
@@ -71,13 +75,26 @@ fun FriendScreen(navController: NavController) {
     val friendInvite = friendInviteState?.getOrNull() ?: emptyList()
 
     // 검색된 친구 목록 필터링
-    val filteredFriendList = remember(friendList, searchText.value) {
-        friendList.filter { friend ->
-            searchText.value.isEmpty() ||
-                    friend.friendLoginId.contains(searchText.value, ignoreCase = true) ||
-                    friend.name.contains(searchText.value, ignoreCase = true)
+//    val filteredFriendList = remember(friendList, searchText.value) {
+//        friendList.filter { friend ->
+//            searchText.value.isEmpty() ||
+//                    friend.friendLoginId.contains(searchText.value, ignoreCase = true) ||
+//                    friend.name.contains(searchText.value, ignoreCase = true)
+//        }
+//    }
+
+    // ✅ 검색된 친구 목록을 필터링하고, 즐겨찾기(isFavorite=true)한 친구들을 먼저 정렬
+    val filteredFriendList by rememberUpdatedState(
+        derivedStateOf {
+            friendList
+                .filter { friend ->
+                    searchText.value.isEmpty() ||
+                            friend.friendLoginId.contains(searchText.value, ignoreCase = true) ||
+                            friend.name.contains(searchText.value, ignoreCase = true)
+                }
+                .sortedByDescending { it.isFavorite } // 즐겨찾기 친구가 먼저 나오도록 정렬
         }
-    }
+    )
 
     // 검색된 회원 전체 목록
     val memberListState = memberViewModel.memberList.collectAsState().value
@@ -104,6 +121,13 @@ fun FriendScreen(navController: NavController) {
         if (!token.isNullOrEmpty()) {
             // 검색한 텍스트로 회원 전체 목록 검색
             memberViewModel.searchFriend(token, searchText.value)
+        }
+    }
+
+    // ✅ 친구 목록을 갱신하는 LaunchedEffect 추가
+    LaunchedEffect(friendList) {
+        if (token != null) {
+            friendViewModel.getFriendList(token)
         }
     }
 
@@ -189,8 +213,8 @@ fun FriendScreen(navController: NavController) {
                 // menu 별로 데이터 보여주기
                 when (currentScreen.value) {
                     "list" -> {  // 전체 친구 목록
-                        if (filteredFriendList.isNotEmpty()) {
-                            items(filteredFriendList) { friend ->
+                        if (filteredFriendList.value.isNotEmpty()) {
+                            items(filteredFriendList.value) { friend ->
                                 FriendList(
                                     friend = friend,
                                     onFavoriteClick = { friendMemberId, isFavorite ->
@@ -258,7 +282,12 @@ fun FriendScreen(navController: NavController) {
 
 // 메뉴 아이템
 @Composable
-fun MenuItem(screen: String, title: String, currentScreen: MutableState<String>, friendRequestCount: Int) {
+fun MenuItem(
+    screen: String,
+    title: String,
+    currentScreen: MutableState<String>,
+    friendRequestCount: Int
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.clickable { currentScreen.value = screen }

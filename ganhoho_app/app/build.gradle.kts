@@ -27,6 +27,8 @@ android {
 
         buildConfigField("String", "SERVER_URL", "\"${localProperties.getProperty("SERVER_URL", "")}\"")
         buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"${localProperties.getProperty("KAKAO_NATIVE_APP_KEY", "")}\"")
+        buildConfigField("String", "WEBVIEW_PILL_URL", "\"${localProperties.getProperty("WEBVIEW_PILL_URL", "")}\"")
+        buildConfigField("String", "WEBVIEW_WORK_URL", "\"${localProperties.getProperty("WEBVIEW_WORK_URL", "")}\"")
 
         manifestPlaceholders["KAKAO_NATIVE_APP_KEY"] = localProperties["KAKAO_NATIVE_APP_KEY"] ?: ""
 
