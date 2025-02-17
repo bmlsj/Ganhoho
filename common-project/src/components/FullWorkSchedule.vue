@@ -38,20 +38,6 @@ import { ref, onMounted, nextTick,computed } from 'vue'
 import { useApiStore } from '@/stores/apiRequest'
 
 const store = useApiStore()
-const logSchedule = (person, day) => {
-  console.log(`🗓️ ${person.name}의 일정 (${day}):`, person.schedule[day]);
-  return person.schedule[day] || '-';
-};
-
-// 스크롤 대상 요소
-const calendarBodyRef = ref(null)
-
-const message = ref("Hello Vue!")
-
-const debuggedValue = computed(() => {
-  console.log("Computed property 실행됨:", message.value);
-  return message.value;
-})
 
 onMounted(async () => {
   // 1) 캘린더 데이터 생성
@@ -61,35 +47,6 @@ onMounted(async () => {
   // 2) DOM 업데이트 후 처리
   await nextTick();
   // setTimeout으로 100ms 지연 후 실행
-  setTimeout(() => {
-    const today = new Date().getDate();
-    let targetWeekIndex = 0;
-    store.calendar.forEach((week, index) => {
-      if (week.includes(today)) {
-        targetWeekIndex = index;
-      }
-    });
-    console.log("📢 targetWeekIndex:", targetWeekIndex);
-    
-    if (calendarBodyRef.value) {
-      const weekElements = calendarBodyRef.value.querySelectorAll('.week');
-      if (weekElements.length > targetWeekIndex) {
-        const targetElement = weekElements[targetWeekIndex];
-        const headerEl = document.querySelector('.header');
-        const headerHeight = headerEl ? headerEl.offsetHeight : 0;
-        const scrollPosition = targetElement.offsetTop - headerHeight;
-        console.log("📢 scrollPosition:", scrollPosition);
-        calendarBodyRef.value.scrollTo({
-          top: scrollPosition,
-          behavior: 'smooth'
-        });
-      } else {
-        console.warn("⚠️ weekElements의 수가 targetWeekIndex보다 작습니다.");
-      }
-    } else {
-      console.warn("⚠️ calendarBodyRef가 유효하지 않습니다.")
-    }
-  }, 100); // 100ms 딜레이, 필요 시 조정
 })
 </script>
 
