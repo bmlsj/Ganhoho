@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import axios from 'axios';
-import { useRouter } from 'vue-router';
+import router from '@/router/index.js'
 // 1) 방금 만든 마스킹 함수 가져오기
 import { maskURL, maskToken } from '@/utils/mask.js';
 // import { useLoadingStore } from '@/stores/loadingStore';
@@ -38,8 +38,6 @@ export const useApiStore = defineStore('api', () => {
   const calendar = ref([]);
   const currentYear = ref(null);
   const currentMonth = ref(null);
-  const router = useRouter();
-  console.log("router : ",router)
 
   // .env 파일에 정의된 VITE_API_URL 사용
   const API_URL = import.meta.env.VITE_API_URL || 'https://i12d209.p.ssafy.io';
