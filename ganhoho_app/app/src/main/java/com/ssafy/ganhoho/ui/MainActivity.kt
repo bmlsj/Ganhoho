@@ -58,7 +58,7 @@ class MainActivity : ComponentActivity() {
         // 앱 실행 시 딥링크 처리
         val groupViewModel: GroupViewModel = ViewModelProvider(
             this,
-            GroupViewModelFactory(repository, tokenManager)
+            GroupViewModelFactory(repository)
         ).get(GroupViewModel::class.java)
 
         handleDeepLink(intent, groupViewModel)

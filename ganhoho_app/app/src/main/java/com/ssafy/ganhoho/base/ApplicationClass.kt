@@ -24,7 +24,6 @@ class ApplicationClass : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        TokenManager.init(this) // 앱 실행 시 SharedPreferences 초기화
         Log.d("GanHohoApplication", "🚀 TokenManager 초기화됨")
 
         // 로그 찍기

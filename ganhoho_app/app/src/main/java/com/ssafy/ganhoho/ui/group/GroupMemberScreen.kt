@@ -41,11 +41,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ssafy.ganhoho.base.TokenManager
 import com.ssafy.ganhoho.data.model.dto.group.GroupDto
 import com.ssafy.ganhoho.data.model.response.group.GroupMemberResponse
 import com.ssafy.ganhoho.data.repository.GroupRepository
+import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.GroupViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -62,23 +64,42 @@ fun GroupMemberScreen(
     tokenManager: TokenManager,
     group: GroupDto
 ) {
+
+
+    val authViewModel: AuthViewModel = viewModel()
+    val token = authViewModel.accessToken.collectAsState().value
+    val context = LocalContext.current
+
+    LaunchedEffect(token) {
+        if (token.isNullOrEmpty()) {
+            authViewModel.loadTokens(context)
+        } else {
+            Log.d("token", token)
+        }
+    }
+
+
     val yearMonth: String = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"))
     var inviteLink by rememberSaveable { mutableStateOf("") }
 
-    LaunchedEffect(Unit) {
-        viewModel.fetchMemberSchedules(groupId, yearMonth) // 스케줄 불러오기
-        viewModel.fetchMemberList(groupId) // 그룹원 리스트 불러오기
+    LaunchedEffect(token) {
+        if (token != null) {
+            viewModel.fetchMemberSchedules(groupId, yearMonth, token)  // 스케줄 불러오기
+            viewModel.fetchMemberList(groupId, token) // 그룹원 리스트 불러오기
+
+            viewModel.fetchGroupInviteLink(token, groupId,
+                onSuccess = { link ->
+                    inviteLink = "ssafyd209://ganhoho/group?groupCode=$link"
+                    Log.d("초대링크", "초대링크 가져오기 성공!~ : $inviteLink")
+                },
+                onFailure = { error ->
+                    Log.e("초대링크", "초대 링크 불러오기 실패: $error")
+                })
+        }
 
         // 초대 링크 가져오기
-        val token = tokenManager.getAccessToken() ?: return@LaunchedEffect
-        viewModel.fetchGroupInviteLink(token, groupId,
-            onSuccess = { link ->
-                inviteLink = "ssafyd209://ganhoho/group?groupCode=$link"
-                Log.d("초대링크", "초대링크 가져오기 성공!~ : $inviteLink")
-            },
-            onFailure = { error ->
-                Log.e("초대링크", "초대 링크 불러오기 실패: $error")
-            })
+//        val token = tokenManager.getAccessToken() ?: return@LaunchedEffect
+
     }
 
 
@@ -204,7 +225,6 @@ fun GroupMemberScreen(
             onDismiss = { isDialogVisible = false }, // 다이얼로그 닫기
             navController = navController,
             repository = repository,
-            tokenManager = tokenManager,
             group = group
         )
     }

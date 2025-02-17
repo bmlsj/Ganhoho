@@ -3,7 +3,6 @@ package com.ssafy.ganhoho.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssafy.ganhoho.base.TokenManager
 import com.ssafy.ganhoho.data.model.dto.group.GroupDto
 import com.ssafy.ganhoho.data.model.response.group.GroupMemberResponse
 import com.ssafy.ganhoho.data.model.response.group.MemberMonthlyScheduleResponse
@@ -12,9 +11,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class GroupViewModel (
-    val repository: GroupRepository,
-    private val tokenManager: TokenManager
+class GroupViewModel(
+    val repository: GroupRepository
 ) : ViewModel() {
 
     // API 에러 상태 관리
@@ -30,41 +28,43 @@ class GroupViewModel (
     val groupMembers: StateFlow<List<GroupMemberResponse>> = _groupMembers
 
     // 그룹 스케줄 관련
-    private val _memberSchedules = MutableStateFlow<List<MemberMonthlyScheduleResponse>>(emptyList())
+    private val _memberSchedules =
+        MutableStateFlow<List<MemberMonthlyScheduleResponse>>(emptyList())
     val memberSchedules: StateFlow<List<MemberMonthlyScheduleResponse>> = _memberSchedules
 
 
     //그룹 목록 출력
-    fun fetchGroupList() {
+    fun fetchGroupList(token: String) {
         viewModelScope.launch {
-            val token = tokenManager.getAccessToken() ?: run {
-                Log.e("GroupViewModel", "no token!!!")
-                return@launch
-            }
             val result = repository.getGroupList(token) // API 호출
             result.onSuccess { groups ->
                 _groupList.value = groups
+                Log.d("GroupViewModel", "✅ 그룹 목록 가져오기 성공! (총 ${groups.size}개)")
+                groups.forEach { group ->
+                    Log.d("GroupViewModel", "📝 그룹 ID: ${group.groupId}, 이름: ${group.groupName}, 아이콘: ${group.groupIconType}")
+                }
             }.onFailure { error ->
                 _errorMessage.value = error.message
+                Log.e("GroupViewModel", "❌ 그룹 목록 가져오기 실패: ${error.message}", error)
             }
         }
     }
 
 
     // 그룹 추가
-    fun addGroup(groupName: String, groupIconType: Int) {
+    fun addGroup(groupName: String, groupIconType: Int, token: String) {
         viewModelScope.launch {
-            val token = tokenManager.getAccessToken() ?: run {
-                Log.e("GroupViewModel", "no token!!!")
-                return@launch
-            }
+//            val token = tokenManager.getAccessToken() ?: run {
+//                Log.e("GroupViewModel", "no token!!!")
+//                return@launch
+//            }
             Log.e("GroupViewModel", "token : $token")
 
             val result = repository.addGroup(token, groupName, groupIconType)
 
             result.onSuccess { newGroup ->
                 Log.d("GroupViewModel", "그룹 추가 성공")
-                fetchGroupList() // 그룹 추가하고 다시 목록을 불러와서 자동 새로고침!
+                fetchGroupList(token) // 그룹 추가하고 다시 목록을 불러와서 자동 새로고침!
 
             }.onFailure { error ->
                 Log.e("GroupViewModel", "그룹 추가 실패: ${error.message}")
@@ -74,13 +74,18 @@ class GroupViewModel (
 
 
     //그룹 탈퇴
-    fun leaveGroup(groupId: Int, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+    fun leaveGroup(
+        groupId: Int,
+        token: String,
+        onSuccess: () -> Unit,
+        onFailure: (String) -> Unit
+    ) {
         viewModelScope.launch {
-            val token = TokenManager.getAccessToken() // 토큰 가져오기
-            if (token == null) {
-                onFailure("토큰이 없습니다.")
-                return@launch
-            }
+//            val token = TokenManager.getAccessToken() // 토큰 가져오기
+//            if (token == null) {
+//                onFailure("토큰이 없습니다.")
+//                return@launch
+//            }
 
             val result = repository.leaveGroup(token, groupId)
             result.onSuccess {
@@ -98,11 +103,10 @@ class GroupViewModel (
     }
 
 
-
     // 그룹별 스케줄 조회
-    fun fetchMemberSchedules(groupId: Int, yearMonth: String) {
+    fun fetchMemberSchedules(groupId: Int, yearMonth: String, token: String) {
         viewModelScope.launch {
-            val token = tokenManager.getAccessToken() ?: return@launch
+//            val token = tokenManager.getAccessToken() ?: return@launch
             Log.d("API_REQUEST", "Fetching schedule for groupId: $groupId, yearMonth: $yearMonth")
 
             val result = repository.getMemberSchedules(token, groupId, yearMonth)
@@ -115,9 +119,9 @@ class GroupViewModel (
     }
 
     // 그룹원 리스트 불러오기
-    fun fetchMemberList(groupId: Int) {
+    fun fetchMemberList(groupId: Int, token: String) {
         viewModelScope.launch {
-            val token = tokenManager.getAccessToken() ?: return@launch
+//            val token = tokenManager.getAccessToken() ?: return@launch
             Log.d("API_REQUEST", "Fetching members for groupId: $groupId")
 
             val result = repository.getGroupMembers(token, groupId)
@@ -130,7 +134,12 @@ class GroupViewModel (
     }
 
     // 그룹 초대 링크 가져오기
-    fun fetchGroupInviteLink(token: String, groupId: Int, onSuccess: (String) -> Unit, onFailure: (String) -> Unit) {
+    fun fetchGroupInviteLink(
+        token: String,
+        groupId: Int,
+        onSuccess: (String) -> Unit,
+        onFailure: (String) -> Unit
+    ) {
         viewModelScope.launch {
             val result = repository.getGroupInviteLink(token, groupId)
             result.onSuccess { response ->
@@ -143,7 +152,12 @@ class GroupViewModel (
     }
 
     // 그룹 초대 코드로 가입하기
-    fun joinGroupByInviteCode(token: String?, inviteLink: String, onSuccess: (String) -> Unit, onFailure: (String) -> Unit) {
+    fun joinGroupByInviteCode(
+        token: String?,
+        inviteLink: String,
+        onSuccess: (String) -> Unit,
+        onFailure: (String) -> Unit
+    ) {
         if (token == null) {
             onFailure("토큰이 없습니다. 로그인 후 다시 시도해주세요.")
             return

@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ssafy.ganhoho.R
 import com.ssafy.ganhoho.base.TokenManager
@@ -54,6 +55,7 @@ import com.ssafy.ganhoho.data.model.dto.group.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.response.group.GroupMemberResponse
 import com.ssafy.ganhoho.data.model.response.group.GroupViewModelFactory
 import com.ssafy.ganhoho.data.repository.GroupRepository
+import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.GroupViewModel
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -65,15 +67,15 @@ fun EachGroupScreen(
     group: GroupDto,
     groupMember: List<GroupMemberResponse>,
     repository:GroupRepository,
-    tokenManager:TokenManager,
     groupId: Int?,
     yearMonth: String
     ) {
 
+    val authViewModel: AuthViewModel = viewModel()
     val viewModel: GroupViewModel = ViewModelProvider(
         LocalContext.current as ViewModelStoreOwner,
-        GroupViewModelFactory(repository, tokenManager)
-    ).get(GroupViewModel::class.java)
+        GroupViewModelFactory(repository)
+    )[GroupViewModel::class.java]
 
 
     val currentDate = LocalDate.now()
@@ -91,14 +93,28 @@ fun EachGroupScreen(
     var inviteLink by rememberSaveable { mutableStateOf("") }
 
 
+    val token = authViewModel.accessToken.collectAsState().value
+    val context = LocalContext.current
+
+    LaunchedEffect(token) {
+        if (token.isNullOrEmpty()) {
+            authViewModel.loadTokens(context)
+        } else {
+            Log.d("token", token)
+        }
+    }
+
+
     LaunchedEffect(groupId) {
         if(groupId != 0){
             if (groupId != null) {
-                viewModel.fetchMemberSchedules(groupId, yearMonth)
+                if (token != null) {
+                    viewModel.fetchMemberSchedules(groupId, yearMonth, token)
+                }
             }
             Log.d("DEBUG", "Fetching schedules for groupId: $groupId, yearMonth: $yearMonth")
-            if (groupId != null) {
-                viewModel.fetchMemberList(groupId)
+            if (groupId != null && token != null) {
+                viewModel.fetchMemberList(groupId, token)
             }
         }else{
             val inviteCode = navController.currentBackStackEntry?.arguments?.getString("inviteCode")
@@ -118,14 +134,16 @@ fun EachGroupScreen(
 //                    }
 //                )
 
-                val token = tokenManager.getAccessToken() ?: return@LaunchedEffect
-                viewModel.fetchGroupInviteLink(token, groupId,
-                    onSuccess = { link ->
-                        inviteLink = "ssafyd209://ganhoho/group?groupCode=$link"
-                    },
-                    onFailure = { error ->
-                        Log.e("GroupMemberScreen", "초대 링크 불러오기 실패: $error")
-                    })
+//                val token = tokenManager.getAccessToken() ?: return@LaunchedEffect
+                if (token != null) {
+                    viewModel.fetchGroupInviteLink(token, groupId,
+                        onSuccess = { link ->
+                            inviteLink = "ssafyd209://ganhoho/group?groupCode=$link"
+                        },
+                        onFailure = { error ->
+                            Log.e("GroupMemberScreen", "초대 링크 불러오기 실패: $error")
+                        })
+                }
             }
 
         }
@@ -371,7 +389,6 @@ fun EachGroupScreen(
                         },
                         navController = navController,
                         repository = repository,
-                        tokenManager = tokenManager,
                         group = group
                     )
                 }

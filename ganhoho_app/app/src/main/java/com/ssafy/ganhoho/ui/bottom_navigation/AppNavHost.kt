@@ -47,8 +47,7 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
             GroupScreen(
                 navController = navController,
                 bottomNavViewModel = bottomNavViewModel,
-                repository = groupRepository,
-                tokenManager = TokenManager
+                repository = groupRepository
             )
         }
         composable("friend") { FriendScreen(navController) }
@@ -63,8 +62,7 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
             GroupScreen(
                 navController = navController,
                 bottomNavViewModel = bottomNavViewModel,
-                repository = groupRepository,
-                tokenManager = TokenManager
+                repository = groupRepository
             )
         }
 
@@ -81,8 +79,8 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
             }
 
             if (group != null) {
-                val groupViewModel: GroupViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-                    factory = GroupViewModelFactory(groupRepository, TokenManager)
+                val groupViewModel: GroupViewModel = viewModel(
+                    factory = GroupViewModelFactory(groupRepository)
                 )
 
                 EachGroupScreen(
@@ -90,7 +88,6 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
                     group = group,
                     groupMember = getSampleMembers(),
                     repository = GroupRepository(),
-                    tokenManager = TokenManager,
                     groupId = group.groupId,
                     yearMonth = yearMonth
                 )
@@ -113,7 +110,6 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
                 group = GroupDto(groupId, "Sample Group", 1, 5), // 필요시 수정
                 groupMember = getSampleMembers(),
                 repository = groupRepository,
-                tokenManager = TokenManager,
                 groupId = groupId,
                 yearMonth = yearMonth
             )

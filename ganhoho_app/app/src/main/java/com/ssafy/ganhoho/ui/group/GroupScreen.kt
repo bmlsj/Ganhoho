@@ -1,6 +1,7 @@
 package com.ssafy.ganhoho.ui.group
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,8 +16,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
@@ -26,21 +25,21 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.google.gson.Gson
-import com.ssafy.ganhoho.base.TokenManager
 import com.ssafy.ganhoho.data.model.response.group.GroupViewModelFactory
 import com.ssafy.ganhoho.data.repository.GroupRepository
 import com.ssafy.ganhoho.ui.group.common.GroupItem
+import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.BottomNavViewModel
 import com.ssafy.ganhoho.viewmodel.GroupViewModel
 
@@ -48,18 +47,27 @@ import com.ssafy.ganhoho.viewmodel.GroupViewModel
 fun GroupScreen(
     navController: NavHostController,
     bottomNavViewModel: BottomNavViewModel = viewModel(),
-    repository: GroupRepository,
-    tokenManager: TokenManager
-
+    repository: GroupRepository
 ) {
+
+    val authViewModel: AuthViewModel = viewModel()
+
+    // 토큰 로드하기
+    val token = authViewModel.accessToken.collectAsState().value
+    val context = LocalContext.current
+
+    LaunchedEffect(token) {
+        if (token.isNullOrEmpty()) {
+            authViewModel.loadTokens(context)
+        }
+    }
+
     //그룹 추가 용도
     val groupViewModel: GroupViewModel = viewModel(
-        factory = GroupViewModelFactory(repository, tokenManager)
+        factory = GroupViewModelFactory(repository)
     )
-
-
-    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
-    val coroutineScope = rememberCoroutineScope()
+//    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+//    val coroutineScope = rememberCoroutineScope()
 
     // viewGroup에서 상태 가져오기
     val groupList by groupViewModel.groupList.collectAsState()
@@ -70,11 +78,13 @@ fun GroupScreen(
 
 
     // 화면 진입 시 자동으로 그룹 목록 불러오도록 설정
-    LaunchedEffect(Unit) {
-        groupViewModel.fetchGroupList()
+    LaunchedEffect(token) {
+        if (token != null) {
+            groupViewModel.fetchGroupList(token)
+        } else {
+            Log.d("GroupViewModel", "token is null")
+        }
     }
-
-
 
     Box(
         modifier = Modifier
@@ -168,7 +178,9 @@ fun GroupScreen(
             onDismiss = { isSheetOpen = false },
             viewModel = bottomNavViewModel,
             onAddGroup = { name, iconType ->
-                groupViewModel.addGroup(name, iconType)
+                if (token != null) {
+                    groupViewModel.addGroup(name, iconType, token)
+                }
                 isSheetOpen = false // 바텀시트 닫기
             }
         )

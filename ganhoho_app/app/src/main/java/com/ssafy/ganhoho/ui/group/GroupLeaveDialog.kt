@@ -15,9 +15,12 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -31,6 +34,7 @@ import com.ssafy.ganhoho.base.TokenManager
 import com.ssafy.ganhoho.data.model.dto.group.GroupDto
 import com.ssafy.ganhoho.data.model.response.group.GroupViewModelFactory
 import com.ssafy.ganhoho.data.repository.GroupRepository
+import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.GroupViewModel
 
 @Composable
@@ -40,13 +44,24 @@ fun GroupLeaveDialog(
     onDismiss: () -> Unit,
     navController: NavController,
     repository: GroupRepository,
-    tokenManager: TokenManager,
     group: GroupDto
 ) {
 
+    val authViewModel: AuthViewModel = viewModel()
     val groupViewModel: GroupViewModel = viewModel(
-        factory = GroupViewModelFactory(repository, tokenManager)
+        factory = GroupViewModelFactory(repository)
     )
+
+    val token = authViewModel.accessToken.collectAsState().value
+    val context = LocalContext.current
+
+    LaunchedEffect(token) {
+        if (token.isNullOrEmpty()) {
+            authViewModel.loadTokens(context)
+        } else {
+            Log.d("token", token)
+        }
+    }
 
     if (isVisible) {
         Dialog( onDismissRequest = { onDismiss()}) {
@@ -79,18 +94,21 @@ fun GroupLeaveDialog(
                     Button(
                         onClick = {
                             group.groupId?.let {
-                                groupViewModel.leaveGroup(
-                                    it,
-                                    onSuccess = {
-                                        Log.d("GroupLeaveDialog", "✅ 그룹 탈퇴 성공! 홈 화면으로 이동")
-                                        navController.navigate("group") // 🔹 탈퇴 성공 시 그룹 목록으로 이동
-                                        onConfirm() // 다이얼로그 닫기
-                                    },
-                                    onFailure = { errorMessage ->
-                                        Log.e("GroupLeaveDialog", "❌ 그룹 탈퇴 실패: $errorMessage")
-                                        onDismiss() // 실패 시 다이얼로그 닫기
-                                    }
-                                )
+                                if (token != null) {
+                                    groupViewModel.leaveGroup(
+                                        it,
+                                        token,
+                                        onSuccess = {
+                                            Log.d("GroupLeaveDialog", "✅ 그룹 탈퇴 성공! 홈 화면으로 이동")
+                                            navController.navigate("group") // 🔹 탈퇴 성공 시 그룹 목록으로 이동
+                                            onConfirm() // 다이얼로그 닫기
+                                        },
+                                        onFailure = { errorMessage ->
+                                            Log.e("GroupLeaveDialog", "❌ 그룹 탈퇴 실패: $errorMessage")
+                                            onDismiss() // 실패 시 다이얼로그 닫기
+                                        }
+                                    )
+                                }
                             }
                         },
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF79C7E3)),
