@@ -26,7 +26,9 @@ android {
 
         // 2. 추가
         buildConfigField("String", "SERVER_URL", "\"${localProperties.getProperty("SERVER_URL", "")}\"")
-        buildConfigField("String", "TOKEN", "\"${localProperties.getProperty("TOKEN", "")}\"")
+        buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"${localProperties.getProperty("KAKAO_NATIVE_APP_KEY", "")}\"")
+
+        manifestPlaceholders["KAKAO_NATIVE_APP_KEY"] = localProperties["KAKAO_NATIVE_APP_KEY"] ?: ""
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -91,6 +93,11 @@ dependencies {
     implementation("com.kizitonwose.calendar:compose:2.6.2")
     implementation("androidx.compose.material:material:1.7.5")
     implementation("androidx.navigation:navigation-compose:2.8.5")
+    implementation("androidx.compose.material:material:1.7.5")     // material2 지원
+    implementation ("androidx.navigation:navigation-compose:2.8.5")  // 네비게이션 구현
+
+    implementation("androidx.compose.foundation:foundation:1.7.7") // LazyGrid 지원
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0") // 날짜 지원
 
     implementation("androidx.compose.foundation:foundation:1.7.7") // LazyGrid 지원
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0") // 날짜 지원
@@ -112,6 +119,15 @@ dependencies {
     implementation ("androidx.datastore:datastore-preferences:1.1.2")
     implementation ("androidx.datastore:datastore-core:1.1.2")  // 코어 의존성 (필요 시)
 
+    // 카카오 지도 API
+    implementation ("com.kakao.maps.open:android:2.11.9")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+
+    implementation ("com.kakao.sdk:v2-all:2.20.6") // 전체 모듈 설치, 2.11.0 버전부터 지원
+
+    // lottie
+    implementation ("com.airbnb.android:lottie-compose:6.6.2")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
     implementation ("androidx.navigation:navigation-compose:2.4.0-alpha10") //네비게이션
 

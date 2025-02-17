@@ -8,9 +8,10 @@ import com.ssafy.ganhoho.data.model.dto.friend.FriendFavoriteRequest
 import com.ssafy.ganhoho.data.model.dto.friend.FriendInviteDto
 import com.ssafy.ganhoho.data.model.response.friend.FriendAddResponse
 import com.ssafy.ganhoho.data.model.response.friend.FriendApproveResponse
+import com.ssafy.ganhoho.data.model.response.schedule.FriendPersonalResponse
+import com.ssafy.ganhoho.data.model.response.schedule.FriendWorkResponse
 import com.ssafy.ganhoho.data.model.response.handleResponse
 import com.ssafy.ganhoho.data.remote.RetrofitUtil
-import retrofit2.Response
 
 class FriendRepository {
 
@@ -79,19 +80,11 @@ class FriendRepository {
     ): Result<Boolean> {
         return try {
             val response = RetrofitUtil.friendService.updateFriendFavorite("Bearer $token", request)
-//            if (response.isSuccessful) {
-//                response.body()?.let {
-//                    Result.success(it)  // ✅ 성공 시 정상적으로 데이터 반환
-//                } ?: Result.failure(Exception("Response body is null"))
-//            } else {
-//                val errorBody = response.errorBody()?.string()
-//                Log.e("FriendRepository", "Error Body: $errorBody") // 에러 로그 추가
-//                Result.failure(Exception("Request failed: $errorBody")) // ❌ 실패 시 메시지 반환
-//            }
             handleResponse(response)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
+
 
 }

@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,14 +18,18 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -31,12 +37,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.ssafy.ganhoho.BuildConfig
 import com.ssafy.ganhoho.data.model.dto.friend.FriendDto
-import com.ssafy.ganhoho.viewmodel.FriendViewModel
+import com.ssafy.ganhoho.ui.friend.FriendScheduleScreen
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FriendList(
     friend: FriendDto,
@@ -45,8 +50,8 @@ fun FriendList(
 
     // 즐겨찾기 상태를 기억하고 변경 시, UI 업데이트
     val isFavorite = remember { mutableStateOf(friend.isFavorite) }
-
-    // viewModel
+    // 친구 스케쥴 모달 열기
+    val isFriendModal = remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -57,7 +62,7 @@ fun FriendList(
             .padding(16.dp)
             .clickable {
                 // TODO: 아이디로 친구 근무 기록 조회 기능
-
+                isFriendModal.value = true
             }
     ) {
         Row(
@@ -80,7 +85,7 @@ fun FriendList(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = "목록 @${friend.friendLoginId}",
+                        text = "@${friend.friendLoginId}",
                         color = Color.Gray,
                         fontSize = 14.sp
                     )
@@ -90,7 +95,7 @@ fun FriendList(
 
                 // 병원과 병동정보
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    friend.hospital?.let {
+                    friend.hospital?.takeIf { it.isNotBlank() }?.let {
                         Text(
                             text = it,
                             modifier = Modifier
@@ -105,7 +110,7 @@ fun FriendList(
                         )
                     }
 
-                    friend.ward?.let {
+                    friend.ward?.takeIf { it.isNotBlank() }?.let {
                         Text(
                             text = it,
                             modifier = Modifier
@@ -145,9 +150,34 @@ fun FriendList(
 
                 )
             }
-
-
         }
+    }
+
+    // 친구 일정 화면 모달 열기
+    if (isFriendModal.value) {
+        ModalBottomSheet(
+            onDismissRequest = { isFriendModal.value = false }, // 바깥 클릭하면 닫힘
+            modifier = Modifier
+                .clip(shape = RoundedCornerShape(12.dp))
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White)
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // 친구 스케쥴 화면 표시
+                FriendScheduleScreen(
+                    friendName = friend.name,
+                    friendId = friend.memberId,
+                    isFavorite = isFavorite.value
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+
     }
 }
 

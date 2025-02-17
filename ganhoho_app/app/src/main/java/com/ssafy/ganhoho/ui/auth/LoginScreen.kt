@@ -1,6 +1,5 @@
 package com.ssafy.ganhoho.ui.auth
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,7 +26,6 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -47,16 +45,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.ssafy.ganhoho.R
-import com.ssafy.ganhoho.data.model.dto.member.LoginRequest
+import com.ssafy.ganhoho.data.model.dto.auth.LoginRequest
 import com.ssafy.ganhoho.ui.theme.BackgroundBlue40
 import com.ssafy.ganhoho.ui.theme.FieldGray
 import com.ssafy.ganhoho.ui.theme.FieldLightGray
 import com.ssafy.ganhoho.ui.theme.PrimaryBlue
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
-import kotlin.math.log
 
 @Composable
-fun LoginScreen(navController: NavController, authDataStore : AuthDataStore) {
+fun LoginScreen(navController: NavController) {
 
     // 입력 필드 상태
     val id = remember { mutableStateOf("") }
@@ -66,33 +63,37 @@ fun LoginScreen(navController: NavController, authDataStore : AuthDataStore) {
     val authViewModel: AuthViewModel = viewModel()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    
+
     // 자동 로그인 관련
     // 자동 로그인 여부 확인
-    val isLoggedIn by authDataStore.isLoggedIn.collectAsState(initial = false)
+    //val isLoggedIn by authDataStore.isLoggedIn.collectAsState(initial = false)
 
     // 로그인 여부 감지 -> 자동 메인화면 이동
-    LaunchedEffect(isLoggedIn) {
-        if(isLoggedIn){
-            navController.navigate("main"){
-                popUpTo("login") {inclusive = true}
-            }
-        }
-    }
+//    LaunchedEffect(isLoggedIn) {
+//        if(isLoggedIn){
+//            navController.navigate("main"){
+//                popUpTo("login") {inclusive = true}
+//            }
+//        }
+//    }
 
 
     // 로그인 결과 상태 감지
-    val loginResult = authViewModel.loginResult.collectAsState().value
+    // val loginResult = authViewModel.loginResult.collectAsState().value
+    val userInfo = authViewModel.userInfo.collectAsState().value
 
-    LaunchedEffect(loginResult) {
-        loginResult?.onSuccess {
-            // ✅ 로그인 성공 시 메인 화면으로 이동
-            Toast.makeText(context, "로그인 성공!", Toast.LENGTH_SHORT).show()
+    // ✅ 앱 실행 시 자동 로그인 확인
+    LaunchedEffect(Unit) {
+        authViewModel.checkAutoLogin(context)
+    }
+
+    // ✅ 로그인 성공 시 메인 화면 이동
+    LaunchedEffect(userInfo) {
+        userInfo?.let {
+            // Toast.makeText(context, "${it.name}님 자동 로그인 성공!", Toast.LENGTH_SHORT).show()
             navController.navigate("main") {
                 popUpTo("login") { inclusive = true }
             }
-        }?.onFailure { error ->
-            Toast.makeText(context, "로그인 실패: ${error.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -285,5 +286,5 @@ fun LoginPreview() {
     val context = LocalContext.current
     val authDataStore = AuthDataStore(context)
 
-    LoginScreen(navController, authDataStore)
+    LoginScreen(navController)
 }

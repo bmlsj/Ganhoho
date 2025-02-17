@@ -15,13 +15,14 @@ class GroupRepository {
     suspend fun getGroupList(): Result<List<GroupDto>> {
         return try {
             val response = RetrofitUtil.groupService.getGroups()
-            Result.success(response)
+            handleResponse(response)
         } catch (e: Exception) {
             Log.e("GroupRepository", "Error fetching group list", e)
             Result.failure(e)
         }
     }
-    
+
+
     // 그룹 초대 링크 조회
     suspend fun getGroupInviteLink(token: String, groupId: Int): Result<GroupInviteLinkResponse> {
         return try{

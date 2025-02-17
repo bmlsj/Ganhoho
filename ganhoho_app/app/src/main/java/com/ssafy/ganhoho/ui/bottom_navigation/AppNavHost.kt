@@ -17,6 +17,8 @@ import com.ssafy.ganhoho.ui.group.EachGroupScreen
 import com.ssafy.ganhoho.ui.group.GroupScreen
 import com.ssafy.ganhoho.ui.group.getSampleMembers
 import com.ssafy.ganhoho.ui.home.HomeScreen
+import com.ssafy.ganhoho.ui.mypage.MyPageScreen
+import com.ssafy.ganhoho.ui.mypage.UpdateMemberInfo
 import com.ssafy.ganhoho.ui.pill.PillScreen
 import com.ssafy.ganhoho.ui.work_schedule.WorkScreen
 import com.ssafy.ganhoho.viewmodel.BottomNavViewModel
@@ -39,7 +41,8 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
     ) {
         composable("work") { WorkScreen(navController) }
         composable("pill") { PillScreen(navController) }
-        composable("home") { HomeScreen() } // modifier 제거
+        composable("home") { HomeScreen(navController) }
+        composable("home") { HomeScreen(navController) } // modifier 제거
         composable("group") {
             GroupScreen(
                 navController = navController,
@@ -49,6 +52,8 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
             )
         }
         composable("friend") { FriendScreen(navController) }
+        composable("mypage") { MyPageScreen(navController) }
+        composable("update") { UpdateMemberInfo(navController) }  // 회원정보 수정 화면
 
         composable("group/{groupIconType}") { backStackEntry ->
             val groupIconType =

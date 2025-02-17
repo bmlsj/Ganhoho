@@ -1,26 +1,24 @@
-package com.ssafy.ganhoho.ui.bottom_navigation
+package com.ssafy.ganhoho.ui.bottom_navigation//package com.example.calendar.ui.bottomnavigation
 
-import androidx.compose.foundation.layout.Box
+import android.annotation.SuppressLint
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.BottomAppBar
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.FabPosition
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,127 +29,82 @@ import com.ssafy.ganhoho.R
 
 @Composable
 fun CustomBottomNavigation(navController: NavController) {
-    val navController = rememberNavController()
 
-    Scaffold(
-        bottomBar = {
-            BottomAppBar(
-                modifier = Modifier
-                    .height(65.dp)
-                    .clip(RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp)),
-                cutoutShape = CircleShape, // FAB 컷아웃 적용
-                backgroundColor = Color.White,
-                elevation = 16.dp
-            ) {
-                BottomNav(navController = navController)
-            }
-        },
-        floatingActionButtonPosition = FabPosition.Center,
-        isFloatingActionButtonDocked = true,
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    navController.navigate("home") {
-                        popUpTo(navController.graph.startDestinationId) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                },
-                shape = CircleShape,
-                backgroundColor = Color(0xFF79C7E3)
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.nav_home),
-                    contentDescription = "홈",
-                    Modifier.size(23.dp),
-                    tint = Color.White
-                )
-            }
-        }
-    ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
-            AppNavHost(navController)
-        }
-    }
-}
-
-@Composable
-fun BottomNav(navController: NavController) {
-    val currentRoute by navController.currentBackStackEntryAsState()
-
+    // 리소스를 명확히 선언하여 수정
     val items = listOf(
-        NavItem("work", R.drawable.bottom_calendar),
-        NavItem("pill", R.drawable.bottom_pill),
-        NavItem("home", R.drawable.bottom_home_white),
-        NavItem("group", R.drawable.bottom_group),
-        NavItem("friend", R.drawable.bottom_friend)
+        Pair("work", R.drawable.nav_work),
+        Pair("pill", R.drawable.nav_pill),
+        Pair("home", R.drawable.nav_home),
+        Pair("group", R.drawable.nav_group),
+        Pair("friend", R.drawable.nav_friend)
     )
 
-    BottomNavigation(
-        modifier = Modifier
-            .padding(horizontal = 0.dp)
-            .height(118.dp)
-            .fillMaxWidth(),
-        backgroundColor = Color.White,
-        elevation = 10.dp
-    ) {
-        items.forEach { item ->
-            val isSelected = currentRoute?.destination?.route == item.route
+    val currentRoute = navController.currentBackStackEntryAsState().value
 
-            BottomNavigationItem(
-                icon = {
-                    Icon(
-                        painter = painterResource(id = item.icon),
-                        contentDescription = item.route,
-                        modifier = Modifier.size(25.dp)
-                            .padding(bottom = 5.dp),
-                        tint = if (isSelected) Color(0xFFBCE0F5) else Color.Gray
-                    )
-                },
-                label = {
-                    Text(
-                        text = routeToLabel[item.route] ?: item.route, // route 대신 한글 표시
-                        fontSize = 12.sp,
-                        color = if (isSelected) Color(0xFFBCE0F5) else Color.Gray
-                    )
-                },
-                selected = isSelected,
-                onClick = {
-                    if (!isSelected) {
-                        navController.navigate(item.route) {
-                            popUpTo(navController.graph.startDestinationId) {
-                                saveState = true
+    Row(
+        modifier = Modifier
+            .background(Color.White)
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        items.forEach { (route, icon) ->
+
+            when (route) {
+                "work" -> stringResource(id = R.string.nav_work)
+                "pill" -> stringResource(id = R.string.nav_pill)
+                "home" -> stringResource(id = R.string.nav_home)
+                "group" -> stringResource(id = R.string.nav_group)
+                "friend" -> stringResource(id = R.string.nav_friend)
+                else -> route
+            }
+
+            val isSelected = currentRoute?.destination?.route == route
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .weight(1f)
+                    .clickable {
+                        if (!isSelected) {  // 클릭된 목적지가 현재 경로와 다를때만 실행(중복 클릭 방지)
+                            navController.navigate(route) {
+                                // 시작 화면으로 돌아가는 경로 저장
+                                // 시작 화면 자체는 제거하지 않고, 그위의 스택만 제거
+                                popUpTo(navController.graph.startDestinationId) { inclusive = false }
+
+                                // 스택의 맨 위에 현재 화면이 있는 경우, 재생성 하지 않음
+                                // 중복된 화면 인스턴스 방지
+                                launchSingleTop = true
                             }
-                            launchSingleTop = true
-                            restoreState = true
                         }
                     }
-                }
-            )
+            ) {
+                Icon(
+                    painter = painterResource(id = icon),
+                    contentDescription = route,
+                    tint = if (isSelected) Color.White else Color.Gray,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = route.uppercase(),
+                    fontSize = 12.sp,
+                    color = if (isSelected) Color.White else Color.Gray
+                )
+            }
+
         }
+
     }
 }
 
-// route와 표시할 데이터 매핑
-val routeToLabel = mapOf(
-    "work" to "근무일정",
-    "pill" to "알약찾기",
-    "home" to "홈",
-    "group" to "그룹",
-    "friend" to "친구"
-)
 
-data class NavItem(val route: String, val icon: Int)
-
+@SuppressLint("UnrememberedMutableState")
 @Preview(showBackground = true)
 @Composable
-fun BottomBarPreview() {
+fun BottomNav() {
     val navController = rememberNavController()
-    Box(
-        modifier = Modifier.fillMaxWidth() // Preview에서 너비를 가득 채우도록 설정
-    ) {
-        CustomBottomNavigation(navController)
-    }
+    CustomBottomNavigation(navController)
 }

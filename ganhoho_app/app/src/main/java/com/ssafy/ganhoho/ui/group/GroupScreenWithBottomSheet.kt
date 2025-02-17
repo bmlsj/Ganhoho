@@ -114,8 +114,8 @@ fun GroupBottomSheetContent(
 
     Column(
         modifier = Modifier
-            .height(300.dp)
-            .padding(top = 10.dp, start = 20.dp, end = 20.dp)
+            .height(340.dp)
+            .padding(top = 10.dp)
             .background(
                 color = Color.White,
                 shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
@@ -127,90 +127,118 @@ fun GroupBottomSheetContent(
             ),
         horizontalAlignment = Alignment.Start
     ) {
-        Text(
-            "그룹 정보 입력",
-            fontSize = 20.sp,
-            color = Color.Black,
-            modifier = Modifier.padding(vertical = 10.dp),
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // 이모지 선택 버튼
-        Row(
+        Column(
             modifier = Modifier
-                .height(49.dp)
-                .width(85.dp)
-                .border(1.dp, Color.LightGray, RoundedCornerShape(12.dp))
-                .padding(12.dp)
-                .padding(start = 5.dp, end = 2.dp)
-                .clickable { isDropdownExpanded = true }, //클릭하면 드롭다운 열림
-            verticalAlignment = Alignment.CenterVertically
-        ){
-            Image(
-                painter = painterResource(id = getGroupIconResource(selectedIcon)),
-                contentDescription="선택된 아이콘",
-                modifier = Modifier.size(24.dp)
-            )
+                .padding(start = 20.dp, end = 20.dp)
 
-            Spacer(modifier = Modifier.weight(1f))
-
-            Image(
-                painter = painterResource(id = R.drawable.icon_dropdown),
-                contentDescription = "드롭다운 버튼",
-                modifier = Modifier.size(24.dp)
-            )
-        }
-
-        //드롭다운 메뉴
-        DropdownMenu(
-            expanded = isDropdownExpanded,
-            onDismissRequest = { isDropdownExpanded = false },
-            Modifier
-                .background(Color.White, shape = RoundedCornerShape(12.dp))
-                .align(Alignment.CenterHorizontally)
-                .width(72.dp)
         ) {
-            iconList.forEach{iconId ->
-                DropdownMenuItem(
-                    onClick = {
-                        selectedIcon = iconId
-                        isDropdownExpanded = false
-                    },
-                    text = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+            Text(
+                "그룹 정보 입력",
+                fontSize = 20.sp,
+                color = Color.Black,
+                modifier = Modifier.padding(vertical = 10.dp),
+                fontWeight = FontWeight.Bold
+            )
 
-                        ){
-                            Image(
-                                painter = painterResource(id = getGroupIconResource(iconId)),
-                                contentDescription = "아이콘 $iconId",
-                                modifier = Modifier.size(25.dp)
-                            )
-                        }
-                    }
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // 이모지 선택 버튼
+            Row(
+                modifier = Modifier
+                    .height(49.dp)
+                    .width(85.dp)
+                    .border(1.dp, Color.LightGray, RoundedCornerShape(12.dp))
+                    .padding(12.dp)
+                    .padding(start = 5.dp, end = 2.dp)
+                    .clickable { isDropdownExpanded = true }, //클릭하면 드롭다운 열림
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Image(
+                    painter = painterResource(id = getGroupIconResource(selectedIcon)),
+                    contentDescription="선택된 아이콘",
+                    modifier = Modifier.size(24.dp)
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                Image(
+                    painter = painterResource(id = R.drawable.icon_dropdown),
+                    contentDescription = "드롭다운 버튼",
+                    modifier = Modifier.size(24.dp)
                 )
             }
+
+            //드롭다운 메뉴
+            DropdownMenu(
+                expanded = isDropdownExpanded,
+                onDismissRequest = { isDropdownExpanded = false },
+                Modifier
+                    .background(Color.White, shape = RoundedCornerShape(12.dp))
+                    .align(Alignment.CenterHorizontally)
+                    .width(72.dp)
+            ) {
+                iconList.forEach{iconId ->
+                    DropdownMenuItem(
+                        onClick = {
+                            selectedIcon = iconId
+                            isDropdownExpanded = false
+                        },
+                        text = {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+
+                            ){
+                                Image(
+                                    painter = painterResource(id = getGroupIconResource(iconId)),
+                                    contentDescription = "아이콘 $iconId",
+                                    modifier = Modifier.size(25.dp)
+                                )
+                            }
+                        }
+                    )
+                }
+            }
+
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 그룹 이름 입력 필드
+            OutlinedTextField(
+                value = groupName,
+                onValueChange = {
+                    if (it.text.length <= 8) {
+                        groupName = it
+                    }
+                },
+                placeholder = {
+                    Text(
+                        "그룹 이름을 입력해 주세요.",
+                        color = Color(0xFFB5B5B5),
+                        fontSize = 13.sp
+                    ) },
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(55.dp)
+                    .border(1.dp, Color.LightGray, RoundedCornerShape(12.dp))
+                    .background(Color.White)
+            )
+
+
+            // 그룹 이름 관련 글자 수 제한 안내 문구
+            Text("8자 이내로 입력해 주세요.",
+                color=Color(0xFF717171),
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 5.dp),
+                textAlign = TextAlign.Right)
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
 
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // 그룹 이름 입력 필드
-        OutlinedTextField(
-            value = groupName,
-            onValueChange = { groupName = it },
-            placeholder = { Text("그룹 이름을 입력해 주세요.", color = Color(0xFFB5B5B5)) },
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(55.dp)
-                .border(1.dp, Color.LightGray, RoundedCornerShape(12.dp))
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
 
         // 그룹 만들기 버튼
         Button(
@@ -225,10 +253,13 @@ fun GroupBottomSheetContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(53.dp)
+                .padding(horizontal = 20.dp) // 좌우 여백 추가
                 .shadow(elevation = 10.dp, shape = RoundedCornerShape(13.dp), clip = false)
         ) {
             Text("그룹 만들기", color = Color.White, fontSize = 18.sp, textAlign = TextAlign.Center)
         }
+
+
     }
 }
 

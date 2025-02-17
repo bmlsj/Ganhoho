@@ -14,26 +14,29 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.ssafy.ganhoho.BuildConfig
-import com.ssafy.ganhoho.data.model.dto.friend.FriendAddRequest
 import com.ssafy.ganhoho.data.model.dto.friend.FriendDto
 import com.ssafy.ganhoho.data.model.dto.member.MemberDto
+import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.FriendViewModel
 
 @Composable
@@ -42,8 +45,23 @@ fun FriendAdd(
     friendList: List<FriendDto>
 ) {
 
-    val token = BuildConfig.TOKEN
+    // 다이얼로그
+    var successDialog by remember { mutableStateOf(false) }
+    var errorDialog by remember { mutableStateOf(false) }
+
+  //  val token = BuildConfig.TOKEN
+    val authViewModel: AuthViewModel = viewModel()
     val friendViewModel: FriendViewModel = viewModel()
+
+    // 토큰 로드하기
+    val token = authViewModel.accessToken.collectAsState().value
+    val context = LocalContext.current
+
+    LaunchedEffect(token) {
+        if (token.isNullOrEmpty()) {
+            authViewModel.loadTokens(context)
+        }
+    }
 
     // ✅ 현재 검색된 회원이 이미 친구인지 확인
     val isFriend = friendList.any { it.friendLoginId == member.loginId }
@@ -54,12 +72,15 @@ fun FriendAdd(
 
         addFriendResult?.onSuccess { response ->
             if (response.success) {
-                Log.d("FriendAdd", "✅ 친구 추가 성공!")
+                Log.d("FriendAdd", "add friend success")
+                successDialog = true  // 친구 추가 시, 확인 다이얼로그 띄우기
             } else {
-                Log.d("FriendAdd", "❌ 친구 추가 실패!")
+                Log.d("FriendAdd", "add friend failed")
+
             }
         }?.onFailure { exception ->
-            Log.e("FriendAdd", "🚨 친구 추가 중 오류 발생: ${exception.message}")
+            Log.e("FriendAdd", "🚨 error: ${exception.message}")
+            errorDialog = true // ✅ 409 에러 발생 시 다이얼로그 표시
         }
     }
 
@@ -93,7 +114,7 @@ fun FriendAdd(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = "검색 @${member.loginId}",
+                        text = "@${member.loginId}",
                         color = Color.Gray,
                         fontSize = 14.sp
                     )
@@ -107,7 +128,7 @@ fun FriendAdd(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        member.hospital?.let {
+                        member.hospital?.takeIf { it.isNotBlank() }?.let {
                             Text(
                                 text = it,
                                 modifier = Modifier
@@ -122,7 +143,7 @@ fun FriendAdd(
                             )
                         }
 
-                        member.ward?.let {
+                        member.hospital?.takeIf { it.isNotBlank() }?.let {
                             Text(
                                 text = it,
                                 modifier = Modifier
@@ -151,9 +172,10 @@ fun FriendAdd(
                             )
                             .padding(horizontal = 18.dp, vertical = 4.dp)
                             .clickable(enabled = isClickable) {
-                                // TODO: 추가 버튼 누를 시,
                                 // 친구 리스트에 친구 추가(POST)하면, true/false 반환
-                                friendViewModel.addFriendList(token, member.loginId)
+                                if (token != null) {
+                                    friendViewModel.addFriendList(token, member.loginId)
+                                }
                             },
                         color = Color.White,
                         fontSize = 12.sp,
@@ -162,6 +184,34 @@ fun FriendAdd(
                 }
             }
         }
+    }
+
+    // ✅ 친구 신청 완료 다이얼로그
+    if (successDialog) {
+        AlertDialog(
+            onDismissRequest = { successDialog = false }, // ✅ 바깥 클릭 시 닫힘
+            confirmButton = {
+                Button(
+                    onClick = { successDialog = false } // ✅ 확인 버튼 클릭 시 닫힘
+                ) {
+                    Text("확인")
+                }
+            },
+            text = { Text("친구 신청이 완료되었습니다.") }
+        )
+    }
+
+    // ✅ 이미 요청된 친구 다이얼로그
+    if (errorDialog) {
+        AlertDialog(
+            onDismissRequest = { errorDialog = false },
+            confirmButton = {
+                Button(onClick = { errorDialog = false }) {
+                    Text("확인")
+                }
+            },
+            text = { Text("이미 요청된 친구입니다.") }
+        )
     }
 
 }

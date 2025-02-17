@@ -32,7 +32,7 @@ interface GroupService {
 
     // 그룹 목록 조회
     @GET("api/groups")
-    suspend fun getGroups(): List<GroupDto> // 데이터를 리스트 형태로 받아옴
+    suspend fun getGroups(): Response<List<GroupDto>>
 
     // 그룹 초대 링크 조회
     @GET("api/groups/link/{groupId}")

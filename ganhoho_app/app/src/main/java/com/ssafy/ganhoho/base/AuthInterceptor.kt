@@ -14,12 +14,13 @@ class AuthInterceptor(private val context: Context) : Interceptor {
         val originalRequest = chain.request()
 
         // ✅ 로그인 API 요청인 경우 `Authorization` 헤더를 추가하지 않음
-        if (originalRequest.url.encodedPath.contains("api/auth/login")) {
+        if (originalRequest.url.encodedPath.contains("api/auth")) {
             return chain.proceed(originalRequest)
         }
 
         // 로그인 요청이 아닌 경우, 토큰을 가져와서 헤더에 추가
         val token = runBlocking { SecureDataStore.getAccessToken(context).first() }
+        Log.d("AuthInterceptor", "Token before request: $token")
 
         if (!token.isNullOrEmpty()) {
             Log.d("AuthInterceptor", "Loaded Access Token: $token")

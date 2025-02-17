@@ -17,17 +17,15 @@ class ApplicationClass : Application() {
 
     companion object {
         lateinit var retrofit: Retrofit
-        lateinit var sharedPreferencesUtil: SharedPreferencesUtil
+        lateinit var kakaoRetrofit: Retrofit // ✅ 카카오 API Retrofit 추가
         const val SERVER_URL = BuildConfig.SERVER_URL
+        const val KAKAO_URL = "https://dapi.kakao.com/"
     }
 
     override fun onCreate() {
         super.onCreate()
         TokenManager.init(this) // 앱 실행 시 SharedPreferences 초기화
         Log.d("GanHohoApplication", "🚀 TokenManager 초기화됨")
-
-        // sharedPreferencesUtil 초기화
-        sharedPreferencesUtil = SharedPreferencesUtil(applicationContext)
 
         // 로그 찍기
         val loggingInterceptor = HttpLoggingInterceptor { message ->
@@ -37,10 +35,9 @@ class ApplicationClass : Application() {
             } catch (e: Exception) {
                 Log.e("POST", "log: message (decode failed) $message")
             }
-        }
+        }.setLevel(HttpLoggingInterceptor.Level.BODY)
 
-        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
-
+        // ✅ 기본 서버 API용 클라이언트
         val client = OkHttpClient.Builder()
             .readTimeout(5000, TimeUnit.MILLISECONDS)
             .connectTimeout(5000, TimeUnit.MILLISECONDS)
@@ -48,19 +45,31 @@ class ApplicationClass : Application() {
             .addInterceptor(loggingInterceptor)
             .build()
 
+        // ✅ 카카오 API용 클라이언트 (별도 Interceptor 추가)
+        val kakaoClient = OkHttpClient.Builder()
+            .readTimeout(5000, TimeUnit.MILLISECONDS)
+            .connectTimeout(5000, TimeUnit.MILLISECONDS)
+            .addInterceptor(KakaoInterceptor()) // ✅ 카카오 API 전용 Interceptor 추가
+            .addInterceptor(loggingInterceptor)
+            .build()
 
         val gson: Gson = GsonBuilder()
             .setLenient()
             .disableHtmlEscaping()
             .create()
 
-        // retrofit 인스턴스
+        // ✅ 서버 API Retrofit 인스턴스
         retrofit = Retrofit.Builder()
             .baseUrl(SERVER_URL)
             .client(client)
-            //     .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
 
+        // ✅ 카카오 API Retrofit 인스턴스 추가
+        kakaoRetrofit = Retrofit.Builder()
+            .baseUrl(KAKAO_URL)
+            .client(kakaoClient)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
     }
 }
