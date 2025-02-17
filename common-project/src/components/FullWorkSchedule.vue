@@ -42,10 +42,9 @@ const calendarBodyRef = ref(null)
 
 onMounted(async () => {
   // 1) 캘린더 데이터 생성
-  await store.fetchData();
   store.generateCalendar();
   console.log("📢 generateCalendar 호출 후:", store.calendar);
-
+  console.log("달력인데 달력이야 달력이야:",store.calendar)
   // 2) DOM 업데이트 후 처리
   await nextTick();
   // setTimeout으로 100ms 지연 후 실행
