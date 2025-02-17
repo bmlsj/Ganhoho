@@ -1,4 +1,3 @@
-<!--FullWorkScheduleView.vue -->
 <template>
   <div class="container">
     <div class="header">
@@ -7,19 +6,62 @@
           {{ store.currentYear || defaultYear }}년 {{ store.currentMonth || defaultMonth }}월
         </div>
         <div class="button-group right-item">
-          <button class="btn-gallery" @click="openGallery">
-            <img class=gallery-image :src="gallery" alt="이미지 등록" />
-          </button>
-          <button class="btn-toggle" @click="toggleView">
-            <img class=toggle-image :src="isWeekly ? toggleon : toggleoff" alt="주 단위 보기" />
-          </button>
+          <!-- 갤러리 버튼 래퍼 -->
+          <div class="button-wrapper">
+            <button
+              ref="galleryButton"
+              :class="{
+                'btn-gallery': true,
+                'tuto-button': tutorialStep === 1 && isFirstVisit,
+                'target-circle': tutorialStep === 1 && isFirstVisit
+              }"
+              @click="openGallery"
+            >
+              <img class="gallery-image" :src="gallery" alt="이미지 등록" />
+            </button>
+
+            <!-- 갤러리 말풍선 (tutorialStep 1) -->
+            <div
+              v-if="tutorialStep === 1 && isFirstVisit"
+              class="explanation-text gallery-explanation"
+            >
+              이미지를 등록해보세요!
+            </div>
+          </div>
+
+          <!-- 토글 버튼 래퍼 -->
+          <div class="button-wrapper">
+            <button
+              ref="toggleButton"
+              :class="{
+                'btn-toggle': true,
+                'tuto-button': tutorialStep === 2 && isFirstVisit,
+                'target-circle': tutorialStep === 2 && isFirstVisit
+              }"
+              @click="toggleView"
+            >
+              <img class="toggle-image" :src="isWeekly ? toggleon : toggleoff" alt="주 단위 보기" />
+            </button>
+
+            <!-- 토글 말풍선 (tutorialStep 2) -->
+            <div
+              v-if="tutorialStep === 2 && isFirstVisit"
+              class="explanation-text toggle-explanation"
+            >
+              주 단위 / 전체 보기를<br />전환할 수 있어요!
+            </div>
+          </div>
         </div>
         <!-- 튜토리얼 시 배경 블러 -->
-        <div :class="{'overlay': tutorialStep === 1 && isFirstVisit}"></div>
+        <div :class="{'overlay': (tutorialStep === 1 || tutorialStep === 2) && isFirstVisit}"></div>
       </div>
       <!-- 요일 헤더 -->
       <div class="weekdays">
-        <span v-for="(day, index) in [''].concat(weekDays)" :key="index" :class="{ sunday: index === 1 }">
+        <span
+          v-for="(day, index) in [''].concat(weekDays)"
+          :key="index"
+          :class="{ sunday: index === 1 }"
+        >
           {{ day }}
         </span>
       </div>
@@ -40,6 +82,7 @@
     />
   </div>
 </template>
+
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
@@ -69,11 +112,15 @@ const galleryInput = ref(null)
 
 const nextTutorialStep = async () => {
   if (tutorialStep.value === 1) {
-    tutorialStep.value = 2
-    localStorage.setItem('visitedFullWorkSchedule', 'true')
-    isFirstVisit.value = false
-    await nextTick()
-    document.removeEventListener('click', nextTutorialStep)
+    // 첫 단계: 갤러리 효과 종료, 토글 효과 활성화
+    tutorialStep.value = 2;
+    // 필요시 여기서 토글 효과와 관련한 추가 로직을 넣으세요.
+  } else if (tutorialStep.value === 2) {
+    // 두 번째 단계: 튜토리얼 종료
+    tutorialStep.value = 3;
+    localStorage.setItem('visitedFullWorkSchedule', 'true');
+    isFirstVisit.value = false;
+    document.removeEventListener('click', nextTutorialStep);
   }
 }
 
@@ -120,9 +167,89 @@ onUnmounted(() => {
 })
 </script>
 
-
 <style scoped>
-/* 부모 컨테이너: 전체 화면을 사용 */
+/* 버튼 래퍼: 상대 위치로 두어 내부의 절대 요소 기준이 됨 */
+.button-wrapper {
+  position: relative;
+  display: inline-block;
+  /* flex container 내에서도 공간 차지를 최소화 */
+}
+
+/* 타겟 효과 및 애니메이션 (해당 버튼에 원형 효과) */
+.tuto-button {
+  width: 30px;
+  height: 30px;
+  position: relative;
+  z-index: 200;
+  background-color: #dceaf7;
+  border-radius: 50%;
+  animation: dungdung 1.0s linear alternate infinite;
+}
+.target-circle {
+  position: relative;
+  z-index: 200;
+  background: #dceaf7;
+  border-radius: 50%;
+}
+
+/* 공통 말풍선 스타일 */
+.explanation-text {
+  position: absolute;
+  background: #fff;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 300;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+/* 갤러리 말풍선 위치: 갤러리 버튼 위에 덮어씀 */
+.gallery-explanation {
+  top: 10%;
+  right:35px;
+  /* 중앙 정렬하려면 필요에 따라 transform 사용 가능 */
+  animation: dungdung 1.0s linear alternate infinite;
+}
+
+/* 오른쪽 꼬리 (갤러리 말풍선) */
+.gallery-explanation::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -12px;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+  border-left-color: #fff;
+}
+
+/* 토글 말풍선 위치: 토글 버튼 위에 덮어씀 */
+.toggle-explanation {
+  top: 1%;
+  right: 35px;
+  transform: translateY(-50%);
+  animation: dungdung 1.0s linear alternate infinite;
+}
+
+/* 오른쪽 꼬리 (토글 말풍선) */
+.toggle-explanation::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -12px;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+  border-left-color: #fff;
+}
+
+/* 기타 기존 스타일들은 그대로 유지 */
 .container {
   position: relative;
   font-family: Arial, sans-serif;
@@ -130,10 +257,8 @@ onUnmounted(() => {
   margin: 0 auto;
   padding: 16px;
   flex-direction: column;
-  height: 100vh; /* 전체 화면 사용 */
+  height: 100vh;
 }
-
-/* 헤더 영역: 헤더는 고정되지 않고, 콘텐츠 영역과 별도로 분리 */
 .header {
   position: sticky;
   top: 0;
@@ -141,47 +266,43 @@ onUnmounted(() => {
   z-index: 10;
   border-bottom: 1px solid #ddd;
 }
-
-/* 헤더 내부 */
 .header-row {
   display: grid;
-  grid-template-columns: repeat(12, 1fr); /* 12등분 */
+  grid-template-columns: repeat(12, 1fr);
   align-items: center;
   padding: 8px;
-  white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+  white-space: nowrap;
 }
-
-/* 왼쪽 요소: 1번 칸부터 2칸 차지 */
 .left-item {
   grid-column: 1 / span 2;
 }
-
-/* 오른쪽 요소: 11번 칸부터 2칸 차지 (12칸 중 끝에서 2칸) */
 .right-item {
   grid-column: 11 / span 2;
 }
-
 .year-month {
-  padding-left:8px;
+  padding-left: 8px;
   font-size: 18px;
   font-weight: bold;
 }
+.button-group {
+  display: flex;
+}
 .button-group button {
-  padding-left: 3px;
+  padding-left: 1px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   background: transparent;
 }
 .gallery-image {
-  width: 28px;  
+  width: 28px;
   height: auto;
   display: block;
 }
 .toggle-image {
-  width:28px;
-  height:auto;
-  display:block;
+  width: 28px;
+  height: auto;
+  display: block;
 }
 .btn-gallery,
 .btn-toggle {
@@ -191,7 +312,6 @@ onUnmounted(() => {
   cursor: pointer;
   font-size: 1px;
 }
-/* 요일 헤더 */
 .weekdays {
   display: grid;
   grid-template-columns: 55px repeat(7, 1fr);
@@ -203,22 +323,28 @@ onUnmounted(() => {
 .sunday {
   color: red;
 }
-
-/* 콘텐츠 영역: 헤더 아래에서 스크롤 */
 .content {
   overflow-y: auto;
 }
-
-/* 튜토리얼 배경 블러 */
 .overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(2px);
   z-index: 100;
 }
+
+@keyframes dungdung {
+  from {
+    transform: translateY(-5px);
+  }
+  to {
+    transform: translateY(5px);
+  }
+}
+
 </style>
 
