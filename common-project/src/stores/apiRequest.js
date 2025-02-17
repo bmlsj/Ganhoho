@@ -303,7 +303,7 @@ export const useApiStore = defineStore('api', () => {
       const response = await axios.post(`${API_URL}/api/medicines/upload-image`, formData, {
         headers: {
           Authorization: `Bearer ${token.value}`,
-          "Content-Type": "multipart/form-data",
+          //"Content-Type": "multipart/form-data",
         },
       });
 
@@ -322,7 +322,7 @@ export const useApiStore = defineStore('api', () => {
         // window.location.href = `/pill-detail/${medicineId}`
       }
     } catch (error) {
-      console.error("🚨 이미지 업로드 오류:", error);
+      onsole.error("🚨 이미지 업로드 오류:", error.response ? error.response.data : error.message);
       if (error.response) {
         const { status, message } = error.response.data;
         if (status === 400) {
