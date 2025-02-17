@@ -12,7 +12,7 @@
           <div v-for="(day, dayIndex) in week" :key="dayIndex" class="date">
             {{ day || '' }}
           </div>
-        </div>
+        </div>  
         <div v-for="person in store.people" :key="person.name" class="person-row">
           <div class="person-name">{{ person.name }}</div>
           <div class="person-schedule">
@@ -24,7 +24,7 @@
               :style="{ visibility: day === null ? 'hidden' : 'visible' }"
             >
               {{ person.schedule[day] || '-' }}
-              {{ logSchedule(person, day) }}
+              
             </div>
           </div>
         </div>
@@ -98,7 +98,7 @@ onMounted(async () => {
   /* 자식 컴포넌트도 flex 컨테이너로 */
   display: flex;
   flex-direction: column;
-  flex: 1; /* 부모에서 넘겨준 공간 전부 사용 */
+  flex: 1; 
   overflow-y:auto;
 }
 
@@ -108,7 +108,6 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  max-height:100vh;
 }
 
 .week {
