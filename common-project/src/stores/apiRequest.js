@@ -1,9 +1,12 @@
+// stores/apiRequest.js
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import axios from 'axios';
-// 1) 방금 만든 마스킹 함수 가져오기
+// 1) 마스킹 함수 가져오기
 import { maskURL, maskToken } from '@/utils/mask.js';
 import { useLoadingStore } from '@/stores/loadingStore';
+// ** AlertStore 가져오기 **
+import { useAlertStore } from '@/stores/alertStore.js';
 
 // axios 인터셉터 등록
 axios.interceptors.request.use(
@@ -33,6 +36,9 @@ axios.interceptors.response.use(
 )
 
 export const useApiStore = defineStore('api', () => {
+  // AlertStore 인스턴스 생성 (store 내에서 전역 알림 호출)
+  const alertStore = useAlertStore();
+
   const people = ref([]);
   const calendar = ref([]);
   const currentYear = ref(null);
@@ -49,8 +55,6 @@ export const useApiStore = defineStore('api', () => {
   const token = ref(localStorage.getItem("token") || null);
   const refreshToken = ref(localStorage.getItem("refresh_token") || null);
 
-  //token.value ="eyJhbGciOiJIUzI1NiJ9.eyJtZW1iZXJJZCI6OCwiaWF0IjoxNzM5NjgzMjYzLCJleHAiOjE3Mzk3Njk2NjN9.5KmPHuxwU_GMkUXFENU3EU_FfHRHU6FeGM04kse40Mc"
-
   const setToken = (access_token, refresh_token) => {
     token.value = access_token;
     refreshToken.value = refresh_token;
@@ -58,16 +62,12 @@ export const useApiStore = defineStore('api', () => {
     localStorage.setItem("refresh_token", refresh_token);
   }
 
-  // (예시) 토큰 디버그 로그 -> 마스킹 처리
-  // console.log("현재 토큰:", maskToken(token.value));
-
   const fetchData = async () => {
     try {
       if (isDataLoaded.value) {
         console.log("📢 기존 데이터 있음 → GET 요청 생략");
         return;
       }
-      // 마스킹된 URL만 로그에 찍기
       console.log("🔍 API 요청 URL:", maskURL(`${API_URL}/api/schedules/ocr`));
 
       const response = await axios.get(`${API_URL}/api/schedules/ocr`, {
@@ -89,11 +89,11 @@ export const useApiStore = defineStore('api', () => {
           people.value = responseData.map((person) => ({
             name: person.name,
             schedule: person.scheduleData.reduce((acc, day) => {
-              acc[day.day] = typeMapping[day.type] || day.type
-              return acc
+              acc[day.day] = typeMapping[day.type] || day.type;
+              return acc;
             }, {}),
-          }))
-          console.log("피!!!플!!!!:",people.value)
+          }));
+          console.log("피!!!플!!!!:", people.value);
           isDataLoaded.value = true;
           generateCalendar();
         }
@@ -111,38 +111,32 @@ export const useApiStore = defineStore('api', () => {
   
     console.log("달력 생성 시작 - 연도:", currentYear.value, "월:", currentMonth.value);
   
-    // 1일의 요일(0: 일요일 ~ 6: 토요일)과 마지막 날짜 계산
     let firstDay = new Date(currentYear.value, currentMonth.value - 1, 1).getDay();
     const lastDate = new Date(currentYear.value, currentMonth.value, 0).getDate();
     console.log("첫번째 날의 요일 인덱스:", firstDay);
     console.log("해당 월의 마지막 날짜:", lastDate);
   
     let calendarData = [];
-    // 인덱스를 1부터 사용하기 위해 첫 번째 요소를 null로 시작
     let week = [null, ...new Array(7).fill(null)];
     console.log("초기 week 배열:", week);
   
-    // 첫 주의 시작 전 빈 칸 설정 (이미 null로 채워져 있지만, 디버깅용으로 반복문 기록)
     for (let i = 1; i <= firstDay; i++) {
       week[i] = null;
     }
     console.log("빈 칸 설정 후 week 배열:", week);
   
-    // 날짜를 week 배열에 채워 넣기
     for (let day = 1; day <= lastDate; day++) {
-      // 현재 요일 위치: (firstDay % 7) + 1 인덱스에 할당
       const index = (firstDay % 7) + 1;
       week[index] = day;
       console.log(`날짜 ${day}는 인덱스 ${index}에 할당됨 -> week:`, week);
       firstDay++;
   
-      // 한 주가 끝났거나 마지막 날짜인 경우 week 배열을 calendarData에 저장
       if (firstDay % 7 === 0 || day === lastDate) {
         console.log(
           `한 주가 완료되었거나 마지막 날짜에 도달 (firstDay: ${firstDay}, day: ${day}). week 배열 저장:`,
           week
         );
-        calendarData.push([...week]); // 현재 week 배열 복사해서 추가
+        calendarData.push([...week]);
         week = [null, ...new Array(7).fill(null)];
         console.log("다음 주를 위해 week 배열 초기화:", week);
       }
@@ -151,13 +145,11 @@ export const useApiStore = defineStore('api', () => {
     calendar.value = calendarData;
     console.log("최종 생성된 달력 데이터:", calendar.value);
   };
-  
 
   const sendImageToAPI = async (file) => {
     const formData = new FormData();
     formData.append('ocrImg', file);
 
-    // 마스킹된 URL 로그
     console.log("🔍 API 요청 URL:", maskURL(`${API_URL}/api/schedules/ocr`));
 
     try {
@@ -170,7 +162,8 @@ export const useApiStore = defineStore('api', () => {
 
       if (response.status === 200) {
         console.log('✅ 이미지 업로드 성공:', response.data);
-        alert('이미지 업로드 성공!');
+        // 기본 alert 대신 커스텀 alert 호출
+        alertStore.showAlert('이미지 업로드 성공!');
 
         // store 리셋
         people.value = [];
@@ -183,21 +176,18 @@ export const useApiStore = defineStore('api', () => {
         await fetchData();
       } else {
         console.error('업로드 실패:', response.data);
-        alert('업로드 실패');
+        alertStore.showAlert('업로드 실패');
       }
     } catch (error) {
       console.error('API 요청 오류:', error);
-      alert('서버 오류로 업로드 실패');
+      alertStore.showAlert('서버 오류로 업로드 실패');
     }
   };
 
   const fetchMedicineList = async (itemName) => {
     try {
-      // 검색 로그
       console.log("검색 요청:", itemName);
-      // 마스킹된 토큰 로그
       console.log("토큰:", maskToken(token.value));
-      // 마스킹된 URL 로그
       console.log("API URL:", maskURL(API_URL));
 
       const response = await axios.get(`${API_URL}/api/medicines/search`, {
@@ -237,7 +227,6 @@ export const useApiStore = defineStore('api', () => {
           status: error.response.status,
           data: error.response.data,
           headers: error.response.headers,
-          // URL도 마스킹 가능
           config: {
             ...error.response.config,
             url: maskURL(error.response.config.url)
@@ -293,7 +282,7 @@ export const useApiStore = defineStore('api', () => {
   const uploadMedicineImage = async (file) => {
     if (!file) {
       console.error("🚨 업로드할 파일이 없습니다.");
-      alert("이미지를 선택해 주세요.");
+      alertStore.showAlert("이미지를 선택해 주세요.");
       return;
     }
 
@@ -304,13 +293,12 @@ export const useApiStore = defineStore('api', () => {
       const response = await axios.post(`${API_URL}/api/medicines/upload-image`, formData, {
         headers: {
           Authorization: `Bearer ${token.value}`,
-          // "Content-Type": "multipart/form-data",  // 브라우저가 자동으로 처리
         },
       });
 
       if (response.status === 200) {
         console.log("✅ 이미지 업로드 성공:", response.data);
-        alert("이미지 업로드 성공!");
+        alertStore.showAlert("이미지 업로드 성공!");
 
         // store 리셋
         people.value = [];
@@ -322,14 +310,12 @@ export const useApiStore = defineStore('api', () => {
         // 새로 fetch
         await fetchData();
 
-        // medicineId를 store에 저장 (서버가 반환한 값)
         const id = response.data.medicineInfo?.[0]?.ITEM_SEQ;
         console.log("약!!!!!!!!!!!!!!!!!!!", id);
         if (!id) {
-          alert("인식에 실패했습니다. 다시 시도해 주세요.");
+          alertStore.showAlert("인식에 실패했습니다. 다시 시도해 주세요.");
           return;
         }
-        // medicineId 업데이트
         medicineId.value = id;
       }
     } catch (error) {
@@ -337,16 +323,16 @@ export const useApiStore = defineStore('api', () => {
       if (error.response) {
         const { status, message } = error.response.data;
         if (status === 400) {
-          alert("🚨 잘못된 이미지 형식입니다. (INVALID_IMAGE_FORMAT)");
+          alertStore.showAlert("🚨 잘못된 이미지 형식입니다. (INVALID_IMAGE_FORMAT)");
         } else if (status === 401) {
-          alert("🚨 인증되지 않은 사용자입니다. 로그인 후 이용해 주세요. (UNAUTHORIZED)");
+          alertStore.showAlert("🚨 인증되지 않은 사용자입니다. 로그인 후 이용해 주세요. (UNAUTHORIZED)");
         } else if (status === 404) {
-          alert("🚨 약 정보를 찾을 수 없습니다. (NOT_FOUND)");
+          alertStore.showAlert("🚨 약 정보를 찾을 수 없습니다. (NOT_FOUND)");
         } else {
-          alert(`🚨 오류 발생: ${message}`);
+          alertStore.showAlert(`🚨 오류 발생: ${message}`);
         }
       } else {
-        alert("🚨 네트워크 오류가 발생했습니다.")
+        alertStore.showAlert("🚨 네트워크 오류가 발생했습니다.");
       }
     }
   };
