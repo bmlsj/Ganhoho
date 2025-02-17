@@ -81,15 +81,6 @@ const getCurrentWeekRange = computed(() => {
   return `${firstDay}일 - ${lastDay}일`
 })
 
-// 이전 주로 이동
-const prevWeek = () => {
-  if (currentWeekIndex.value > 0) currentWeekIndex.value--
-}
-
-// 다음 주로 이동
-const nextWeek = () => {
-  if (currentWeekIndex.value < weeks.value.length - 1) currentWeekIndex.value++
-}
 
 // 마운트 시, 오늘 날짜가 포함된 주를 자동 선택
 onMounted(() => {
@@ -140,6 +131,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  max-height: 75vh;
 }
 
 .weekly-schedule .dates {

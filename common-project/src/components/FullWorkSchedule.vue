@@ -39,6 +39,8 @@ import { useApiStore } from '@/stores/apiRequest'
 
 const store = useApiStore()
 
+
+
 onMounted(async () => {
   // 1) 캘린더 데이터 생성
   store.generateCalendar();
@@ -65,6 +67,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  max-height: 75vh;
 }
 
 .week {
