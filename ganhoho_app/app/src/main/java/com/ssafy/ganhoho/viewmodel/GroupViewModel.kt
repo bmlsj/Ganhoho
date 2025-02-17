@@ -37,7 +37,11 @@ class GroupViewModel (
     //그룹 목록 출력
     fun fetchGroupList() {
         viewModelScope.launch {
-            val result = repository.getGroupList() // API 호출
+            val token = tokenManager.getAccessToken() ?: run {
+                Log.e("GroupViewModel", "no token!!!")
+                return@launch
+            }
+            val result = repository.getGroupList(token) // API 호출
             result.onSuccess { groups ->
                 _groupList.value = groups
             }.onFailure { error ->

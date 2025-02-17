@@ -12,9 +12,9 @@ import com.ssafy.ganhoho.data.remote.RetrofitUtil
 class GroupRepository {
 
     // 그룹 목록 조회
-    suspend fun getGroupList(): Result<List<GroupDto>> {
+    suspend fun getGroupList(token: String): Result<List<GroupDto>> {
         return try {
-            val response = RetrofitUtil.groupService.getGroups()
+            val response = RetrofitUtil.groupService.getGroups("Bearer $token")
             handleResponse(response)
         } catch (e: Exception) {
             Log.e("GroupRepository", "Error fetching group list", e)

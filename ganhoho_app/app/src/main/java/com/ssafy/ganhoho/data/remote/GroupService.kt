@@ -32,7 +32,9 @@ interface GroupService {
 
     // 그룹 목록 조회
     @GET("api/groups")
-    suspend fun getGroups(): Response<List<GroupDto>>
+    suspend fun getGroups(
+        @Header("Authorization") token: String,
+    ): Response<List<GroupDto>>
 
     // 그룹 초대 링크 조회
     @GET("api/groups/link/{groupId}")
