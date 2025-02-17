@@ -10,13 +10,11 @@
       <div v-for="(week, weekIndex) in store.calendar" :key="weekIndex" class="week">
         <div class="dates">
           <div v-for="(day, dayIndex) in week" :key="dayIndex" class="date">
-            <p>{{ debuggedValue }}</p>
             {{ day || '' }}
           </div>
         </div>
         <div v-for="person in store.people" :key="person.name" class="person-row">
           <div class="person-name">{{ person.name }}</div>
-          <p>{{ debuggedValue }}</p>
           <div class="person-schedule">
             <div
               v-for="(day, dayIndex) in week.slice(1, 8)"
@@ -25,8 +23,8 @@
               :class="person.schedule[day]?.toLowerCase()"
               :style="{ visibility: day === null ? 'hidden' : 'visible' }"
             >
-            <p>{{ debuggedValue }}</p>
               {{ person.schedule[day] || '-' }}
+              {{ logSchedule(person, day) }}
             </div>
           </div>
         </div>
@@ -40,6 +38,10 @@ import { ref, onMounted, nextTick,computed } from 'vue'
 import { useApiStore } from '@/stores/apiRequest'
 
 const store = useApiStore()
+const logSchedule = (person, day) => {
+  console.log(`🗓️ ${person.name}의 일정 (${day}):`, person.schedule[day]);
+  return person.schedule[day] || '-';
+};
 
 // 스크롤 대상 요소
 const calendarBodyRef = ref(null)
