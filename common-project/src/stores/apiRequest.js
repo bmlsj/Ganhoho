@@ -3,34 +3,34 @@ import { ref } from 'vue';
 import axios from 'axios';
 // 1) 방금 만든 마스킹 함수 가져오기
 import { maskURL, maskToken } from '@/utils/mask.js';
-// import { useLoadingStore } from '@/stores/loadingStore';
+import { useLoadingStore } from '@/stores/loadingStore';
 
 // axios 인터셉터 등록
-// axios.interceptors.request.use(
-//   (config) => {
-//     const loadingStore = useLoadingStore();
-//     loadingStore.startLoading();
-//     return config;
-//   },
-//   (error) => {
-//     const loadingStore = useLoadingStore();
-//     loadingStore.stopLoading();
-//     return Promise.reject(error);
-//   }
-// );
+axios.interceptors.request.use(
+  (config) => {
+    const loadingStore = useLoadingStore();
+    loadingStore.startLoading();
+    return config;
+  },
+  (error) => {
+    const loadingStore = useLoadingStore();
+    loadingStore.stopLoading();
+    return Promise.reject(error);
+  }
+);
 
-// axios.interceptors.response.use(
-//   (response) => {
-//     const loadingStore = useLoadingStore();
-//     loadingStore.stopLoading();
-//     return response;
-//   },
-//   (error) => {
-//     const loadingStore = useLoadingStore();
-//     loadingStore.stopLoading();
-//     return Promise.reject(error);
-//   }
-// )
+axios.interceptors.response.use(
+  (response) => {
+    const loadingStore = useLoadingStore();
+    loadingStore.stopLoading();
+    return response;
+  },
+  (error) => {
+    const loadingStore = useLoadingStore();
+    loadingStore.stopLoading();
+    return Promise.reject(error);
+  }
+)
 
 export const useApiStore = defineStore('api', () => {
   const people = ref([]);
