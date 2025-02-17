@@ -325,7 +325,7 @@ export const useApiStore = defineStore('api', () => {
         // window.location.href = `/pill-detail/${medicineId}`
       }
     } catch (error) {
-      onsole.error("🚨 이미지 업로드 오류:", error.response ? error.response.data : error.message);
+      console.error("🚨 이미지 업로드 오류:", error.response ? error.response.data : error.message);
       if (error.response) {
         const { status, message } = error.response.data;
         if (status === 400) {
