@@ -21,9 +21,13 @@
            :key="index" 
            class="pill-card"
            @click="goToDetailPage(pill.id)">
-        <div class="pill-image-container">
-          <img :src="pill.imageSrc || defaultImage" :alt="pill.name" class="pill-image" />
+           
+        <!-- pill.imageSrc가 있을 때만 이미지 영역 렌더링 -->
+        <div v-if="pill.imageSrc" class="pill-image-container">
+          <img :src="pill.imageSrc" :alt="pill.name" class="pill-image" />
         </div>
+        
+        <!-- 이미지 영역이 없으면 자동으로 pill-info가 전체 너비를 차지 -->
         <div class="pill-info">
           <h3 class="pill-name">{{ pill.name }}</h3>
           <p class="pill-content">{{ pill.content }}</p>
@@ -40,7 +44,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue"
+import { ref, onMounted } from "vue"
 import { useRouter } from "vue-router"
 import { useApiStore } from "@/stores/apiRequest"
 import maskGroup from '@/assets/mask-group0.svg'
@@ -74,29 +78,24 @@ onMounted(async () => {
       console.error("토큰이 없습니다. 로그인이 필요합니다.");
       return;
     }
-    // 초기 로딩 시에는 빈 목록으로 시작
     filteredMedicineList.value = [];
   } catch (error) {
     console.error("초기화 중 오류 발생:", error);
     filteredMedicineList.value = [];
   }
 
-  // ✅ 앱에서 호출할 전역 함수 등록
   document.addEventListener('tokenReceived', (e) => {
     const { access_token, refresh_token } = e.detail
     console.log("Component - Token received via event:", access_token)
     apiStore.setToken(access_token, refresh_token)
   })
 
-  // ① 네이티브 앱에게 카메라를 열도록 요청하는 함수 등록
   window.openNativeCamera = function() {
     console.log("window.openNativeCamera 호출됨");
-    // iOS: WKWebView의 messageHandler 호출 예시
     if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.openCamera) {
       console.log("iOS 네이티브 openCamera 호출");
       window.webkit.messageHandlers.openCamera.postMessage(null);
     } 
-    // Android: 웹뷰에 주입된 인터페이스(예: AndroidInterface)를 통한 호출
     else if (window.AndroidCameraInterface && typeof window.AndroidCameraInterface.openCamera === 'function') {
       console.log("Android 네이티브 openCamera 호출");
       window.AndroidCameraInterface.openCamera();
@@ -106,7 +105,6 @@ onMounted(async () => {
     }
   }
 
-  // ② 네이티브 앱에서 사진 촬영 후 호출할 콜백 함수 등록  
   window.onImageCaptured = function(imageData) {
     console.log("window.onImageCaptured 호출됨, imageData:", imageData);
     let dataUrl = imageData.startsWith("data:image/")
@@ -140,7 +138,6 @@ onMounted(async () => {
   }
 });
 
-// ✅ 약 상세 페이지 이동
 const goToDetailPage = (medicineId) => {
   console.log("📢 이동할 약 ID:", medicineId);
   if (!medicineId) {
@@ -150,7 +147,6 @@ const goToDetailPage = (medicineId) => {
   router.push(`/pill-detail/${medicineId}`);
 };
 
-// ✅ 카메라 버튼 클릭 시 네이티브 함수 호출
 const triggerCamera = () => {
   console.log("triggerCamera 호출됨");
   if (window.openNativeCamera && typeof window.openNativeCamera === "function") {
@@ -172,7 +168,7 @@ const triggerCamera = () => {
 
 .search-header {
   display: flex;
-  grid-column: 1 / -1; /* 전체 너비 사용 */
+  grid-column: 1 / -1;
   align-items: center;
   background: #ffffff;
   border-radius: 20px;
@@ -181,18 +177,18 @@ const triggerCamera = () => {
   box-shadow: inset 0px 4px 4px rgba(0, 0, 0, 0.05);
   padding: 0 10px;
   margin: 0 auto 3vh;
-  position: sticky; /* ✅ 스크롤 시 고정 */
-  top: 15px; /* ✅ 상단에 고정 */
-  z-index: 100; /* ✅ 다른 요소 위에 표시 */
+  position: sticky;
+  top: 15px;
+  z-index: 100;
 }
 .search-header::before {
   content: "";
   position: absolute; 
-  top: -15px; /* ✅ 기존의 틈을 메우기 */
+  top: -15px;
   left: 0;
   width: 100%;
-  height: 17px; /* ✅ 틈만큼 높이 설정 */
-  background: #ffffff; /* ✅ 헤더 배경색과 동일하게 */
+  height: 17px;
+  background: #ffffff;
 }
 .mask-group {
   position: absolute;
@@ -225,14 +221,10 @@ const triggerCamera = () => {
   aspect-ratio: 1 / 1;
 }
 
-/* ✅ 숨겨진 파일 선택 input */
 .hidden-input {
   display: none;
 }
 
-
-
-/* ✅ 검색 결과 없음 */
 .no-results {
   text-align: center;
   color: gray;
@@ -286,27 +278,27 @@ const triggerCamera = () => {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 2px; /* 글자 요소들 사이 간격 축소 */
+  gap: 2px;
 }
 
 .pill-name {
   font-size: 15px;
   font-weight: bold;
   color: #333;
-  margin-bottom: 2px; /* 간격 축소 */
-  line-height: 1.2; /* 줄 간격 축소 */
+  margin-bottom: 2px;
+  line-height: 1.2;
 }
 
 .pill-content {
   font-size: 13px;
   color: #666;
-  margin-bottom: 2px; /* 간격 축소 */
-  line-height: 1.2; /* 줄 간격 축소 */
+  margin-bottom: 2px;
+  line-height: 1.2;
 }
 
 .pill-expiry {
   font-size: 12px;
   color: #888;
-  line-height: 1.2; /* 줄 간격 축소 */
+  line-height: 1.2;
 }
 </style>
