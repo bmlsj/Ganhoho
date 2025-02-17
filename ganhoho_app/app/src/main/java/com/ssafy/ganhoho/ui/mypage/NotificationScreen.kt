@@ -14,9 +14,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -28,15 +32,19 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.firebase.messaging.FirebaseMessaging
 import com.ssafy.ganhoho.data.model.dto.notification.Notification
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.NotifiViewModel
+import kotlinx.coroutines.delay
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
@@ -46,7 +54,7 @@ fun NotificationScreen(navController: NavController) {
     val authViewModel: AuthViewModel = viewModel()
 
     val notificationState = notifiViewModel.notifcations.collectAsState().value
-    val notifications = notificationState?.getOrNull() ?: emptyList()
+    var notifications by remember { mutableStateOf(emptyList<Notification>()) }
 
     // fcm 토큰 불러오기
     val fcmToken = remember { mutableStateOf<String?>(null) }
@@ -57,6 +65,21 @@ fun NotificationScreen(navController: NavController) {
                 fcmToken.value = task.result
             } else {
                 fcmToken.value = null
+            }
+        }
+    }
+
+
+    // ✅ 새로운 알림이 추가될 때 리스트 자동 업데이트
+    val lazyListState = rememberLazyListState()
+
+    // ✅ 알림 상태가 변경될 때 리스트 업데이트
+    LaunchedEffect(notificationState) {
+        notificationState?.let { result ->
+            val newNotifications = result.getOrNull() ?: emptyList()
+            if (newNotifications.isNotEmpty() && newNotifications != notifications) {
+                notifications = newNotifications // 새로운 알림 적용
+                lazyListState.animateScrollToItem(0) // 맨 위로 자동 스크롤
             }
         }
     }
@@ -75,24 +98,43 @@ fun NotificationScreen(navController: NavController) {
         }
     }
 
+    // ✅ 주기적으로 서버에서 새로운 알림을 가져오는 Polling
+    LaunchedEffect(Unit) {
+        while (true) {
+            if (!token.isNullOrEmpty()) {
+                notifiViewModel.getNotifications(token) // 새로운 알림 확인
+            }
+            delay(5000) // 5초마다 알림 확인
+        }
+    }
 
-    Column(
+
+    LaunchedEffect(notifications.size) {
+        if (notifications.isNotEmpty()) {
+            lazyListState.animateScrollToItem(0) // ✅ 새로운 알림이 오면 맨 위로 자동 스크롤
+        }
+    }
+
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(12.dp),
+            .padding(horizontal = 14.dp, vertical = 16.dp),
+        state = lazyListState,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Top
     ) {
         if (notifications.isEmpty()) {
-            // ✅ 알림이 없을 때
-            Text(
-                text = "조회된 알림이 없습니다.",
-                fontSize = 18.sp,
-                color = Color.Gray
-            )
+            item {
+                Text(
+                    text = "조회된 알림이 없습니다.",
+                    fontSize = 18.sp,
+                    color = Color.Gray,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
         } else {
-            // ✅ 알림이 있을 때
-            for (notis in notifications) {
+            items(notifications.asReversed()) { notis -> // ✅ 최신 데이터가 위로 오도록 변경
                 NotiDetail(notis)
             }
         }

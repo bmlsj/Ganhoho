@@ -22,6 +22,7 @@ class NotifiViewModel : ViewModel() {
         viewModelScope.launch {
             val response = repository.getNotifications(token)
             _notifications.value = response
+            Log.d("noti", "$response")
         }
     }
 
