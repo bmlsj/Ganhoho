@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import axios from 'axios';
-import router from '@/router';
+import router from '@/router/index.js';
+console.log('router:',router)
 // 1) 방금 만든 마스킹 함수 가져오기
 import { maskURL, maskToken } from '@/utils/mask.js';
 // import { useLoadingStore } from '@/stores/loadingStore';
