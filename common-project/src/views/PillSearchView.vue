@@ -8,14 +8,12 @@
         type="text"
         placeholder="검색어를 입력해 주세요."
         class="search-input"
-        @input="filterMedicineList"
-        @keyup.enter="search"
+        @keyup.enter="search"   
       />
       <button @click="triggerCamera" class="search-button">
         <img :src="frameIcon" alt="검색 아이콘" class="search-icon" />
       </button>
     </div>
-
 
     <!-- 약 정보 목록 -->
     <div v-if="filteredMedicineList.length > 0" class="pill-list">
@@ -53,20 +51,21 @@ const router = useRouter()
 const searchQuery = ref("")
 const filteredMedicineList = ref([])
 
-// 검색어 변경 시 API 호출
-watch(searchQuery, async (newQuery) => {
-  if (newQuery.length >= 1) { // 1글자 이상일 때만 검색
-    console.log("검색 시작:", newQuery);
-    const success = await apiStore.fetchMedicineList(newQuery);
-    if (success) {
-      filteredMedicineList.value = apiStore.medicineList;
-    } else {
-      filteredMedicineList.value = [];
-    }
+// 엔터 키 입력 시 검색 함수 실행
+const search = async () => {
+  const query = searchQuery.value.trim();
+  if (!query) {
+    filteredMedicineList.value = [];
+    return;
+  }
+  console.log("검색 시작:", query);
+  const success = await apiStore.fetchMedicineList(query);
+  if (success) {
+    filteredMedicineList.value = apiStore.medicineList;
   } else {
     filteredMedicineList.value = [];
   }
-})
+};
 
 onMounted(async () => {
   console.log("onMounted: 토큰 확인", apiStore.token)
@@ -108,26 +107,21 @@ onMounted(async () => {
   }
 
   // ② 네이티브 앱에서 사진 촬영 후 호출할 콜백 함수 등록  
-  // 전달받은 imageData는 보통 base64 형식의 문자열(예: "iVBORw0KGgoAAAANSUhEUgAA...")이라고 가정합니다.
   window.onImageCaptured = function(imageData) {
     console.log("window.onImageCaptured 호출됨, imageData:", imageData);
-    // imageData가 dataURL 전체라면 그대로 사용, 아니라면 dataURL 접두어를 붙입니다.
     let dataUrl = imageData.startsWith("data:image/")
       ? imageData
       : "data:image/png;base64," + imageData;
     console.log("변환된 dataUrl:", dataUrl);
-    // dataURL을 File 객체로 변환
     const file = dataURLtoFile(dataUrl, "captured.png");
     if (!file) {
       console.error("이미지 파일 변환 실패");
       return;
     }
     console.log("파일 객체 생성됨:", file);
-    // 네이티브 앱에서 전달받은 파일을 바로 업로드
     apiStore.uploadMedicineImage(file);
   }
 
-  // dataURL을 File 객체로 변환하는 유틸 함수
   function dataURLtoFile(dataurl, filename) {
     const arr = dataurl.split(',');
     const match = arr[0].match(/:(.*?);/);
@@ -144,22 +138,11 @@ onMounted(async () => {
     }
     return new File([u8arr], filename, { type: mime });
   }
-})
-// ✅ Watch store의 medicineId 변경 시 자동 페이지 이동
-watch(
-  () => apiStore.medicineId,
-  (newMedicineId) => {
-    if (newMedicineId) {
-      console.log("자동 이동: 약 ID", newMedicineId);
-      router.push(`/pill-detail/${newMedicineId}`);
-      // 초기화 (한 번 이동 후 다시 감지되지 않도록)
-      apiStore.medicineId = null;
-    }
-  }
-);
+});
+
 // ✅ 약 상세 페이지 이동
 const goToDetailPage = (medicineId) => {
-  console.log("📢 이동할 약 ID:", medicineId); // ✅ 콘솔에서 확인
+  console.log("📢 이동할 약 ID:", medicineId);
   if (!medicineId) {
     console.error("🚨 오류! 전달된 medicineId 값이 없음!");
     return;
