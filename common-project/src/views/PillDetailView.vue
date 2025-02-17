@@ -4,7 +4,7 @@
 
     <!-- 이미지 -->
     <div class="image-container">
-      <img :src="medicineDetail?.imageSrc || defaultImage" alt="알약 이미지" class="medicine-image" />
+      <img :src="medicineDetail?.ITEM_IMAGE || defaultImage" alt="알약 이미지" class="medicine-image" />
     </div>
 
     <!-- 기본 정보 -->
