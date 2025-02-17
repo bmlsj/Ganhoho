@@ -27,7 +27,9 @@ android {
         versionName = "1.0"
 
         buildConfigField("String", "SERVER_URL", "\"${localProperties.getProperty("SERVER_URL", "")}\"")
+        buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"${localProperties.getProperty("KAKAO_NATIVE_APP_KEY", "")}\"")
 
+        manifestPlaceholders["KAKAO_NATIVE_APP_KEY"] = localProperties["KAKAO_NATIVE_APP_KEY"] ?: ""
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -64,7 +66,9 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
 }
+
 
 dependencies {
 
@@ -115,4 +119,18 @@ dependencies {
     implementation ("androidx.datastore:datastore-preferences:1.1.2")
     implementation ("androidx.datastore:datastore-core:1.1.2")  // 코어 의존성 (필요 시)
 
+    // 카카오 지도 API
+    implementation ("com.kakao.maps.open:android:2.11.9")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+
+    implementation ("com.kakao.sdk:v2-all:2.20.6") // 전체 모듈 설치, 2.11.0 버전부터 지원
+
+    // lottie
+    implementation ("com.airbnb.android:lottie-compose:6.6.2")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+    // workmanager
+    implementation ("androidx.work:work-runtime-ktx:2.7.1")
+
+    // location
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 }

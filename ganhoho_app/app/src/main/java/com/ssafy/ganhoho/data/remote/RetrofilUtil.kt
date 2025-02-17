@@ -11,6 +11,8 @@ class RetrofitUtil {
         val memberService = ApplicationClass.retrofit.create(MemberService::class.java)
         val notiService = ApplicationClass.retrofit.create(NotiService::class.java)
         val scheduleService = ApplicationClass.retrofit.create(ScheduleService::class.java)
-
+        
+        // 지도
+        val kakaoSearchAApi = ApplicationClass.kakaoRetrofit.create(KakaoSearchService::class.java)
     }
 }

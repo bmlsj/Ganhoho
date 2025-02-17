@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "447664676410",
+    "project_id": "ssafy-common-d209",
+    "storage_bucket": "ssafy-common-d209.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:447664676410:android:d3452b23b7500bfe169f03",
+        "android_client_info": {
+          "package_name": "com.ssafy.ganhoho"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAh-4LYwNKfy7HAwPA3TBa36if6Dl6k3Zg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

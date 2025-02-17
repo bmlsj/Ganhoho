@@ -28,6 +28,7 @@ class AuthInterceptor(private val context: Context) : Interceptor {
         }
 
         val request = chain.request().newBuilder()
+       //     .addHeader("Authorization", "Bearer $token")
             .addHeader("Content-Type", "application/json")
             .addHeader("Accept", "application/json")
             .build()

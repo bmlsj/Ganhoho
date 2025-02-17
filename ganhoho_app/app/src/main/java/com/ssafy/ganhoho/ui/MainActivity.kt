@@ -2,6 +2,9 @@ package com.ssafy.ganhoho.ui
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Context
+import android.content.pm.PackageManager
 import androidx.compose.runtime.*
 import android.os.Build
 import android.os.Bundle
@@ -12,7 +15,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -36,16 +38,28 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.firebase.messaging.FirebaseMessaging
+import com.kakao.vectormap.KakaoMapSdk
+import com.ssafy.ganhoho.BuildConfig.KAKAO_NATIVE_APP_KEY
 import com.ssafy.ganhoho.R
+import com.ssafy.ganhoho.fcm.LocationWorker
 import com.ssafy.ganhoho.ui.bottom_navigation.AppNavHost
 import com.ssafy.ganhoho.ui.bottom_navigation.CustomBottomNavigation
 import com.ssafy.ganhoho.ui.theme.GANHOHOTheme
 import com.ssafy.ganhoho.util.PermissionChecker
+import com.ssafy.ganhoho.util.requestBackgroundLocationPermission
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
+import java.util.concurrent.TimeUnit
 
+private const val TAG = "MainActivity"
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 class MainActivity : ComponentActivity() {
 
@@ -55,12 +69,17 @@ class MainActivity : ComponentActivity() {
 
         // 저장된 토큰 불러오기
         authViewModel.loadTokens(this)
+        // 카카오 맵
+        KakaoMapSdk.init(
+            this@MainActivity,
+            KAKAO_NATIVE_APP_KEY
+        )
         setContent {
             GANHOHOTheme {
                 Surface(
                     color = MaterialTheme.colorScheme.background
                 ) {
-                   // MainScreen()
+                    // MainScreen()
                     MainNavHost()
                 }
             }
@@ -72,13 +91,18 @@ class MainActivity : ComponentActivity() {
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
 fun MainScreen() {
-
+    val context = LocalContext.current // ✅ LocalContext 가져오기
     val navController = rememberNavController()
 
     // 현재 활성화된 경로(route)를 추적
     val currentBackStackEntry =
         navController.currentBackStackEntryAsState().value  // currentRoute 자동 업데이트
     val currentRoute = currentBackStackEntry?.destination?.route ?: "home"
+
+    // 알림 권한 요청
+//    NotificationPermission()
+//    requestLocationPermission(context)
+//    RequestMultiplePermissions()
 
     BoxWithConstraints {
         val screenWidth = with(LocalDensity.current) { constraints.maxWidth.toDp() }
@@ -136,7 +160,7 @@ fun MainScreen() {
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun CheckPermissionAndInitFCM() {
-    val permissions = arrayOf(Manifest.permission.POST_NOTIFICATIONS)
+    val permissions = arrayOf(Manifest.permission.POST_NOTIFICATIONS, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
     val context = LocalContext.current // ✅ LocalContext 가져오기
 
     var permissionGranted by remember { mutableStateOf(false) } // ✅ 올바른 선언
@@ -147,7 +171,20 @@ fun CheckPermissionAndInitFCM() {
     ) { result ->
         val allPermissionsGranted = result.values.all { it } // ✅ Boolean 값 저장
         permissionGranted = allPermissionsGranted // ✅ 직접 할당
-        if (allPermissionsGranted) initFCM() // ✅ true일 때 실행
+        if (allPermissionsGranted) {
+            requestBackgroundLocationPermission(context)
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//                ActivityCompat.requestPermissions(
+//                    context as Activity,
+//                    arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
+//                    10
+//                )
+//            } else {
+//                // Android 10 미만에서는 백그라운드 위치 권한이 필요 없으므로 바로 실행
+//                initFCM()
+//                scheduleLocationWorker(context)
+//            }
+        } // ✅ true일 때 실행
     }
 
     // 🔹 앱 실행 시 권한 자동 체크
@@ -156,6 +193,7 @@ fun CheckPermissionAndInitFCM() {
             permissionLauncher.launch(permissions)
         } else {
             permissionGranted = true
+            scheduleLocationWorker(context)
             initFCM()
         }
     }
@@ -171,6 +209,33 @@ fun initFCM() {
 
         val token = task.result
         Log.d("FCM Token", "FCM Token: $token")
+    }
+}
+
+fun scheduleLocationWorker(context: Context) {
+    Log.d(TAG, "scheduleLocationWorker: ")
+    val workManager = WorkManager.getInstance(context)
+    // 기존 작업이 등록되어 있는지 확인
+    workManager.getWorkInfosByTag("LocationWorker").get().let { workInfos ->
+        if (workInfos.isNullOrEmpty()) {
+            // 기존에 등록된 작업이 없으면 새로 등록
+            val workRequest = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES)
+                .addTag("LocationWorker") // 중복 실행 방지용 태그 추가
+                .setConstraints(
+                    Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.CONNECTED) // 네트워크 연결 필요 (선택)
+                        .build()
+                )
+                .build()
+
+            workManager.enqueueUniquePeriodicWork(
+                "LocationWorker",
+                ExistingPeriodicWorkPolicy.KEEP, // 기존 작업 유지
+                workRequest
+            )
+        } else{
+            Log.d(TAG, "scheduleLocationWorker: already scheduled")
+        }
     }
 }
 
@@ -238,3 +303,4 @@ fun calculateFabOffset(currentRoute: String, itemWidth: Dp): Dp {
 fun MainActivityPreview() {
     MainScreen()
 }
+

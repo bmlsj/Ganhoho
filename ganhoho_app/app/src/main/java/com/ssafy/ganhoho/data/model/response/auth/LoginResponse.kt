@@ -7,5 +7,7 @@ data class LoginResponse(
     val hospital: String?,
     val ward: String?,
     val accessToken: String,
-    val refreshToken: String
+    val refreshToken: String,
+    val hospitalLat: Double?,
+    val hospitalLng: Double?
 )
