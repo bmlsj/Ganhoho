@@ -129,7 +129,6 @@ onUnmounted(() => {
   max-width: 100%;
   margin: 0 auto;
   padding: 16px;
-  display: flex;
   flex-direction: column;
   height: 100vh; /* 전체 화면 사용 */
 }
