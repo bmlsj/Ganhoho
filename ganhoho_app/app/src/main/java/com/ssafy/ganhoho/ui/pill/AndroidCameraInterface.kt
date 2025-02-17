@@ -40,14 +40,18 @@ class AndroidCameraInterface(
                 REQUEST_CAMERA_PERMISSION
             )
             Log.e("AndroidCameraInterface", "🚨 카메라 권한이 없어 요청함.")
-            return
+        } else {
+            launchCamera()
         }
+    }
 
+    // ✅ 카메라 실행을 따로 함수로 분리
+    private fun launchCamera() {
         try {
-            Log.d("AndroidCameraInterface", "📸 openNativeCamera() 호출됨!")
-            cameraLauncher.launch(null) // ✅ 카메라 실행
+            Log.d("AndroidCameraInterface", "📸 카메라 실행됨!")
+            cameraLauncher.launch(null) // 카메라 실행
         } catch (e: Exception) {
-            Log.e("AndroidCameraInterface", "🚨 openNativeCamera() 실행 중 오류 발생", e)
+            Log.e("AndroidCameraInterface", "🚨 카메라 실행 중 오류 발생", e)
         }
     }
 
@@ -76,7 +80,7 @@ class AndroidCameraInterface(
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // ✅ 사용자가 카메라 권한을 허용함 -> 카메라 실행
                 Log.d("AndroidCameraInterface", "✅ 카메라 권한이 허용됨!")
-                openCamera()  // 🚨 카메라 다시 실행
+                launchCamera()  // 🚨 카메라 다시 실행
             } else {
                 // ❌ 사용자가 카메라 권한을 거부함
                 Log.e("AndroidCameraInterface", "🚨 카메라 권한이 거부됨!")

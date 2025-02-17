@@ -7,6 +7,7 @@ import android.net.Uri
 import android.util.Base64
 import android.util.Log
 import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -36,18 +37,18 @@ fun WebViewWithToken(
 
 //    val context = LocalContext.current as? Activity
 
-//    // ✅ 파일 선택 콜백 변수 선언 (WebView -> Activity Result로 전달)
-//    var fileChooserCallback by remember {
-//        mutableStateOf<ValueCallback<Array<Uri>>?>(null)
-//    }
-//
-//    // ✅ 파일 선택 ActivityResultLauncher
-//    val fileChooserLauncher = rememberLauncherForActivityResult(
-//        contract = ActivityResultContracts.OpenDocument()
-//    ) { uri: Uri? ->
-//        fileChooserCallback?.onReceiveValue(uri?.let { arrayOf(it) } ?: emptyArray())
-//        fileChooserCallback = null
-//    }
+    // ✅ 파일 선택 콜백 변수 선언 (WebView -> Activity Result로 전달)
+    var fileChooserCallback by remember {
+        mutableStateOf<ValueCallback<Array<Uri>>?>(null)
+    }
+
+    // ✅ 파일 선택 ActivityResultLauncher
+    val fileChooserLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        fileChooserCallback?.onReceiveValue(uri?.let { arrayOf(it) } ?: emptyArray())
+        fileChooserCallback = null
+    }
 
     // ✅ 웹뷰 상태 관리
     val webViewState = remember { mutableStateOf<WebView?>(null) }
@@ -102,6 +103,20 @@ fun WebViewWithToken(
                             loadWithOverviewMode = true
                             useWideViewPort = true
                         }
+
+                        // ✅ 파일 선택 (갤러리, 문서 업로드 지원)
+                        webChromeClient = object : WebChromeClient() {
+                            override fun onShowFileChooser(
+                                webView: WebView?,
+                                filePathCallback: ValueCallback<Array<Uri>>?,
+                                fileChooserParams: FileChooserParams?
+                            ): Boolean {
+                                fileChooserCallback = filePathCallback
+                                fileChooserLauncher.launch(arrayOf("*/*")) // ✅ 모든 파일 선택 가능
+                                return true
+                            }
+                        }
+
 
                         webViewClient = object : WebViewClient() {
                             override fun onPageFinished(view: WebView?, url: String?) {
