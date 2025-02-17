@@ -84,6 +84,7 @@ class AuthViewModel : ViewModel() {
                 response.hospitalLat?.let {
                     SecureDataStore.saveHospitalLocation(context, response.hospitalLat, response.hospitalLng!!)
                 }
+                Log.d("TAG", "login: ${response.hospital} ${response.hospitalLat} ${response.hospitalLng}")
 
                 // ✅ 저장된 토큰 상태 업데이트
                 _accessToken.value = response.accessToken
