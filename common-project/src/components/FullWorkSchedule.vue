@@ -75,7 +75,7 @@ onMounted(async () => {
         console.warn("⚠️ weekElements의 수가 targetWeekIndex보다 작습니다.");
       }
     } else {
-      console.warn("⚠️ calendarBodyRef가 유효하지 않습니다.");
+      console.warn("⚠️ calendarBodyRef가 유효하지 않습니다.")
     }
   }, 100); // 100ms 딜레이, 필요 시 조정
 })

@@ -93,7 +93,7 @@ export const useApiStore = defineStore('api', () => {
               return acc
             }, {}),
           }))
-
+          console.log("피!!!플!!!!:",people.value)
           isDataLoaded.value = true;
           generateCalendar();
         }
@@ -104,30 +104,54 @@ export const useApiStore = defineStore('api', () => {
   };
 
   const generateCalendar = () => {
-    if (!currentYear.value || !currentMonth.value) return;
-
+    if (!currentYear.value || !currentMonth.value) {
+      console.log("currentYear나 currentMonth가 설정되어 있지 않습니다:", currentYear.value, currentMonth.value);
+      return;
+    }
+  
+    console.log("달력 생성 시작 - 연도:", currentYear.value, "월:", currentMonth.value);
+  
+    // 1일의 요일(0: 일요일 ~ 6: 토요일)과 마지막 날짜 계산
     let firstDay = new Date(currentYear.value, currentMonth.value - 1, 1).getDay();
     const lastDate = new Date(currentYear.value, currentMonth.value, 0).getDate();
-
+    console.log("첫번째 날의 요일 인덱스:", firstDay);
+    console.log("해당 월의 마지막 날짜:", lastDate);
+  
     let calendarData = [];
+    // 인덱스를 1부터 사용하기 위해 첫 번째 요소를 null로 시작
     let week = [null, ...new Array(7).fill(null)];
-
+    console.log("초기 week 배열:", week);
+  
+    // 첫 주의 시작 전 빈 칸 설정 (이미 null로 채워져 있지만, 디버깅용으로 반복문 기록)
     for (let i = 1; i <= firstDay; i++) {
       week[i] = null;
     }
-
+    console.log("빈 칸 설정 후 week 배열:", week);
+  
+    // 날짜를 week 배열에 채워 넣기
     for (let day = 1; day <= lastDate; day++) {
-      week[(firstDay % 7) + 1] = day;
+      // 현재 요일 위치: (firstDay % 7) + 1 인덱스에 할당
+      const index = (firstDay % 7) + 1;
+      week[index] = day;
+      console.log(`날짜 ${day}는 인덱스 ${index}에 할당됨 -> week:`, week);
       firstDay++;
-
+  
+      // 한 주가 끝났거나 마지막 날짜인 경우 week 배열을 calendarData에 저장
       if (firstDay % 7 === 0 || day === lastDate) {
-        calendarData.push([...week]);
+        console.log(
+          `한 주가 완료되었거나 마지막 날짜에 도달 (firstDay: ${firstDay}, day: ${day}). week 배열 저장:`,
+          week
+        );
+        calendarData.push([...week]); // 현재 week 배열 복사해서 추가
         week = [null, ...new Array(7).fill(null)];
+        console.log("다음 주를 위해 week 배열 초기화:", week);
       }
     }
-
+  
     calendar.value = calendarData;
+    console.log("최종 생성된 달력 데이터:", calendar.value);
   };
+  
 
   const sendImageToAPI = async (file) => {
     const formData = new FormData();
