@@ -3,17 +3,20 @@
   <div class="full-work-schedule">
     <div v-if="store.people.length === 0" class="empty-state">
       <p>현재 등록된 일정이 없습니다.</p>
+      <p>{{ debuggedValue }}</p>
     </div>
     <!-- 자동 스크롤 대상이 되는 캘린더 영역 -->
     <div v-else class="calendar-body" ref="calendarBodyRef">
       <div v-for="(week, weekIndex) in store.calendar" :key="weekIndex" class="week">
         <div class="dates">
           <div v-for="(day, dayIndex) in week" :key="dayIndex" class="date">
+            <p>{{ debuggedValue }}</p>
             {{ day || '' }}
           </div>
         </div>
         <div v-for="person in store.people" :key="person.name" class="person-row">
           <div class="person-name">{{ person.name }}</div>
+          <p>{{ debuggedValue }}</p>
           <div class="person-schedule">
             <div
               v-for="(day, dayIndex) in week.slice(1, 8)"
@@ -22,6 +25,7 @@
               :class="person.schedule[day]?.toLowerCase()"
               :style="{ visibility: day === null ? 'hidden' : 'visible' }"
             >
+            <p>{{ debuggedValue }}</p>
               {{ person.schedule[day] || '-' }}
             </div>
           </div>
@@ -32,13 +36,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick,computed } from 'vue'
 import { useApiStore } from '@/stores/apiRequest'
 
 const store = useApiStore()
 
 // 스크롤 대상 요소
 const calendarBodyRef = ref(null)
+
+const message = ref("Hello Vue!")
+
+const debuggedValue = computed(() => {
+  console.log("Computed property 실행됨:", message.value);
+  return message.value;
+})
 
 onMounted(async () => {
   // 1) 캘린더 데이터 생성
