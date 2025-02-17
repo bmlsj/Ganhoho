@@ -66,10 +66,10 @@ fun EachGroupScreen(
     navController: NavController,
     group: GroupDto,
     groupMember: List<GroupMemberResponse>,
-    repository:GroupRepository,
+    repository: GroupRepository,
     groupId: Int?,
     yearMonth: String
-    ) {
+) {
 
     val authViewModel: AuthViewModel = viewModel()
     val viewModel: GroupViewModel = ViewModelProvider(
@@ -106,19 +106,16 @@ fun EachGroupScreen(
 
 
     LaunchedEffect(groupId) {
-        if(groupId != 0){
-            if (groupId != null) {
-                if (token != null) {
-                    viewModel.fetchMemberSchedules(groupId, yearMonth, token)
-                }
-            }
-            Log.d("DEBUG", "Fetching schedules for groupId: $groupId, yearMonth: $yearMonth")
+        if (groupId != 0) {
             if (groupId != null && token != null) {
+                viewModel.fetchMemberSchedules(groupId, yearMonth, token)
                 viewModel.fetchMemberList(groupId, token)
             }
-        }else{
+            Log.d("DEBUG", "Fetching schedules for groupId: $groupId, yearMonth: $yearMonth")
+
+        } else {
             val inviteCode = navController.currentBackStackEntry?.arguments?.getString("inviteCode")
-            if(inviteCode.isNullOrEmpty()){
+            if (inviteCode.isNullOrEmpty()) {
                 Log.d("group_invite", "초대 코드 감지: $inviteCode")
 
 //                viewModel.joinGroupByInviteCode(inviteCode,
@@ -151,7 +148,7 @@ fun EachGroupScreen(
 
     }
 
-    Box(modifier = Modifier.fillMaxSize()){
+    Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
         ) { paddingValues ->
             Box(modifier = Modifier.fillMaxSize()) {
@@ -176,16 +173,17 @@ fun EachGroupScreen(
                                 Image(
                                     painter = painterResource(groupIcon),
                                     contentDescription = "그룹 아이콘",
-                                    modifier = Modifier.size(35.dp)
+                                    modifier = Modifier
+                                        .size(35.dp)
                                         .padding(bottom = 5.dp)
                                 )
-                                Text(
+                                Text(  // 그룹 이름
                                     text = group.groupName,
                                     fontSize = 30.sp,
                                     fontWeight = FontWeight.Bold
                                 )
 
-                                Row(
+                                Row(  // 그룹원 목록 열기
                                     horizontalArrangement = Arrangement.Start,
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
@@ -247,10 +245,17 @@ fun EachGroupScreen(
                         }
 
                         val adjustedSchedules = memberSchedules.map {
-                            Log.d("DEBUG_MEMBER_SCHEDULE", "Member: ${it.name}, Schedule Size: ${it.schedules.size}")
+                            Log.d(
+                                "DEBUG_MEMBER_SCHEDULE",
+                                "Member: ${it.name}, Schedule Size: ${it.schedules.size}"
+                            )
 
                             it.copy(
-                                schedules = adjustWorkSchedule(it.schedules, currentYear, currentMonth),
+                                schedules = adjustWorkSchedule(
+                                    it.schedules,
+                                    currentYear,
+                                    currentMonth
+                                ),
                                 ward = it.ward ?: "미정"
                             )
                         }
@@ -270,7 +275,9 @@ fun EachGroupScreen(
                                         fontSize = 16.sp,
                                         textAlign = TextAlign.Center,
                                         fontWeight = if (date == today.dayOfMonth.toString()) FontWeight.Bold else FontWeight.Normal, // 오늘 날짜는 굵게
-                                        color = if (date == today.dayOfMonth.toString()) Color(0xFF1A85AB) else Color.Black, // 오늘 날짜는 굵게
+                                        color = if (date == today.dayOfMonth.toString()) Color(
+                                            0xFF1A85AB
+                                        ) else Color.Black, // 오늘 날짜는 굵게
 
                                         modifier = Modifier
                                             .padding(top = 10.dp, bottom = 5.dp)
@@ -295,7 +302,9 @@ fun EachGroupScreen(
                                         modifier = Modifier.width(60.dp)
                                     )
 
-                                    val weekSchedule = schedule.schedules.chunked(7).getOrNull(weekIndex) ?: emptyList()
+                                    val weekSchedule =
+                                        schedule.schedules.chunked(7).getOrNull(weekIndex)
+                                            ?: emptyList()
 
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
@@ -355,7 +364,10 @@ fun EachGroupScreen(
 
                 AnimatedVisibility(
                     visible = isMemberScreenVisible,
-                    enter = slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(800)),
+                    enter = slideInHorizontally(
+                        initialOffsetX = { it },
+                        animationSpec = tween(800)
+                    ),
                     exit = slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(800)),
                     modifier = Modifier
                         .zIndex(2f)
@@ -465,7 +477,12 @@ fun getShiftColor(shift: String): Color {
 
 // 샘플 데이터 생성
 fun getSampleGroup(groupId: Int): GroupDto {
-    return GroupDto(groupId = groupId, groupName = "그룹 $groupId", groupIconType = R.drawable.icon_profile, groupMemberCount = 6)
+    return GroupDto(
+        groupId = groupId,
+        groupName = "그룹 $groupId",
+        groupIconType = R.drawable.icon_profile,
+        groupMemberCount = 6
+    )
 }
 
 
