@@ -99,8 +99,8 @@ onMounted(() => {
 .weekly-schedule {
   display: flex;
   flex-direction: column;
-  flex: 1; /* 부모에서 넘겨준 공간 전부 사용 */
-  overflow-y:auto;
+  height:auto; /* 부모에서 넘겨준 공간 전부 사용 */
+  overflow-y:visible;
 }
 
 .weekly-schedule .header-row {
@@ -127,11 +127,8 @@ onMounted(() => {
 
 /* 캘린더 영역: 남은 공간을 모두 사용하고 스크롤 가능하게 */
 .weekly-schedule .calendar-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  max-height: 75vh;
+  height: auto;
+  overflow-y: visible;
 }
 
 .weekly-schedule .dates {
