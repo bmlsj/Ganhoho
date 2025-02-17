@@ -130,7 +130,7 @@ onUnmounted(() => {
   margin: 0 auto;
   padding: 16px;
   flex-direction: column;
-  height: 100vh; /* 전체 화면 사용 */
+  height: 75vh; /* 전체 화면 사용 */
 }
 
 /* 헤더 영역: 헤더는 고정되지 않고, 콘텐츠 영역과 별도로 분리 */
