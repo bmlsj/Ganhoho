@@ -197,6 +197,7 @@ onUnmounted(() => {
 /* 콘텐츠 영역: 헤더 아래에서 스크롤 */
 .content {
   flex: 1;
+  min-height: 70vh;
   overflow-y: auto;
 }
 
