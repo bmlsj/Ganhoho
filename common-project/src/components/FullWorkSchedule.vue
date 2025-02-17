@@ -47,7 +47,8 @@ onMounted(async () => {
 
   // 2) DOM 업데이트 후 처리
   await nextTick();
-  
+  store.generateCalendar();
+  console.log("📢 generateCalendar 호출 한번더 하고고:", store.calendar);
   // setTimeout으로 100ms 지연 후 실행
   setTimeout(() => {
     const today = new Date().getDate();
