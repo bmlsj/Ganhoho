@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import axios from 'axios';
-import router from '@/router/index.js'
 // 1) 방금 만든 마스킹 함수 가져오기
 import { maskURL, maskToken } from '@/utils/mask.js';
 // import { useLoadingStore } from '@/stores/loadingStore';
@@ -44,6 +43,8 @@ export const useApiStore = defineStore('api', () => {
   const medicineList = ref([]);
   const medicineDetail = ref({});
   const isDataLoaded = ref(false);
+
+  const medicineId = ref(null);
 
   const token = ref(localStorage.getItem("token") || null);
   const refreshToken = ref(localStorage.getItem("refresh_token") || null);
@@ -303,23 +304,33 @@ export const useApiStore = defineStore('api', () => {
       const response = await axios.post(`${API_URL}/api/medicines/upload-image`, formData, {
         headers: {
           Authorization: `Bearer ${token.value}`,
-          //"Content-Type": "multipart/form-data",
+          // "Content-Type": "multipart/form-data",  // 브라우저가 자동으로 처리
         },
       });
 
       if (response.status === 200) {
-        console.log("✅ 이미지 업로드 성공:", response.data)
-         // 서버가 인식 실패 데이터를 보낸 경우를 체크 (예: medicineId가 없을 경우)
-         const medicineId = response.data.medicineInfo?.[0]?.ITEM_SEQ;
-         console.log("약!!!!!!!!!!!!!!!!!!!",medicineId)
-        if (!medicineId) {
+        console.log("✅ 이미지 업로드 성공:", response.data);
+        alert("이미지 업로드 성공!");
+
+        // store 리셋
+        people.value = [];
+        calendar.value = [];
+        currentYear.value = null;
+        currentMonth.value = null;
+        isDataLoaded.value = false;
+
+        // 새로 fetch
+        await fetchData();
+
+        // medicineId를 store에 저장 (서버가 반환한 값)
+        const id = response.data.medicineInfo?.[0]?.ITEM_SEQ;
+        console.log("약!!!!!!!!!!!!!!!!!!!", id);
+        if (!id) {
           alert("인식에 실패했습니다. 다시 시도해 주세요.");
-          return
+          return;
         }
-         // 성공 시 상세 페이지로 이동 (vue-router 사용 시)
-        router.push(`/pill-detail/${medicineId}`)
-        // window.location.href 사용 시:
-        // window.location.href = `/pill-detail/${medicineId}`
+        // medicineId 업데이트
+        medicineId.value = id;
       }
     } catch (error) {
       console.error("🚨 이미지 업로드 오류:", error.response ? error.response.data : error.message);
@@ -356,7 +367,8 @@ export const useApiStore = defineStore('api', () => {
     uploadMedicineImage,
     setToken,
     token,
-    refreshToken
+    refreshToken,
+    medicineId,
   };
 }, {
   persist: {

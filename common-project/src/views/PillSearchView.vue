@@ -145,7 +145,18 @@ onMounted(async () => {
     return new File([u8arr], filename, { type: mime });
   }
 })
-
+// ✅ Watch store의 medicineId 변경 시 자동 페이지 이동
+watch(
+  () => apiStore.medicineId,
+  (newMedicineId) => {
+    if (newMedicineId) {
+      console.log("자동 이동: 약 ID", newMedicineId);
+      router.push(`/pill-detail/${newMedicineId}`);
+      // 초기화 (한 번 이동 후 다시 감지되지 않도록)
+      apiStore.medicineId = null;
+    }
+  }
+);
 // ✅ 약 상세 페이지 이동
 const goToDetailPage = (medicineId) => {
   console.log("📢 이동할 약 ID:", medicineId); // ✅ 콘솔에서 확인
