@@ -3,10 +3,10 @@
   <div class="container">
     <div class="header">
       <div class="header-row">
-        <div class="year-month">
+        <div class="year-month left-item">
           {{ store.currentYear || defaultYear }}년 {{ store.currentMonth || defaultMonth }}월
         </div>
-        <div class="button-group">
+        <div class="button-group right-item">
           <button class="btn-gallery" @click="openGallery">
             <img class=gallery-image :src="gallery" alt="이미지 등록" />
           </button>
@@ -145,11 +145,22 @@ onUnmounted(() => {
 /* 헤더 내부 */
 .header-row {
   display: grid;
-  grid-template-columns: auto auto; /* 첫 번째 컬럼: 년월, 두 번째 컬럼: 버튼 그룹 */
-  column-gap: 175px;  /* 원하는 간격 조절 */
+  grid-template-columns: repeat(12, 1fr); /* 12등분 */
   align-items: center;
-  padding: 8px 8px;
+  padding: 8px;
+  white-space: nowrap; /* 텍스트 줄바꿈 방지 */
 }
+
+/* 왼쪽 요소: 1번 칸부터 2칸 차지 */
+.left-item {
+  grid-column: 1 / span 2;
+}
+
+/* 오른쪽 요소: 11번 칸부터 2칸 차지 (12칸 중 끝에서 2칸) */
+.right-item {
+  grid-column: 11 / span 2;
+}
+
 .year-month {
   padding-left:8px;
   font-size: 18px;
