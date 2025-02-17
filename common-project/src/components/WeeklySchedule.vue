@@ -140,7 +140,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  max-height: 75vh;
 }
 
 .weekly-schedule .dates {
