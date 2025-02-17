@@ -287,7 +287,7 @@ export const useApiStore = defineStore('api', () => {
       if (response.status === 200) {
         console.log("✅ 이미지 업로드 성공:", response.data)
          // 서버가 인식 실패 데이터를 보낸 경우를 체크 (예: medicineId가 없을 경우)
-        const medicineId = response.data.medicineId
+         const medicineId = response.data.medicineInfo?.[0]?.ITEM_SEQ;
         if (!medicineId) {
           alert("인식에 실패했습니다. 다시 시도해 주세요.");
           return
