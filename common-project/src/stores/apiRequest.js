@@ -70,7 +70,7 @@ export const useApiStore = defineStore('api', () => {
       // 마스킹된 URL만 로그에 찍기
       console.log("🔍 API 요청 URL:", maskURL(`${API_URL}/api/schedules/ocr`));
 
-      const response = await axios.get(`${API_URL}/api/schedules/ocr.json`, {
+      const response = await axios.get(`${API_URL}/api/schedules/ocr`, {
         headers: {
           Authorization: `Bearer ${token.value}`,
         },
@@ -161,7 +161,7 @@ export const useApiStore = defineStore('api', () => {
     console.log("🔍 API 요청 URL:", maskURL(`${API_URL}/api/schedules/ocr`));
 
     try {
-      const response = await axios.post(`${API_URL}/api/schedules/ocr.json`, formData, {
+      const response = await axios.post(`${API_URL}/api/schedules/ocr`, formData, {
         headers: {
           Authorization: `Bearer ${token.value}`,
           'Content-Type': 'multipart/form-data',
