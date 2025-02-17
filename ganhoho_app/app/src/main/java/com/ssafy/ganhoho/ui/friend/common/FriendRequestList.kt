@@ -61,22 +61,33 @@ fun FriendRequestList(
             authViewModel.loadTokens(context)
         }
     }
+
     var successDialog by remember { mutableStateOf(false) }
-
-
     // 수락 성공 시
     val friendInviteResponse = friendViewModel.friendResponse.collectAsState().value
+    val updatedResponse by rememberUpdatedState(friendInviteResponse)
 
-    LaunchedEffect(friendInviteResponse) {
-        friendInviteResponse?.let {
-            if (friendInviteResponse.isSuccess) {
+    LaunchedEffect(updatedResponse) {
+        updatedResponse?.let {
+            if (it.isSuccess) {
                 Log.d("friend", "friend add success")
-                successDialog = true
+                successDialog = true // ✅ 다이얼로그 열기
             } else {
                 Log.d("friend", "friend add failed")
             }
         }
     }
+
+//    LaunchedEffect(friendInviteResponse) {
+//        friendInviteResponse?.let {
+//            if (friendInviteResponse.isSuccess) {
+//                Log.d("friend", "friend add success")
+//                successDialog = true // ✅ 다이얼로그 열기
+//            } else {
+//                Log.d("friend", "friend add failed")
+//            }
+//        }
+//    }
 
     Box(
         modifier = Modifier
@@ -124,35 +135,31 @@ fun FriendRequestList(
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        friend.hospital?.takeIf { it.isNotBlank() }?.let {
-                            Text(
-                                text = it,
-                                modifier = Modifier
-                                    .background(
-                                        Color(0xfff0f0f0),
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                                color = Color.Black,
-                                fontSize = 12.sp,
-                                textAlign = TextAlign.Center
-                            )
-                        }
+                        Text(
+                            text = friend.hospital ?: "병원없음", // 데이터가 없으면 빈 문자열
+                            modifier = Modifier
+                                .background(
+                                    if (friend.hospital.isNullOrBlank()) Color.Transparent else Color(0xfff0f0f0),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            color = if (friend.hospital.isNullOrBlank()) Color.Transparent else Color.Black,
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center
+                        )
 
-                        friend.ward?.takeIf { it.isNotBlank() }?.let {
-                            Text(
-                                text = it,
-                                modifier = Modifier
-                                    .background(
-                                        Color(0xfff0f0f0),
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                                color = Color.Black,
-                                fontSize = 12.sp,
-                                textAlign = TextAlign.Center
-                            )
-                        }
+                        Text(
+                            text = friend.ward ?: "병동없음", // 데이터가 없으면 "병동없음" 표시
+                            modifier = Modifier
+                                .background(
+                                    if (friend.ward.isNullOrBlank()) Color.Transparent else Color(0xfff0f0f0),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            color = if (friend.ward.isNullOrBlank()) Color.Transparent else Color.Black,
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center
+                        )
                     }
 
                     Box(
@@ -186,13 +193,13 @@ fun FriendRequestList(
                 }
             }
 
-            // 즐겨찾기 아이콘
-            Icon(
-                imageVector =
-                Icons.Default.Close, contentDescription = "close",
-                tint = Color.Gray,
-                modifier = Modifier.size(18.dp)
-            )
+            // 삭제 아이콘
+//            Icon(
+//                imageVector =
+//                Icons.Default.Close, contentDescription = "close",
+//                tint = Color.Gray,
+//                modifier = Modifier.size(18.dp)
+//            )
 
         }
     }
@@ -219,7 +226,7 @@ fun FriendRequestList(
 fun FreiendRequestPreview() {
     FriendRequestList(
         FriendInviteDto(
-            -1, "@jeonghu1010", "서정후",
+            -1, "jeonghu1010", "서정후",
             "싸피병원", "일반병동", "pending"
         )
     )

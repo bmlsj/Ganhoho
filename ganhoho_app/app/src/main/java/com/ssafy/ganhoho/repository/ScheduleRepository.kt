@@ -9,6 +9,7 @@ import com.ssafy.ganhoho.data.model.response.schedule.AddMyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.handleResponse
 import com.ssafy.ganhoho.data.model.response.schedule.FriendPersonalResponse
 import com.ssafy.ganhoho.data.model.response.schedule.MyScheduleResponse
+import com.ssafy.ganhoho.data.model.response.schedule.MyWorkResponse
 import com.ssafy.ganhoho.data.model.response.schedule.ScheduleUpdateResponse
 import com.ssafy.ganhoho.data.remote.RetrofitUtil
 
@@ -21,6 +22,7 @@ class ScheduleRepository {
         return try {
             val response =
                 RetrofitUtil.scheduleService.getMyWorkSchedule("Bearer $token")
+            Log.d("Schedule", "📌 개인 근무 스케줄 API 응답: $response")
             handleResponse(response)
         } catch (e: Exception) {
             Result.failure(e)

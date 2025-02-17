@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.ssafy.ganhoho.BuildConfig.WEBVIEW_PILL_URL
 import com.ssafy.ganhoho.BuildConfig.WEBVIEW_WORK_URL
 import com.ssafy.ganhoho.util.WebViewWithToken
 import com.ssafy.ganhoho.viewmodel.AuthViewModel

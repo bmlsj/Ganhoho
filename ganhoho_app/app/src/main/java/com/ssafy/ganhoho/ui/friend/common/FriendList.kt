@@ -61,7 +61,7 @@ fun FriendList(
             .background(Color.White, shape = RoundedCornerShape(15.dp))
             .padding(16.dp)
             .clickable {
-                // TODO: 아이디로 친구 근무 기록 조회 기능
+
                 isFriendModal.value = true
             }
     ) {
@@ -95,35 +95,32 @@ fun FriendList(
 
                 // 병원과 병동정보
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    friend.hospital?.takeIf { it.isNotBlank() }?.let {
-                        Text(
-                            text = it,
-                            modifier = Modifier
-                                .background(
-                                    Color(0xfff0f0f0),
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .padding(horizontal = 8.dp, vertical = 4.dp),
-                            color = Color.Black,
-                            fontSize = 12.sp,
-                            textAlign = TextAlign.Center
-                        )
-                    }
+                    Text(
+                        text = friend.hospital ?: "병원없음", // 데이터가 없으면 빈 문자열
+                        modifier = Modifier
+                            .background(
+                                if (friend.hospital.isNullOrBlank()) Color.Transparent else Color(0xfff0f0f0),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        color = if (friend.hospital.isNullOrBlank()) Color.Transparent else Color.Black,
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center
+                    )
 
-                    friend.ward?.takeIf { it.isNotBlank() }?.let {
-                        Text(
-                            text = it,
-                            modifier = Modifier
-                                .background(
-                                    Color(0xfff0f0f0),
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .padding(horizontal = 8.dp, vertical = 4.dp),
-                            color = Color.Black,
-                            fontSize = 12.sp,
-                            textAlign = TextAlign.Center
-                        )
-                    }
+                    Text(
+                        text = friend.ward ?: "병동없음", // 데이터가 없으면 "병동없음" 표시
+                        modifier = Modifier
+                            .background(
+                                if (friend.ward.isNullOrBlank()) Color.Transparent else Color(0xfff0f0f0),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        color = if (friend.ward.isNullOrBlank()) Color.Transparent else Color.Black,
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center
+                    )
+
                 }
             }
 
@@ -186,7 +183,7 @@ fun FriendList(
 fun FreiendPreview() {
     FriendList(
         FriendDto(
-            -1, -1, "@jeonghu1010", "서정후",
+            -1, -1, "jeonghu1010", "서정후",
             "싸피병원", "일반병동", true
         ), onFavoriteClick = { friendId, isFavorite ->
             println("🔥 즐겨찾기 상태 변경: ID = $friendId, 새로운 상태 = $isFavorite")

@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.ui.friend
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,22 +13,29 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,6 +54,7 @@ import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.FriendViewModel
 import com.ssafy.ganhoho.viewmodel.MemberViewModel
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun FriendScreen(navController: NavController) {
 
@@ -66,13 +75,26 @@ fun FriendScreen(navController: NavController) {
     val friendInvite = friendInviteState?.getOrNull() ?: emptyList()
 
     // 검색된 친구 목록 필터링
-    val filteredFriendList = remember(friendList, searchText.value) {
-        friendList.filter { friend ->
-            searchText.value.isEmpty() ||
-                    friend.friendLoginId.contains(searchText.value, ignoreCase = true) ||
-                    friend.name.contains(searchText.value, ignoreCase = true)
+//    val filteredFriendList = remember(friendList, searchText.value) {
+//        friendList.filter { friend ->
+//            searchText.value.isEmpty() ||
+//                    friend.friendLoginId.contains(searchText.value, ignoreCase = true) ||
+//                    friend.name.contains(searchText.value, ignoreCase = true)
+//        }
+//    }
+
+    // ✅ 검색된 친구 목록을 필터링하고, 즐겨찾기(isFavorite=true)한 친구들을 먼저 정렬
+    val filteredFriendList by rememberUpdatedState(
+        derivedStateOf {
+            friendList
+                .filter { friend ->
+                    searchText.value.isEmpty() ||
+                            friend.friendLoginId.contains(searchText.value, ignoreCase = true) ||
+                            friend.name.contains(searchText.value, ignoreCase = true)
+                }
+                .sortedByDescending { it.isFavorite } // 즐겨찾기 친구가 먼저 나오도록 정렬
         }
-    }
+    )
 
     // 검색된 회원 전체 목록
     val memberListState = memberViewModel.memberList.collectAsState().value
@@ -102,6 +124,13 @@ fun FriendScreen(navController: NavController) {
         }
     }
 
+    // ✅ 친구 목록을 갱신하는 LaunchedEffect 추가
+    LaunchedEffect(friendList) {
+        if (token != null) {
+            friendViewModel.getFriendList(token)
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -120,9 +149,9 @@ fun FriendScreen(navController: NavController) {
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
 
-            MenuItem("list", "친구목록", currentScreen)
-            MenuItem("request", "친구요청", currentScreen)
-            MenuItem("search", "친구검색", currentScreen)
+            MenuItem("list", "친구목록", currentScreen, friendInvite.size)
+            MenuItem("request", "친구요청", currentScreen, friendInvite.size)
+            MenuItem("search", "친구검색", currentScreen, friendInvite.size)
 
         }
 
@@ -177,82 +206,114 @@ fun FriendScreen(navController: NavController) {
                 }
             }
 
-            // menu 별로 데이터 보여주기
-            when (currentScreen.value) {
-                "list" -> {  // 전체 친구 목록
-                    if (filteredFriendList.isNotEmpty()) {
-                        filteredFriendList.forEach { friend ->
-                            FriendList(
-                                friend = friend,
-                                onFavoriteClick = { friendMemberId, isFavorite ->
-                                    if (token != null) {
-                                        friendViewModel.updateFriendFavorite(
-                                            token,
-                                            friendMemberId,
-                                            isFavorite
-                                        )
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                // menu 별로 데이터 보여주기
+                when (currentScreen.value) {
+                    "list" -> {  // 전체 친구 목록
+                        if (filteredFriendList.value.isNotEmpty()) {
+                            items(filteredFriendList.value) { friend ->
+                                FriendList(
+                                    friend = friend,
+                                    onFavoriteClick = { friendMemberId, isFavorite ->
+                                        if (token != null) {
+                                            friendViewModel.updateFriendFavorite(
+                                                token,
+                                                friendMemberId,
+                                                isFavorite
+                                            )
+                                        }
                                     }
-                                }
-                            )
+                                )
+                            }
+                        } else {
+                            item {
+                                Spacer(modifier = Modifier.height(50.dp))
+                                Text(
+                                    text = "등록된 친구가 없습니다.",
+                                    fontSize = 16.sp,
+                                    color = Color.Gray
+                                )
+                            }
                         }
-                    } else {
-                        Spacer(modifier = Modifier.height(50.dp))
-                        Text(
-                            text = "등록된 친구가 없습니다.",
-                            fontSize = 16.sp,
-                            color = Color.Gray
-                        )
                     }
-                }
 
-                "request" -> {  // 친구 요청 리스트
-                    if (friendInvite.isNotEmpty()) {
-                        friendInvite.forEach { friend ->
-                            FriendRequestList(friend = friend)
+                    "request" -> {  // 친구 요청 리스트
+                        if (friendInvite.isNotEmpty()) {
+                            items(friendInvite) { friend ->
+                                FriendRequestList(friend = friend)
+                            }
+                        } else {
+                            item {
+                                Spacer(modifier = Modifier.height(50.dp))
+                                Text(
+                                    text = "친구 요청이 없습니다.",
+                                    fontSize = 16.sp,
+                                    color = Color.Gray
+                                )
+                            }
                         }
-                    } else {
-                        Spacer(modifier = Modifier.height(50.dp))
-                        Text(text = "친구 요청이 없습니다.", fontSize = 16.sp, color = Color.Gray)
                     }
-                }
 
-                "search" -> {  // 친구 추가를 위해 전체 회원 목록 검색
-                    if (searchText.value.isNotEmpty() && memberList.isNotEmpty()) {
-                        memberList.forEach { member ->
-                            FriendAdd(member = member, friendList = friendList)
+                    "search" -> {  // 친구 추가를 위해 전체 회원 목록 검색
+                        if (searchText.value.isNotEmpty() && memberList.isNotEmpty()) {
+                            items(memberList) { member ->
+                                FriendAdd(member = member, friendList = friendList)
+                            }
+                        } else {
+                            item {
+                                Spacer(modifier = Modifier.height(50.dp))
+                                Text(
+                                    text = "추가할 친구가 없습니다.",
+                                    fontSize = 16.sp,
+                                    color = Color.Gray
+                                )
+                            }
                         }
-                    } else {
-                        Spacer(modifier = Modifier.height(50.dp))
-                        Text(text = "추가할 친구가 없습니다.", fontSize = 16.sp, color = Color.Gray)
                     }
                 }
             }
+
         }
     }
 }
 
 // 메뉴 아이템
 @Composable
-fun MenuItem(screen: String, title: String, currentScreen: MutableState<String>) {
+fun MenuItem(
+    screen: String,
+    title: String,
+    currentScreen: MutableState<String>,
+    friendRequestCount: Int
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.clickable { currentScreen.value = screen }
     ) {
-        Text(
-            text = title,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            color = if (currentScreen.value == screen) Color.Black else Color.Gray
-        )
+        if (title == "친구요청") {
+
+            FriendRequestBadge(friendRequestCount)
+        } else {
+            Text(
+                text = title,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (currentScreen.value == screen) Color.Black else Color.Gray
+            )
+        }
 
         Spacer(modifier = Modifier.height(3.dp))
         if (currentScreen.value == screen) {
+
             Box(
                 modifier = Modifier
                     .width(75.dp)
                     .height(3.dp)
                     .background(Color(0xff35A6CC))
             )
+
         }
     }
 }
@@ -265,4 +326,36 @@ fun ScreenPreivew() {
     val navController = rememberNavController()
     FriendScreen(navController)
 
+}
+
+@Composable
+fun FriendRequestBadge(friendRequestCount: Int) {
+    Box { // 외부 Box
+        // 친구 요청 아이콘 (예제 아이콘)
+        Text(
+            "친구 요청",
+            fontSize = 20.sp,
+            modifier = Modifier.padding(top = 2.dp, end = 8.dp),
+            fontWeight = FontWeight.Bold
+        )
+
+        // 🔴 빨간 알림 배지 (알림 개수가 0보다 클 때만 표시)
+        if (friendRequestCount > 0) {
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .background(Color.Red, shape = CircleShape)
+                    .align(Alignment.TopEnd), // 오른쪽 상단 정렬
+                contentAlignment = Alignment.Center
+            ) {
+
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun FriendRequestBadgePreview() {
+    FriendRequestBadge(friendRequestCount = 3) // 🔥 예제: 친구 요청 3개
 }

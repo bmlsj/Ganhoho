@@ -123,7 +123,6 @@ fun AddDateBottomSheet(
         }
     }
 
-
     // viewModel
     val scheduleViewModel: ScheduleViewModel = viewModel()
     val authViewModel: AuthViewModel = viewModel()

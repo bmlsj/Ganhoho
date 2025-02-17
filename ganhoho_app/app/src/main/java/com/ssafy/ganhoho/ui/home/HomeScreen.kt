@@ -82,7 +82,8 @@ fun HomeScreen(navController: NavController) {
 
     // 근무 스케쥴 조회
     val myWorkScheduleState = scheduleViewModel.myWorkSchedule.collectAsState().value
-    val myWorkSchedule = myWorkScheduleState?.getOrNull() ?: emptyList()
+    val myWorkSchedule =
+        remember(myWorkScheduleState) { myWorkScheduleState?.getOrNull() ?: emptyList() }
 
     // 토큰 로드하기
     val token = authViewModel.accessToken.collectAsState().value
@@ -98,6 +99,7 @@ fun HomeScreen(navController: NavController) {
         if (token != null) {
             // 근무 스케쥴 불러오기
             scheduleViewModel.getMyWorkSchedule(token)
+            Log.d("schedule", myScheduleList.toString())
             // 개인 스케쥴 불러오기
             scheduleViewModel.getMySchedule(token)
         }
