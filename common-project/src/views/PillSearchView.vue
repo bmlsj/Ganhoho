@@ -22,7 +22,8 @@
            class="pill-card"
            @click="goToDetailPage(pill.id)">
         <div class="pill-image-container">
-          <img :src="pill.imageSrc || defaultImage" :alt="pill.name" class="pill-image" />
+          <!-- pill.imageSrc가 빈 문자열이면 defaultImage를 사용 -->
+          <img :src="pill.imageSrc === '' ? defaultImage : pill.imageSrc" :alt="pill.name" class="pill-image" />
         </div>
         <div class="pill-info">
           <h3 class="pill-name">{{ pill.name }}</h3>
@@ -45,7 +46,7 @@ import { useRouter } from "vue-router"
 import { useApiStore } from "@/stores/apiRequest"
 import maskGroup from '@/assets/mask-group0.svg'
 import frameIcon from '@/assets/frame0.svg'
-
+import defaultImage from '@/assets/image-26920.png';
 const apiStore = useApiStore()
 const router = useRouter()
 const searchQuery = ref("")
