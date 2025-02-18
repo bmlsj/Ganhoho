@@ -49,8 +49,8 @@ import maskGroup from '@/assets/mask-group0.svg'
 import frameIcon from '@/assets/frame0.svg'
 import { storeToRefs } from 'pinia'
 
-const { medicineId } = storeToRefs(apiStore)
 const apiStore = useApiStore()
+const { medicineId } = storeToRefs(apiStore)
 const router = useRouter()
 const searchQuery = ref("")
 const filteredMedicineList = ref([])
