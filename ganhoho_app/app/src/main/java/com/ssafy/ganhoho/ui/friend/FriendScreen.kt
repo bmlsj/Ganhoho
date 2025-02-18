@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -157,6 +158,24 @@ fun FriendScreen(navController: NavController) {
         }
     }
 
+    // ✅ 친구 목록 새로고침 함수 추가
+    fun fetchFriendData() {
+        if (!token.isNullOrEmpty()) {
+            friendViewModel.getFriendList(token)  // 친구 목록 조회
+            friendViewModel.getFriendInvite(token)  // 친구 요청 목록 조회
+            if (searchText.value.isNotEmpty()) {
+                memberViewModel.searchFriend(token, searchText.value)  // 친구 검색
+            }
+        }
+    }
+
+    // menuItem 변경 시 마다 데이터 새로 고침
+    LaunchedEffect(currentScreen.value) {
+        Log.d("current", "화면 변경 ${currentScreen.value}")
+        fetchFriendData()
+    }
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -175,13 +194,13 @@ fun FriendScreen(navController: NavController) {
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
 
-            MenuItem("list", "친구목록", currentScreen, friendInvite.size)
-            MenuItem("request", "친구요청", currentScreen, friendInvite.size)
-            MenuItem("search", "친구검색", currentScreen, friendInvite.size)
+            MenuItem("list", "친구목록", currentScreen, friendInvite.size, { fetchFriendData() })
+            MenuItem("request", "친구요청", currentScreen, friendInvite.size, { fetchFriendData() })
+            MenuItem("search", "친구검색", currentScreen, friendInvite.size, { fetchFriendData() })
 
         }
 
-        Spacer(modifier = Modifier.height(25.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // 친구 검색 화면
         Column(
@@ -192,13 +211,13 @@ fun FriendScreen(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             if (currentScreen.value != "request") {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
                     // 친구 검색
                     OutlinedTextField(
@@ -233,7 +252,11 @@ fun FriendScreen(navController: NavController) {
             }
 
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f)
+                    .padding(bottom = 80.dp)
+                    .navigationBarsPadding(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 // menu 별로 데이터 보여주기
@@ -308,7 +331,9 @@ fun FriendScreen(navController: NavController) {
                 }
             }
 
+
         }
+
 
         // ✅ 친구 추가 성공 다이얼로그
         if (friendListSuccessDialog) {
@@ -349,27 +374,31 @@ fun MenuItem(
     screen: String,
     title: String,
     currentScreen: MutableState<String>,
-    friendRequestCount: Int
+    friendRequestCount: Int,
+    fetchFriendData: () -> Unit
 ) {
+    val isSelected = currentScreen.value == screen
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable { currentScreen.value = screen }
+        modifier = Modifier.clickable {
+            currentScreen.value = screen
+            fetchFriendData()  // ✅ 메뉴 클릭 시 친구 목록 새로고침
+        }
     ) {
         if (title == "친구요청") {
-
-            FriendRequestBadge(friendRequestCount)
+            FriendRequestBadge(friendRequestCount, isSelected)
         } else {
             Text(
                 text = title,
                 fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (currentScreen.value == screen) Color.Black else Color.Gray
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                color = if (isSelected) Color.Black else Color.Gray
             )
         }
 
         Spacer(modifier = Modifier.height(3.dp))
-        if (currentScreen.value == screen) {
-
+        if (isSelected) {
             Box(
                 modifier = Modifier
                     .width(75.dp)
@@ -392,14 +421,15 @@ fun ScreenPreivew() {
 }
 
 @Composable
-fun FriendRequestBadge(friendRequestCount: Int) {
+fun FriendRequestBadge(friendRequestCount: Int, isSelected: Boolean) {
     Box { // 외부 Box
         // 친구 요청 아이콘 (예제 아이콘)
         Text(
             "친구 요청",
             fontSize = 20.sp,
             modifier = Modifier.padding(top = 2.dp, end = 8.dp),
-            fontWeight = FontWeight.Bold
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+            color = if (isSelected) Color.Black else Color.Gray
         )
 
         // 🔴 빨간 알림 배지 (알림 개수가 0보다 클 때만 표시)
@@ -420,5 +450,5 @@ fun FriendRequestBadge(friendRequestCount: Int) {
 @Preview
 @Composable
 fun FriendRequestBadgePreview() {
-    FriendRequestBadge(friendRequestCount = 3) // 🔥 예제: 친구 요청 3개
+    FriendRequestBadge(friendRequestCount = 3, false) // 🔥 예제: 친구 요청 3개
 }
