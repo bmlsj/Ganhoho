@@ -62,7 +62,7 @@ fun FriendRequestList(
         }
     }
 
-    var successDialog by remember { mutableStateOf(false) }
+//    var successDialog by remember { mutableStateOf(false) }
     // 수락 성공 시
     val friendInviteResponse = friendViewModel.friendResponse.collectAsState().value
     val updatedResponse by rememberUpdatedState(friendInviteResponse)
@@ -71,23 +71,12 @@ fun FriendRequestList(
         updatedResponse?.let {
             if (it.isSuccess) {
                 Log.d("friend", "friend add success")
-                successDialog = true // ✅ 다이얼로그 열기
+//                successDialog = true // ✅ 다이얼로그 열기
             } else {
                 Log.d("friend", "friend add failed")
             }
         }
     }
-
-//    LaunchedEffect(friendInviteResponse) {
-//        friendInviteResponse?.let {
-//            if (friendInviteResponse.isSuccess) {
-//                Log.d("friend", "friend add success")
-//                successDialog = true // ✅ 다이얼로그 열기
-//            } else {
-//                Log.d("friend", "friend add failed")
-//            }
-//        }
-//    }
 
     Box(
         modifier = Modifier
@@ -192,32 +181,9 @@ fun FriendRequestList(
                     }
                 }
             }
-
-            // 삭제 아이콘
-//            Icon(
-//                imageVector =
-//                Icons.Default.Close, contentDescription = "close",
-//                tint = Color.Gray,
-//                modifier = Modifier.size(18.dp)
-//            )
-
         }
     }
 
-    // ✅ 친구 신청 완료 다이얼로그
-    if (successDialog) {
-        AlertDialog(
-            onDismissRequest = { successDialog = false }, // ✅ 바깥 클릭 시 닫힘
-            confirmButton = {
-                Button(
-                    onClick = { successDialog = false } // ✅ 확인 버튼 클릭 시 닫힘
-                ) {
-                    Text("확인")
-                }
-            },
-            text = { Text("친구 추가되었습니다.") }
-        )
-    }
 
 }
 

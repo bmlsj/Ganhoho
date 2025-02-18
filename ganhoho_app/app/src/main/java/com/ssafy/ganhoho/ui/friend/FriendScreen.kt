@@ -22,7 +22,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -76,15 +75,6 @@ fun FriendScreen(navController: NavController) {
     val friendInviteState = friendViewModel.friendInviteList.collectAsState().value
     val friendInvite = friendInviteState?.getOrNull() ?: emptyList()
 
-    // 검색된 친구 목록 필터링
-//    val filteredFriendList = remember(friendList, searchText.value) {
-//        friendList.filter { friend ->
-//            searchText.value.isEmpty() ||
-//                    friend.friendLoginId.contains(searchText.value, ignoreCase = true) ||
-//                    friend.name.contains(searchText.value, ignoreCase = true)
-//        }
-//    }
-
     // ✅ 검색된 친구 목록을 필터링하고, 즐겨찾기(isFavorite=true)한 친구들을 먼저 정렬
     val filteredFriendList by rememberUpdatedState(
         derivedStateOf {
@@ -127,23 +117,38 @@ fun FriendScreen(navController: NavController) {
     }
 
     // ✅ 다이얼로그 상태 추가 (한 번만 표시하기 위해)
-    var successDialog by remember { mutableStateOf(false) }
-    var errorDialog by remember { mutableStateOf(false) }
+    var friendListSuccessDialog by remember { mutableStateOf(false) } // 친구 추가 성공
+    var friendListErrorDialog by remember { mutableStateOf(false) }  // 친구 추가 실패
+    var friendAcceptDialog by remember { mutableStateOf(false) } // 친구 요청 수락 성공
 
+
+    // ✅ 친구 추가 요청 결과 감지
     val addFriendResult = friendViewModel.addFriendResult.collectAsState().value
 
     // ✅ ViewModel에서 addFriendResult 변경 감지 → 다이얼로그 상태 업데이트
     LaunchedEffect(addFriendResult) {
         addFriendResult?.onSuccess { response ->
             if (response.success) {
-                successDialog = true
+                friendListSuccessDialog = true
             }
         }?.onFailure {
-            errorDialog = true
+            friendListErrorDialog = true
         }
         friendViewModel.clearAddFriendResult()
     }
 
+    // ✅ 친구 요청 수락 감지
+    val friendAcceptResult = friendViewModel.friendResponse.collectAsState().value
+    LaunchedEffect(friendAcceptResult) {
+        friendAcceptResult?.let {
+            if (it.isSuccess) {
+                Log.d("friend", "친구 요청 수락 성공")
+                friendAcceptDialog = true // ✅ 다이얼로그 표시
+            } else {
+                Log.d("friend", "친구 요청 수락 실패")
+            }
+        }
+    }
 
     // ✅ 친구 목록을 갱신하는 LaunchedEffect 추가
     LaunchedEffect(friendList) {
@@ -283,7 +288,7 @@ fun FriendScreen(navController: NavController) {
                             items(memberList) { member ->
                                 FriendAdd(member = member, friendList = friendList,
                                     onFriendAdd = { loginId ->
-                                        if(!token.isNullOrEmpty()) {
+                                        if (!token.isNullOrEmpty()) {
                                             friendViewModel.addFriendList(token, loginId)
                                         }
                                     }
@@ -306,24 +311,33 @@ fun FriendScreen(navController: NavController) {
         }
 
         // ✅ 친구 추가 성공 다이얼로그
-        if (successDialog) {
+        if (friendListSuccessDialog) {
             AlertDialog(
-                onDismissRequest = { successDialog = false },
+                onDismissRequest = { friendListSuccessDialog = false },
                 confirmButton = {
-                    Button(onClick = { successDialog = false }) { Text("확인") }
+                    Button(onClick = { friendListSuccessDialog = false }) { Text("확인") }
                 },
                 text = { Text("친구 신청이 완료되었습니다.") }
             )
         }
 
         // ✅ 친구 추가 실패 다이얼로그
-        if (errorDialog) {
+        if (friendListErrorDialog) {
             AlertDialog(
-                onDismissRequest = { errorDialog = false },
+                onDismissRequest = { friendListErrorDialog = false },
                 confirmButton = {
-                    Button(onClick = { errorDialog = false }) { Text("확인") }
+                    Button(onClick = { friendListErrorDialog = false }) { Text("확인") }
                 },
                 text = { Text("이미 요청된 친구입니다.") }
+            )
+        }
+
+        // ✅ 친구 요청 수락 성공 다이얼로그
+        if (friendAcceptDialog) {
+            AlertDialog(
+                onDismissRequest = { friendAcceptDialog = false },
+                confirmButton = { Button(onClick = { friendAcceptDialog = false }) { Text("확인") } },
+                text = { Text("친구 요청을 수락했습니다!") }
             )
         }
     }
