@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -184,10 +185,8 @@ fun CheckPermissionAndInitFCM() {
         val allPermissionsGranted = result.values.all { it }
         if (allPermissionsGranted) {
             permissionGranted = allPermissionsGranted // ✅ 직접 할당
+            Toast.makeText(context, "원활한 알림 on/off를 위해 항상 허용을 선택해주세요", Toast.LENGTH_SHORT).show()
             backgroundPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-            Log.d(TAG, "CheckPermissionAndInitFCM: rnjsgks ccpzmcpzm")
-        } else{
-            Log.d(TAG, "CheckPermissionAndInitFCM: ")
         }
     }
 
@@ -199,7 +198,6 @@ fun CheckPermissionAndInitFCM() {
             permissionGranted = true
             initFCM()
             if(!PermissionChecker.hasPermissions(context, arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION))) backgroundPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-            Log.d(TAG, "CheckPermissionAndInitFCM: rnjsgks dlTdma")
             scheduleLocationWorker(context)
         }
     }
@@ -226,7 +224,7 @@ fun scheduleLocationWorker(context: Context) {
 //        if (workInfos.isNullOrEmpty()) {
             // 기존에 등록된 작업이 없으면 새로 등록
             val workRequest = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES)
-                .setInitialDelay(2, TimeUnit.MINUTES)
+                .setInitialDelay(1, TimeUnit.MINUTES)
                 .addTag("LocationWorker") // 중복 실행 방지용 태그 추가
                 .setConstraints(
                     Constraints.Builder()
@@ -237,7 +235,7 @@ fun scheduleLocationWorker(context: Context) {
 
             workManager.enqueueUniquePeriodicWork(
                 "LocationWorker",
-                ExistingPeriodicWorkPolicy.REPLACE, // 기존 작업 유지
+                ExistingPeriodicWorkPolicy.REPLACE,
                 workRequest
             )
 //        } else{
