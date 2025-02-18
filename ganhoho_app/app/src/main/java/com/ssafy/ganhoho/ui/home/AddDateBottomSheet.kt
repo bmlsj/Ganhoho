@@ -49,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -300,149 +301,161 @@ fun AddDateBottomSheet(
         Spacer(modifier = Modifier.height(30.dp))
 
         // 등록 버튼
-        Button(
-            onClick = {
-                // 📌 스케줄 추가 기능
-                try {
-                    Log.d(
-                        "edit",
-                        "수정 버튼 클릭됨 - title: ${title.value}, color: ${selectedColor.value}"
-                    )
-
-                    // 입력 항목이 비었다면
-                    if (title.value.isBlank()) {
-                        Toast.makeText(context, "제목을 입력해주세요.", Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
-                    if (startDate.value == null || endDate.value == null) {
-                        Toast.makeText(context, "날짜를 입력해주세요.", Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
-
-                    // 시간 설정 했을 경우
-                    val startDateTime = if (isTimeSet) {
-                        LocalDateTime.parse("${startDate.value}T${startTime.value}:01")
-                    } else {
-                        startDate.value!!.atStartOfDay()  // 00:00:00
-                    }
-
-                    val endDateTime = if (isTimeSet) { // 시간 설정 했을 경우
-                        LocalDateTime.parse("${endDate.value}T${endTime.value}:01")
-                    } else {
-                        endDate.value!!.atTime(23, 59, 59)  // 23:59:59
-                    }
-
-
-                    // 일정 수정 정보
-                    val newEditSchedule = MySchedule(
-                        scheduleId = eventToEdit?.scheduleId ?: -1, // 수정 시 ID 유지
-                        startDt = startDateTime.toString(),
-                        endDt = endDateTime.toString(),
-                        scheduleTitle = title.value,
-                        scheduleColor = "#${Integer.toHexString(selectedColor.value.hashCode())}", // 색상을 HEX 코드로 변환
-                        isPublic = isPublic.value,
-                        isTimeSet = isTimeSet
-                    )
-
-                    // 일정 추가 정보
-                    val newSchedule = MyScheduleRequest(  // 새 일정 추가
-                        startDt = startDateTime.toString(),
-                        endDt = endDateTime.toString(),
-                        scheduleTitle = title.value,
-                        scheduleColor = "#${Integer.toHexString(selectedColor.value.hashCode())}", // 색상을 HEX 코드로 변환
-                        isPublic = isPublic.value,
-                        isTimeSet = isTimeSet
-                    )
-
-                    if (eventToEdit != null) {
-                        Log.d("edit", eventToEdit.scheduleId.toString())
-                    }
-
-                    Log.d("addSchedule", newSchedule.toString())
-                    Log.d("edit", newEditSchedule.toString())
-
-                    Log.d("edit", "$isEditing")
-                    // 개인 스케쥴 수정
-                    if (isEditing && token != null) {
-                        Log.d("edit", "${newEditSchedule.scheduleId} edit button")
-                        scheduleViewModel.updateSchedule(
-                            token,
-                            scheduleId = newEditSchedule.scheduleId,
-                            request = newEditSchedule
-                        )
-                    } else if (token != null) { // 개인 스케쥴 추가
-                        scheduleViewModel.addMySchedule(token = token, request = newSchedule)
-                    }
-
-                } catch (e: Exception) {
-                    println("🚨 날짜 변환 오류: ${e.message}")
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
-            shape = RoundedCornerShape(20.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text(text = if (isEditing) "수정" else "추가", color = Color.White, fontSize = 18.sp)
+            Button(
+                onClick = {
+                    // 📌 스케줄 추가 기능
+                    try {
+                        Log.d(
+                            "edit",
+                            "수정 버튼 클릭됨 - title: ${title.value}, color: ${selectedColor.value}"
+                        )
+
+                        // 입력 항목이 비었다면
+                        if (title.value.isBlank()) {
+                            Toast.makeText(context, "제목을 입력해주세요.", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        if (startDate.value == null || endDate.value == null) {
+                            Toast.makeText(context, "날짜를 입력해주세요.", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+
+                        // 시간 설정 했을 경우
+                        val startDateTime = if (isTimeSet) {
+                            LocalDateTime.parse("${startDate.value}T${startTime.value}:01")
+                        } else {
+                            startDate.value!!.atStartOfDay()  // 00:00:00
+                        }
+
+                        val endDateTime = if (isTimeSet) { // 시간 설정 했을 경우
+                            LocalDateTime.parse("${endDate.value}T${endTime.value}:01")
+                        } else {
+                            endDate.value!!.atTime(23, 59, 59)  // 23:59:59
+                        }
+
+
+                        // 일정 수정 정보
+                        val newEditSchedule = MySchedule(
+                            scheduleId = eventToEdit?.scheduleId ?: -1, // 수정 시 ID 유지
+                            startDt = startDateTime.toString(),
+                            endDt = endDateTime.toString(),
+                            scheduleTitle = title.value,
+                            scheduleColor = "#${Integer.toHexString(selectedColor.value.hashCode())}", // 색상을 HEX 코드로 변환
+                            isPublic = isPublic.value,
+                            isTimeSet = isTimeSet
+                        )
+
+                        // 일정 추가 정보
+                        val newSchedule = MyScheduleRequest(  // 새 일정 추가
+                            startDt = startDateTime.toString(),
+                            endDt = endDateTime.toString(),
+                            scheduleTitle = title.value,
+                            scheduleColor = "#${Integer.toHexString(selectedColor.value.hashCode())}", // 색상을 HEX 코드로 변환
+                            isPublic = isPublic.value,
+                            isTimeSet = isTimeSet
+                        )
+
+                        if (eventToEdit != null) {
+                            Log.d("edit", eventToEdit.scheduleId.toString())
+                        }
+
+                        Log.d("addSchedule", newSchedule.toString())
+                        Log.d("edit", newEditSchedule.toString())
+
+                        Log.d("edit", "$isEditing")
+                        // 개인 스케쥴 수정
+                        if (isEditing && token != null) {
+                            Log.d("edit", "${newEditSchedule.scheduleId} edit button")
+                            scheduleViewModel.updateSchedule(
+                                token,
+                                scheduleId = newEditSchedule.scheduleId,
+                                request = newEditSchedule
+                            )
+                        } else if (token != null) { // 개인 스케쥴 추가
+                            scheduleViewModel.addMySchedule(token = token, request = newSchedule)
+                        }
+
+                    } catch (e: Exception) {
+                        println("🚨 날짜 변환 오류: ${e.message}")
+                    }
+                },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(50.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                Text(text = if (isEditing) "수정" else "추가", color = Color.White, fontSize = 18.sp)
+            }
+
+            // 삭제 버튼 (수정 모드일 때만 표시)
+            if (isEditing) {
+                Button(
+                    onClick = {
+                        eventToEdit?.scheduleId?.let {
+                            // 삭제 기능
+                            scheduleViewModel.deleteMySchedule(token!!, it)
+                            showBottomSheet.value = false
+                            navController.navigate("home") {
+                                popUpTo("home") { inclusive = true }
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray),
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    Text(text = "삭제", color = Color.White, fontSize = 18.sp)
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(50.dp))
 
-        // 삭제 버튼 (수정 모드일 때만 표시)
-        if (isEditing) {
-            Button(
-                onClick = {
-                    eventToEdit?.scheduleId?.let {
-                        // 삭제 기능
-                        scheduleViewModel.deleteMySchedule(token!!, it)
-                        showBottomSheet.value = false
-                        navController.navigate("home") {
-                            popUpTo("home") { inclusive = true }
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                shape = RoundedCornerShape(20.dp)
-            ) {
-                Text(text = "삭제", color = Color.White, fontSize = 18.sp)
-            }
-        }
+
     }
 }
 
-// 공개/비공개
-@SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
 fun ToggleButton(isPublic: MutableState<Boolean>) {
+    val toggleWidth = remember { mutableStateOf(100.dp) } // 기본값 설정 (초기값)
+    val toggleHeight = remember { mutableStateOf(40.dp) } // 기본 높이 설정
+    val buttonSize = remember { mutableStateOf(0.dp) } // 원형 버튼 크기
 
     val toggleOffset by animateDpAsState(
-        targetValue = if (isPublic.value) 0.dp else 60.dp,
+        targetValue = if (isPublic.value) 0.dp else toggleWidth.value / 2, // 반응형으로 이동
         animationSpec = tween(durationMillis = 300), label = ""
     )
 
     Box(
         modifier = Modifier
-            .fillMaxWidth(0.4f)
-            .height(40.dp)
-            .padding(1.dp)
+            .fillMaxWidth(0.4f) // ✅ 너비를 60%로 설정하여 반응형 대응
+            .height(toggleHeight.value)
+            .padding(4.dp)
             .clip(RoundedCornerShape(25.dp))
             .background(Color(0xffDADADA)) // 배경색
             .border(BorderStroke(1.dp, color = FieldLightGray), shape = RoundedCornerShape(25.dp))
-            .clickable { isPublic.value = !isPublic.value },
+            .clickable { isPublic.value = !isPublic.value }
+            .onGloballyPositioned { coordinates ->
+                toggleWidth.value = coordinates.size.width.dp // ✅ 실제 너비 저장
+                toggleHeight.value = coordinates.size.height.dp // ✅ 실제 높이 저장
+                buttonSize.value = toggleHeight.value * 0.6f // ✅ 원형 버튼 크기를 높이에 맞게 조정
+            },
         contentAlignment = Alignment.CenterStart
     ) {
         // 원형 이동 버튼
         Box(
             modifier = Modifier
                 .offset(x = toggleOffset)
-                .padding(4.dp)
-                .size(48.dp)
+                .size(buttonSize.value)
                 .clip(CircleShape)
-                .background(Color(0xFF5A5A5A))
+                .background(Color.Gray)
         )
 
         // 텍스트 표시
@@ -472,7 +485,6 @@ fun ToggleButton(isPublic: MutableState<Boolean>) {
             )
         }
     }
-
 }
 
 
