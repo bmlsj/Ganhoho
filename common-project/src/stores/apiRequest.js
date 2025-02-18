@@ -313,7 +313,7 @@ export const useApiStore = defineStore('api', () => {
         const id = response.data.medicineInfo?.[0]?.ITEM_SEQ;
         console.log("약!!!!!!!!!!!!!!!!!!!", id);
         if (!id) {
-          alertStore.showAlert("인식에 실패했습니다. 다시 시도해 주세요.");
+          alert("인식에 실패했습니다. 다시 시도해 주세요.");
           return;
         }
         medicineId.value = id;
