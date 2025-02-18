@@ -23,7 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -62,37 +62,15 @@ fun LoginScreen(navController: NavController) {
 
     val authViewModel: AuthViewModel = viewModel()
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-
-    // 자동 로그인 관련
-    // 자동 로그인 여부 확인
-    //val isLoggedIn by authDataStore.isLoggedIn.collectAsState(initial = false)
-
-    // 로그인 여부 감지 -> 자동 메인화면 이동
-//    LaunchedEffect(isLoggedIn) {
-//        if(isLoggedIn){
-//            navController.navigate("main"){
-//                popUpTo("login") {inclusive = true}
-//            }
-//        }
-//    }
-
 
     // 로그인 결과 상태 감지
-    // val loginResult = authViewModel.loginResult.collectAsState().value
-    val userInfo = authViewModel.userInfo.collectAsState().value
-
-    // ✅ 앱 실행 시 자동 로그인 확인
-    LaunchedEffect(Unit) {
-        authViewModel.checkAutoLogin(context)
-    }
-
-    // ✅ 로그인 성공 시 메인 화면 이동
-    LaunchedEffect(userInfo) {
-        userInfo?.let {
-            // Toast.makeText(context, "${it.name}님 자동 로그인 성공!", Toast.LENGTH_SHORT).show()
-            navController.navigate("main") {
-                popUpTo("login") { inclusive = true }
+     val loginResult = authViewModel.loginResult.collectAsState().value
+    LaunchedEffect(loginResult) {
+        if (loginResult != null) {
+            if(loginResult.isSuccess){
+                navController.navigate("main"){
+                    popUpTo("login") {inclusive = true}
+                }
             }
         }
     }

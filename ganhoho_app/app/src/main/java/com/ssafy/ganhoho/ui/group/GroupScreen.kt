@@ -46,8 +46,7 @@ import com.ssafy.ganhoho.viewmodel.GroupViewModel
 @Composable
 fun GroupScreen(
     navController: NavHostController,
-    bottomNavViewModel: BottomNavViewModel = viewModel(),
-//    repository: GroupRepository
+    bottomNavViewModel: BottomNavViewModel = viewModel()
 ) {
 
     val authViewModel: AuthViewModel = viewModel()
@@ -107,7 +106,7 @@ fun GroupScreen(
             Spacer(modifier = Modifier.height(15.dp))
 
             // 그룹이 없다면!
-            if(groupList.isEmpty()){
+            if (groupList.isEmpty()) {
                 Text(
                     text = "현재 참여하고 있는 그룹이 없습니다. \n그룹을 만들어서 스케줄을 공유해 보세요!",
                     fontSize = 16.sp,
@@ -116,7 +115,7 @@ fun GroupScreen(
             }
 
             // 그룹 목록 로드 에러 발생 시 메시지 표시
-            if(errorMessage != null){
+            if (errorMessage != null) {
                 Text(
                     text = "ERROR: 목록 불러오기 실패!",
                     fontSize = 16.sp
@@ -187,7 +186,6 @@ fun GroupScreen(
         )
     }
 }
-
 
 
 //@Preview(showBackground = true)

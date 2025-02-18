@@ -27,6 +27,9 @@ import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+/**
+ * 바텀 네비게이션을 나타내는 네비게이션
+ */
 @Composable
 fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
     val bottomNavViewModel: BottomNavViewModel = viewModel()
@@ -41,7 +44,6 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         composable("work") { WorkScreen(navController) }
         composable("pill") { PillScreen(navController) }
         composable("home") { HomeScreen(navController) }
-        composable("home") { HomeScreen(navController) } // modifier 제거
         composable("group") {
             GroupScreen(
                 navController = navController,

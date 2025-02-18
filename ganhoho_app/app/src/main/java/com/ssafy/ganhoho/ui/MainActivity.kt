@@ -77,7 +77,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val navController = rememberNavController()
-            val isLoggedIn by authDataStore.isLoggedIn.collectAsState(initial = false) // 자동 로그인 상태 확인
+            val isLoggedIn by authDataStore.isLoggedIn.collectAsState(initial = false) //  로그인 상태 확인
 
             GANHOHOTheme {
                 Surface(

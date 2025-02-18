@@ -2,9 +2,12 @@ package com.ssafy.ganhoho.ui
 
 import android.net.Uri
 import android.util.Log
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -19,6 +22,9 @@ import com.ssafy.ganhoho.ui.group.GroupScreen
 import com.ssafy.ganhoho.ui.splash.AnimatedSplashScreen
 import com.ssafy.ganhoho.viewmodel.GroupViewModel
 
+/**
+ * 최상위 네비게이션
+ */
 @Composable
 fun MainNavHost(deepLinkUri: Uri?) {
 
@@ -50,9 +56,10 @@ fun MainNavHost(deepLinkUri: Uri?) {
         composable("join") { JoinScreen(navController) }
         // 병원 정보 화면
         composable("hospitalInfo") { SearchHospital(navController) }
-        // ✅ 그룹 화면 추가
-        composable("group") { GroupScreen(navController) }
 
+        composable("group") {
+            GroupScreen(navController = navController)
+        }
 
     }
 
@@ -89,12 +96,18 @@ fun HandleDeepLink(
                 groupViewModel.joinGroupByInviteCode(token, inviteCode,
                     onSuccess = {
                         Log.d("DeepLink", "초대 수락 성공! 그룹 화면으로 이동")
-                        navController.navigate("group") {
+
+                        navController.navigate("main") {
                             popUpTo("splash") { inclusive = true }
                         }
+
+                        // ✅ Main 이동 후 AppNavHost에서 그룹 화면으로 이동
+                        navController.navigate("group")
                     },
                     onFailure = { error ->
                         Log.e("DeepLink", "초대 수락 실패: $error")
+
+
                     })
             } else {
                 Log.e("DeepLink", "토큰 없음. 로그인 필요")
