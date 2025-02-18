@@ -184,6 +184,7 @@ public class PersonalScheduleService {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm");
 
         List<Map<String, Object>> formattedSchedules = schedules.stream()
+                .filter(schedule -> schedule.getIsPublic())
                 .flatMap(schedule -> schedule.getScheduleDetails().stream()
                         .map(detail -> {
                             Map<String, Object> map = new HashMap<>();
