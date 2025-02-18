@@ -12,6 +12,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
+
 class ApplicationClass : Application() {
 
     companion object {
@@ -23,6 +24,7 @@ class ApplicationClass : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        Log.d("GanHohoApplication", "🚀 TokenManager 초기화됨")
 
         // 로그 찍기
         val loggingInterceptor = HttpLoggingInterceptor { message ->

@@ -153,8 +153,8 @@ fun HomeScreen(navController: NavController) {
             text = "${currentMonthState.value.year}년 ${
                 currentMonthState.value.month.getDisplayName(TextStyle.FULL, Locale.KOREA)
             }",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.ExtraBold,
             modifier = Modifier.padding(bottom = 8.dp)
         )
 

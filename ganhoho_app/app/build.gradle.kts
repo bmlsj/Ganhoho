@@ -17,7 +17,6 @@ android {
     namespace = "com.ssafy.ganhoho"
     compileSdk = 35
 
-
     defaultConfig {
         applicationId = "com.ssafy.ganhoho"
         minSdk = 26
@@ -25,6 +24,7 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        // 2. 추가
         buildConfigField("String", "SERVER_URL", "\"${localProperties.getProperty("SERVER_URL", "")}\"")
         buildConfigField("String", "WEBVIEW_PILL_URL", "\"${localProperties.getProperty("WEBVIEW_PILL_URL", "")}\"")
         buildConfigField("String", "WEBVIEW_WORK_URL", "\"${localProperties.getProperty("WEBVIEW_WORK_URL", "")}\"")
@@ -83,6 +83,9 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.gms.play.services.wearable)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.testing)
     implementation(libs.androidx.camera.view)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -100,6 +103,10 @@ dependencies {
 
     implementation("androidx.compose.foundation:foundation:1.7.7") // LazyGrid 지원
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0") // 날짜 지원
+
+    implementation("androidx.compose.foundation:foundation:1.7.7") // LazyGrid 지원
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0") // 날짜 지원
+
 
     // retrofit2
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
@@ -126,6 +133,21 @@ dependencies {
     // lottie
     implementation ("com.airbnb.android:lottie-compose:6.6.2")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+    implementation ("androidx.navigation:navigation-compose:2.4.0-alpha10") //네비게이션
+
+    // okhttp3
+    implementation("com.squareup.okhttp3:okhttp")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+
+    // datastore
+    implementation ("androidx.datastore:datastore-preferences:1.1.2")
+    implementation ("androidx.datastore:datastore-core:1.1.2")  // 코어 의존성 (필요 시)
+
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+    implementation ("androidx.navigation:navigation-compose:2.4.0-alpha10") //네비게이션
+    implementation("androidx.compose.material:material:1.5.4")
+
 
     implementation("androidx.camera:camera-camera2:1.4.0-alpha02")
     implementation("androidx.camera:camera-lifecycle:1.4.0-alpha02")

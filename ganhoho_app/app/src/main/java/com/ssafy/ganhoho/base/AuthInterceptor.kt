@@ -18,8 +18,9 @@ class AuthInterceptor(private val context: Context) : Interceptor {
             return chain.proceed(originalRequest)
         }
 
-        // ✅ 로그인 요청이 아닌 경우, 토큰을 가져와서 헤더에 추가
+        // 로그인 요청이 아닌 경우, 토큰을 가져와서 헤더에 추가
         val token = runBlocking { SecureDataStore.getAccessToken(context).first() }
+        Log.d("AuthInterceptor", "Token before request: $token")
 
         if (!token.isNullOrEmpty()) {
             Log.d("AuthInterceptor", "Loaded Access Token: $token")
@@ -28,7 +29,7 @@ class AuthInterceptor(private val context: Context) : Interceptor {
         }
 
         val request = chain.request().newBuilder()
-       //     .addHeader("Authorization", "Bearer $token")
+            //.addHeader("Authorization", "Bearer $token")
             .addHeader("Content-Type", "application/json")
             .addHeader("Accept", "application/json")
             .build()

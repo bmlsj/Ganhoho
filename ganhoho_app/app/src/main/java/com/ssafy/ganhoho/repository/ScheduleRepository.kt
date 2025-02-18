@@ -1,12 +1,11 @@
 package com.ssafy.ganhoho.repository
 
 import android.util.Log
-import com.ssafy.ganhoho.data.model.dto.schedule.FriendPublicSchedule
 import com.ssafy.ganhoho.data.model.dto.schedule.MySchedule
 import com.ssafy.ganhoho.data.model.dto.schedule.MyScheduleRequest
 import com.ssafy.ganhoho.data.model.dto.schedule.WorkScheduleDto
-import com.ssafy.ganhoho.data.model.response.schedule.AddMyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.handleResponse
+import com.ssafy.ganhoho.data.model.response.schedule.AddMyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.schedule.FriendPersonalResponse
 import com.ssafy.ganhoho.data.model.response.schedule.MyScheduleResponse
 import com.ssafy.ganhoho.data.model.response.schedule.MyWorkResponse

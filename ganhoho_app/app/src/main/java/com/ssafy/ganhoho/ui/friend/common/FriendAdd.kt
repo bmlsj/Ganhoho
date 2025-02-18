@@ -42,14 +42,15 @@ import com.ssafy.ganhoho.viewmodel.FriendViewModel
 @Composable
 fun FriendAdd(
     member: MemberDto,
-    friendList: List<FriendDto>
+    friendList: List<FriendDto>,
+    onFriendAdd: (String) -> Unit
 ) {
 
     // 다이얼로그
     var successDialog by remember { mutableStateOf(false) }
     var errorDialog by remember { mutableStateOf(false) }
 
-  //  val token = BuildConfig.TOKEN
+    //  val token = BuildConfig.TOKEN
     val authViewModel: AuthViewModel = viewModel()
     val friendViewModel: FriendViewModel = viewModel()
 
@@ -65,24 +66,27 @@ fun FriendAdd(
 
     // ✅ 현재 검색된 회원이 이미 친구인지 확인
     val isFriend = friendList.any { it.friendLoginId == member.loginId }
-    val addFriendResult = friendViewModel.addFriendResult.collectAsState().value
-
-    LaunchedEffect(addFriendResult) {
-        Log.d("FriendAdd", "addFriendResult 값 변경 감지: $addFriendResult")
-
-        addFriendResult?.onSuccess { response ->
-            if (response.success) {
-                Log.d("FriendAdd", "add friend success")
-                successDialog = true  // 친구 추가 시, 확인 다이얼로그 띄우기
-            } else {
-                Log.d("FriendAdd", "add friend failed")
-
-            }
-        }?.onFailure { exception ->
-            Log.e("FriendAdd", "🚨 error: ${exception.message}")
-            errorDialog = true // ✅ 409 에러 발생 시 다이얼로그 표시
-        }
-    }
+//    val addFriendResult = friendViewModel.addFriendResult.collectAsState().value
+//
+//    LaunchedEffect(addFriendResult) {
+//        if (addFriendResult != null) {
+//            Log.d("FriendAdd", "addFriendResult 값 변경 감지: $addFriendResult")
+//
+//            addFriendResult.onSuccess { response ->
+//                if (response.success) {
+//                    Log.d("FriendAdd", "add friend success")
+//                    successDialog = true  // 친구 추가 시, 확인 다이얼로그 띄우기
+//                    friendViewModel.clearAddFriendResult()
+//                } else {
+//                    Log.d("FriendAdd", "add friend failed")
+//                }
+//            }.onFailure { exception ->
+//                Log.e("FriendAdd", "🚨 error: ${exception.message}")
+//                errorDialog = true // ✅ 409 에러 발생 시 다이얼로그 표시
+//                friendViewModel.clearAddFriendResult()
+//            }
+//        }
+//    }
 
 
     Box(
@@ -169,9 +173,11 @@ fun FriendAdd(
                             .padding(horizontal = 18.dp, vertical = 4.dp)
                             .clickable(enabled = isClickable) {
                                 // 친구 리스트에 친구 추가(POST)하면, true/false 반환
-                                if (token != null) {
-                                    friendViewModel.addFriendList(token, member.loginId)
-                                }
+                                onFriendAdd(member.loginId)
+
+//                                if (token != null) {
+//                                    friendViewModel.addFriendList(token, member.loginId)
+//                                }
                             },
                         color = Color.White,
                         fontSize = 12.sp,
@@ -223,6 +229,7 @@ fun FriendAddPreview() {
         ),
         friendList = listOf(  // ✅ 이미 친구로 등록된 경우를 테스트
             FriendDto(-1, -1, "jeonghu1010", "서정후", "싸피병원", "일반병동", true)
-        )
+        ),
+        {}
     )
 }

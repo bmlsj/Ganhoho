@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.ssafy.ganhoho.base.SecureDataStore
 import com.ssafy.ganhoho.data.model.dto.auth.LoginRequest
 import com.ssafy.ganhoho.data.model.dto.auth.SignUpRequest
+import com.ssafy.ganhoho.base.TokenManager
 import com.ssafy.ganhoho.data.model.response.auth.LoginResponse
 import com.ssafy.ganhoho.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -73,6 +74,18 @@ class AuthViewModel : ViewModel() {
 
                 // ✅ 로그인한 사용자 정보 저장
                 SecureDataStore.saveUserInfo(context, response)
+                // ✅ TokenManager에도 저장
+                TokenManager.saveAccessToken(response.accessToken)
+
+
+                viewModelScope.launch {
+                    SecureDataStore.getAccessToken(context).collect { savedAccessToken ->
+                        Log.d("AuthViewModel", "🔑 저장 후 불러온 Access Token: $savedAccessToken")
+                    }
+                    SecureDataStore.getRefreshToken(context).collect { savedRefreshToken ->
+                        Log.d("AuthViewModel", "🔑 저장 후 불러온 Refresh Token: $savedRefreshToken")
+                    }
+                }
 
                 // ✅ 저장된 토큰 상태 업데이트
                 _accessToken.value = response.accessToken
@@ -94,6 +107,8 @@ class AuthViewModel : ViewModel() {
             }
         }
     }
+
+
 
     /**
      * 🔹 회원가입 요청
