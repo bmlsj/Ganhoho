@@ -109,7 +109,7 @@ class FriendViewModel() : ViewModel() {
 
             val request = FriendAddRequest(friendLoginId)
             val result = friendRepository.addFriendList(token, request)
-            Log.d("friendViewModel", "$friendLoginId $result")
+            Log.d("FriendAdd", "$friendLoginId $result")
             _addFriendResult.value = result // 실패 시 false 반환
         }
     }
@@ -121,6 +121,10 @@ class FriendViewModel() : ViewModel() {
             val result = friendRepository.updateFriendFavorite(token, request)
             _updateFavoriteResult.value = result
         }
+    }
+
+    fun clearAddFriendResult() {
+        _addFriendResult.value = null
     }
 
 }
