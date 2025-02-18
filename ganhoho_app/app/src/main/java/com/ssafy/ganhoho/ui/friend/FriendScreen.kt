@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.ssafy.ganhoho.data.model.dto.member.MemberDto
 import com.ssafy.ganhoho.ui.friend.common.FriendAdd
 import com.ssafy.ganhoho.ui.friend.common.FriendList
 import com.ssafy.ganhoho.ui.friend.common.FriendRequestList
@@ -92,6 +93,18 @@ fun FriendScreen(navController: NavController) {
     // 검색된 회원 전체 목록
     val memberListState = memberViewModel.memberList.collectAsState().value
     val memberList = memberListState.getOrNull() ?: emptyList()
+
+    // ✅ 친구 검색 리스트 정렬: 추가 가능한 친구를 먼저 정렬
+    val filteredMemberList by remember(memberList, friendList, searchText.value) {
+        derivedStateOf {
+            memberList
+                .sortedWith(compareByDescending<MemberDto> { member ->
+                    // ✅ 친구 목록에 없는 경우 (추가 가능) → 리스트 앞쪽으로 배치
+                    friendList.none { it.friendLoginId == member.loginId }
+                }.thenBy { it.name }) // ✅ 추가 가능성이 같으면 이름순 정렬
+        }
+    }
+
 
     // 토큰 로드하기
     val token = authViewModel.accessToken.collectAsState().value
@@ -273,6 +286,8 @@ fun FriendScreen(navController: NavController) {
                                                 friendMemberId,
                                                 isFavorite
                                             )
+
+                                            fetchFriendData()  // 변경 시, 친구 목록 갱신
                                         }
                                     }
                                 )
@@ -308,7 +323,7 @@ fun FriendScreen(navController: NavController) {
 
                     "search" -> {  // 친구 추가를 위해 전체 회원 목록 검색
                         if (searchText.value.isNotEmpty() && memberList.isNotEmpty()) {
-                            items(memberList) { member ->
+                            items(filteredMemberList) { member ->
                                 FriendAdd(member = member, friendList = friendList,
                                     onFriendAdd = { loginId ->
                                         if (!token.isNullOrEmpty()) {

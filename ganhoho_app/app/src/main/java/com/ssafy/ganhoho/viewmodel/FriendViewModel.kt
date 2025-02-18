@@ -119,9 +119,11 @@ class FriendViewModel() : ViewModel() {
         viewModelScope.launch {
             val request = FriendFavoriteRequest(friendMemberId, isFavorite)
             val result = friendRepository.updateFriendFavorite(token, request)
+            getFriendList(token)
             _updateFavoriteResult.value = result
         }
     }
+
 
     fun clearAddFriendResult() {
         _addFriendResult.value = null
