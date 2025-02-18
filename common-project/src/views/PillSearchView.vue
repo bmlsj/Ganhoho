@@ -140,6 +140,7 @@ onMounted(async () => {
   }
 });
 // ✅ Watch store의 medicineId 변경 시 자동 페이지 이동
+console.log("약페이지에 medicineId",apiStore.medicineId)
 watch(
   () => apiStore.medicineId,
   (newMedicineId) => {
