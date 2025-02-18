@@ -47,26 +47,25 @@ import { useRouter } from "vue-router"
 import { useApiStore } from "@/stores/apiRequest"
 import maskGroup from '@/assets/mask-group0.svg'
 import frameIcon from '@/assets/frame0.svg'
+import { storeToRefs } from 'pinia'
 
+const { medicineId } = storeToRefs(apiStore)
 const apiStore = useApiStore()
 const router = useRouter()
 const searchQuery = ref("")
 const filteredMedicineList = ref([])
 
-// 검색어 변경 시 API 호출
-watch(searchQuery, async (newQuery) => {
-  if (newQuery.length >= 1) { // 1글자 이상일 때만 검색
-    console.log("검색 시작:", newQuery);
-    const success = await apiStore.fetchMedicineList(newQuery);
-    if (success) {
-      filteredMedicineList.value = apiStore.medicineList;
-    } else {
-      filteredMedicineList.value = [];
-    }
-  } else {
+// 엔터 키 입력 시 검색 함수 실행
+const search = async () => {
+  const query = searchQuery.value.trim();
+  if (!query) {
     filteredMedicineList.value = [];
+    return;
   }
-})
+  console.log("검색 시작:", query);
+  const success = await apiStore.fetchMedicineList(query);
+  filteredMedicineList.value = success ? apiStore.medicineList : [];
+};
 
 onMounted(async () => {
   console.log("onMounted: 토큰 확인", apiStore.token)
@@ -146,17 +145,13 @@ onMounted(async () => {
   }
 })
 // ✅ Watch store의 medicineId 변경 시 자동 페이지 이동
-watch(
-  () => apiStore.medicineId,
-  (newMedicineId) => {
-    if (newMedicineId) {
-      console.log("자동 이동: 약 ID", newMedicineId);
-      router.push(`/pill-detail/${newMedicineId}`);
-      // 초기화 (한 번 이동 후 다시 감지되지 않도록)
-      apiStore.medicineId = null;
-    }
+watch(medicineId, (newId) => {
+  if (newId) {
+    console.log("자동 이동: 약 ID", newId)
+    router.push(`/pill-detail/${newId}`)
+    apiStore.medicineId = null
   }
-);
+})
 // ✅ 약 상세 페이지 이동
 const goToDetailPage = (medicineId) => {
   console.log("📢 이동할 약 ID:", medicineId); // ✅ 콘솔에서 확인
