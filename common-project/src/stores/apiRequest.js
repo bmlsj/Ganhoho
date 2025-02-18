@@ -166,14 +166,14 @@ export const useApiStore = defineStore('api', () => {
         alertStore.showAlert('이미지 업로드 성공!');
 
         // store 리셋
-        people.value = [];
-        calendar.value = [];
-        currentYear.value = null;
-        currentMonth.value = null;
-        isDataLoaded.value = false;
+        // people.value = [];
+        // calendar.value = [];
+        // currentYear.value = null;
+        // currentMonth.value = null;
+        // isDataLoaded.value = false;
 
-        // 새로 fetch
-        await fetchData();
+        // // 새로 fetch
+        // await fetchData();
       } else {
         console.error('업로드 실패:', response.data);
         alertStore.showAlert('업로드 실패');

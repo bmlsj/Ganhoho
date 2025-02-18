@@ -51,7 +51,6 @@ const apiStore = useApiStore()
 const router = useRouter()
 const searchQuery = ref("")
 const filteredMedicineList = ref([])
-
 // 엔터 키 입력 시 검색 함수 실행
 const search = async () => {
   const query = searchQuery.value.trim();
