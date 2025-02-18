@@ -44,11 +44,11 @@ fun MainNavHost(deepLinkUri: Uri?) {
     // ✅ 딥링크 처리 함수 호출
     HandleDeepLink(deepLinkState, token, navController, groupViewModel)
 
+
     NavHost(
         navController = navController,
         startDestination = "splash"
     ) {
-
         // 스플래시 화면
         composable("splash") { AnimatedSplashScreen(navController) }
         // 로그인 화면
@@ -61,7 +61,9 @@ fun MainNavHost(deepLinkUri: Uri?) {
         composable("hospitalInfo") { SearchHospital(navController) }
 
         composable("group") {
-            GroupScreen(navController = navController)
+            GroupScreen(
+                navController = navController
+            )
         }
 
     }

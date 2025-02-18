@@ -2,7 +2,6 @@ package com.ssafy.ganhoho.ui.bottom_navigation
 
 import android.util.Log
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -11,6 +10,7 @@ import com.google.gson.Gson
 import com.ssafy.ganhoho.data.model.dto.group.GroupDto
 import com.ssafy.ganhoho.data.model.response.group.GroupViewModelFactory
 import com.ssafy.ganhoho.repository.GroupRepository
+import com.ssafy.ganhoho.ui.auth.SearchHospital
 import com.ssafy.ganhoho.ui.friend.FriendScreen
 import com.ssafy.ganhoho.ui.group.EachGroupScreen
 import com.ssafy.ganhoho.ui.group.GroupScreen
@@ -32,7 +32,7 @@ import java.time.format.DateTimeFormatter
  * 바텀 네비게이션을 나타내는 네비게이션
  */
 @Composable
-fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
+fun AppNavHost(navController: NavHostController) {
     val bottomNavViewModel: BottomNavViewModel = viewModel()
     val groupRepository = GroupRepository()
 
@@ -55,7 +55,9 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         composable("mypage") { MyPageScreen(navController) }
         composable("noti") { NotificationScreen(navController) }
         composable("update") { UpdateMemberInfo(navController) }  // 회원정보 수정 화면
+        composable("hospitalInfo") { SearchHospital(navController) }
 
+        // 그룹 화면
         composable("group/{groupIconType}") { backStackEntry ->
             val groupIconType =
                 backStackEntry.arguments?.getString("groupIconType")?.toIntOrNull() ?: 1

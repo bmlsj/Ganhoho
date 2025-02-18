@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -166,6 +167,6 @@ fun HospitalItem(hospital: SearchResultItem, navController: NavController) {
             .background(Color.LightGray, shape = RoundedCornerShape(8.dp))
             .padding(12.dp)
     ) {
-        Text(text = "🏥 ${hospital.name}", style = MaterialTheme.typography.titleMedium)
+        Text(text = "🏥 ${hospital.name}", fontSize = 18.sp)
     }
 }

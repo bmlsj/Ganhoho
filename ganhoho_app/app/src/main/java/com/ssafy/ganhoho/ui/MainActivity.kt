@@ -2,9 +2,7 @@ package com.ssafy.ganhoho.ui
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
-import android.content.pm.PackageManager
 import androidx.compose.runtime.*
 import android.os.Build
 import android.os.Bundle
@@ -16,17 +14,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.activity.viewModels
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.FabPosition
 import androidx.compose.material.Scaffold
-import androidx.compose.material.BottomAppBar
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -44,7 +39,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
-import androidx.core.app.ActivityCompat
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.work.Constraints
@@ -65,7 +59,6 @@ import com.ssafy.ganhoho.ui.bottom_navigation.AppNavHost
 import com.ssafy.ganhoho.ui.bottom_navigation.CustomBottomNavigation
 import com.ssafy.ganhoho.ui.theme.GANHOHOTheme
 import com.ssafy.ganhoho.util.PermissionChecker
-import com.ssafy.ganhoho.util.requestBackgroundLocationPermission
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.GroupViewModel
 import java.util.concurrent.TimeUnit
@@ -171,9 +164,7 @@ fun MainScreen() {
                     .fillMaxSize()
             ) {
                 AppNavHost(
-                    navController = navController,
-                    modifier = Modifier
-                        .padding(innerPadding)
+                    navController = navController
                 )
                 CheckPermissionAndInitFCM()
             }

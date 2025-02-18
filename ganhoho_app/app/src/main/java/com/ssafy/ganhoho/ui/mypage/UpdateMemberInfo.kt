@@ -45,6 +45,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.ssafy.ganhoho.R
 import com.ssafy.ganhoho.data.model.dto.member.UpdateHospitalWardRequest
+import com.ssafy.ganhoho.data.model.response.auth.SearchResultItem
 import com.ssafy.ganhoho.data.model.response.member.MyPageResponse
 import com.ssafy.ganhoho.ui.theme.FieldGray
 import com.ssafy.ganhoho.ui.theme.PrimaryBlue
@@ -115,7 +116,6 @@ fun UpdateMemberInfo(navController: NavController) {
             OutlinedTextField(
                 value = id,
                 onValueChange = { id = it },
-                label = { Text(memberInfo.loginId, color = Color.Gray) },
                 leadingIcon = {
                     Row {
                         Spacer(modifier = Modifier.width(12.dp))
@@ -198,7 +198,6 @@ fun UpdateMemberInfo(navController: NavController) {
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text(memberInfo.name, color = FieldGray) },
                 leadingIcon = {
                     Row {
                         Spacer(modifier = Modifier.width(12.dp))
@@ -233,7 +232,6 @@ fun UpdateMemberInfo(navController: NavController) {
                 OutlinedTextField(
                     value = hospital,
                     onValueChange = { hospital = it },
-                    label = { memberInfo.hospital?.let { Text(it, color = FieldGray) } },
                     leadingIcon = {
                         Row {
                             Spacer(modifier = Modifier.width(12.dp))
@@ -260,7 +258,7 @@ fun UpdateMemberInfo(navController: NavController) {
                 Spacer(modifier = Modifier.width(12.dp))
                 Button(
                     onClick = {
-                        // 병원 찾기 페이지로 이동
+                        // 병원 찾기 페이지로 이동W
                         navController.navigate("hospitalInfo")
                     }, colors = ButtonDefaults.buttonColors(
                         containerColor = PrimaryBlue
@@ -277,7 +275,6 @@ fun UpdateMemberInfo(navController: NavController) {
             OutlinedTextField(
                 value = ward,
                 onValueChange = { ward = it },
-                label = { memberInfo.ward?.let { Text(it, color = FieldGray) } },
                 leadingIcon = {
                     Row {
                         Spacer(modifier = Modifier.width(12.dp))

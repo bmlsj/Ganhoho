@@ -128,7 +128,7 @@ fun MyPageScreen(navController: NavController) {
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = "병원",
+                        text = "병원 | ",
                         fontSize = 14.sp,
                         color = Color.White
                     )
@@ -136,7 +136,7 @@ fun MyPageScreen(navController: NavController) {
                         Text(
                             text = it,
                             fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.Normal,
                             color = Color.White
                         )
                     }
@@ -144,7 +144,7 @@ fun MyPageScreen(navController: NavController) {
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = "병동",
+                        text = "병동 | ",
                         fontSize = 14.sp,
                         color = Color.White
                     )
@@ -152,7 +152,7 @@ fun MyPageScreen(navController: NavController) {
                         Text(
                             text = it,
                             fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.Normal,
                             color = Color.White
                         )
                     }
