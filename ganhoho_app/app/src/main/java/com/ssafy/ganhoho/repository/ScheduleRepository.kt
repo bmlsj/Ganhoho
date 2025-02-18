@@ -20,7 +20,7 @@ class ScheduleRepository {
     ): Result<List<WorkScheduleDto>> {
         return try {
             val response =
-                RetrofitUtil.scheduleService.getMyWorkSchedule("Bearer $token",)
+                RetrofitUtil.scheduleService.getMyWorkSchedule("Bearer $token")
             handleResponse(response)
         } catch (e: Exception) {
             Result.failure(e)

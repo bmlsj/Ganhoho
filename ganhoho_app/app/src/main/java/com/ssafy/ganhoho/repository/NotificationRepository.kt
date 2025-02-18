@@ -17,7 +17,7 @@ class NotificationRepository {
     ): Result<List<Notification>> {
         return try {
             val response = RetrofitUtil.notiService.getNotifications("Bearer $token")
-            Log.d("noti", "getNotifications: ${response.errorBody()?.string()}")
+            Log.d("noti", "getNotifications error: ${response.errorBody()?.string()}")
             handleResponse(response)
         } catch (e: Exception) {
             Result.failure(e)
