@@ -2,6 +2,8 @@ package com.ssafy.ganhoho.ui
 
 import android.net.Uri
 import android.util.Log
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -22,6 +24,7 @@ import com.ssafy.ganhoho.ui.group.GroupScreen
 import com.ssafy.ganhoho.ui.splash.AnimatedSplashScreen
 import com.ssafy.ganhoho.viewmodel.GroupViewModel
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 /**
  * 최상위 네비게이션
  */

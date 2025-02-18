@@ -1,9 +1,10 @@
 import java.util.Properties
 
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.jetbrains.kotlin.android)
-    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.android.application) // Android 애플리케이션 플러그인
+    alias(libs.plugins.jetbrains.kotlin.android) // Kotlin Android 플러그인
+    alias(libs.plugins.compose.compiler) // Jetpack Compose 컴파일러 플러그인
+    id("com.google.gms.google-services")
 }
 
 // 1. 추가
@@ -29,8 +30,6 @@ android {
         buildConfigField("String", "WEBVIEW_PILL_URL", "\"${localProperties.getProperty("WEBVIEW_PILL_URL", "")}\"")
         buildConfigField("String", "WEBVIEW_WORK_URL", "\"${localProperties.getProperty("WEBVIEW_WORK_URL", "")}\"")
         buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"${localProperties.getProperty("KAKAO_NATIVE_APP_KEY", "")}\"")
-        buildConfigField("String", "WEBVIEW_PILL_URL", "\"${localProperties.getProperty("WEBVIEW_PILL_URL", "")}\"")
-        buildConfigField("String", "WEBVIEW_WORK_URL", "\"${localProperties.getProperty("WEBVIEW_WORK_URL", "")}\"")
 
         manifestPlaceholders["KAKAO_NATIVE_APP_KEY"] = localProperties["KAKAO_NATIVE_APP_KEY"] ?: ""
 
@@ -87,6 +86,8 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.testing)
     implementation(libs.androidx.camera.view)
+    implementation(libs.gms.play.services.wearable)
+    implementation(libs.androidx.appcompat)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -115,6 +116,10 @@ dependencies {
 
     // Compose ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    // fcm
+    implementation(platform("com.google.firebase:firebase-bom:33.8.0")) // 최신 버전 유지
+    implementation("com.google.firebase:firebase-messaging")
+    implementation("com.google.firebase:firebase-analytics")
 
     // okhttp3
     implementation("com.squareup.okhttp3:okhttp")
@@ -153,4 +158,9 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:1.4.0-alpha02")
     implementation ("androidx.camera:camera-view:1.4.0-alpha02")
 
+    // workmanager
+    implementation ("androidx.work:work-runtime-ktx:2.7.1")
+
+    // location
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 }

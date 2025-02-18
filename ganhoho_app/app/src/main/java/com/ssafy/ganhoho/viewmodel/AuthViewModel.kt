@@ -10,15 +10,18 @@ import com.ssafy.ganhoho.data.model.dto.auth.SignUpRequest
 import com.ssafy.ganhoho.base.TokenManager
 import com.ssafy.ganhoho.data.model.response.auth.LoginResponse
 import com.ssafy.ganhoho.repository.AuthRepository
+import com.ssafy.ganhoho.repository.NotificationRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import okhttp3.RequestBody
 
 class AuthViewModel : ViewModel() {
 
     private val authRepository by lazy { AuthRepository() }
+    private val notificationRepository by lazy { NotificationRepository() }
 
     // 🔹 로그인 결과 상태 관리
     private val _loginResult = MutableStateFlow<Result<LoginResponse>?>(null)
@@ -86,6 +89,15 @@ class AuthViewModel : ViewModel() {
                         Log.d("AuthViewModel", "🔑 저장 후 불러온 Refresh Token: $savedRefreshToken")
                     }
                 }
+
+                // ✅ 로그인한 사용자의 알림 구독 여부 저장 --> 로그아웃 시 구독 해제
+                SecureDataStore.saveSubscriptionInfo(context, false)
+
+                // ✅ 로그인한 사용자의 병원 위치 정보 저장
+                response.hospitalLat?.let {
+                    SecureDataStore.saveHospitalLocation(context, response.hospitalLat, response.hospitalLng!!)
+                }
+                Log.d("TAG", "login: ${response.hospital} ${response.hospitalLat} ${response.hospitalLng}")
 
                 // ✅ 저장된 토큰 상태 업데이트
                 _accessToken.value = response.accessToken
@@ -165,8 +177,9 @@ class AuthViewModel : ViewModel() {
     /**
      * 🔹 로그아웃 (토큰 삭제)
      */
-    fun logout(context: Context) {
+    fun logout(token: String, context: Context, requestBody: RequestBody) {
         viewModelScope.launch {
+            if(SecureDataStore.getSubscriptionInfo(context).first() == true) notificationRepository.changeSubscription(token, requestBody)
             SecureDataStore.clearTokens(context)
             _userInfo.value = null
             _accessToken.value = null

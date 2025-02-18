@@ -68,6 +68,7 @@ class ApplicationClass : Application() {
         kakaoRetrofit = Retrofit.Builder()
             .baseUrl(KAKAO_URL)
             .client(kakaoClient)
+       //     .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
     }

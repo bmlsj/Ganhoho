@@ -1,5 +1,8 @@
 package com.ssafy.ganhoho.ui.auth
 
+import android.content.Context
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
@@ -32,10 +37,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -44,6 +52,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.wearable.Wearable
+import com.google.firebase.messaging.FirebaseMessaging
 import com.ssafy.ganhoho.R
 import com.ssafy.ganhoho.data.model.dto.auth.LoginRequest
 import com.ssafy.ganhoho.ui.theme.BackgroundBlue40
@@ -51,6 +61,7 @@ import com.ssafy.ganhoho.ui.theme.FieldGray
 import com.ssafy.ganhoho.ui.theme.FieldLightGray
 import com.ssafy.ganhoho.ui.theme.PrimaryBlue
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
+import kotlin.math.sin
 
 @Composable
 fun LoginScreen(navController: NavController) {
@@ -62,6 +73,7 @@ fun LoginScreen(navController: NavController) {
 
     val authViewModel: AuthViewModel = viewModel()
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
 
     // 로그인 결과 상태 감지
      val loginResult = authViewModel.loginResult.collectAsState().value
@@ -74,6 +86,20 @@ fun LoginScreen(navController: NavController) {
             }
         }
     }
+
+    // fcm 토큰 로그인 요청에 넣기
+    val fcmToken = remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                fcmToken.value = task.result
+            } else {
+                fcmToken.value = null
+            }
+        }
+    }
+
 
     Column(
         modifier = Modifier
@@ -152,6 +178,11 @@ fun LoginScreen(navController: NavController) {
                         focusedContainerColor = Color.Transparent, // 내부 배경 투명
                         unfocusedContainerColor = Color.Transparent, // 내부 배경 투명
                         disabledContainerColor = Color.Transparent // 비활성화 상태도 투명
+                    ),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(
+                        onNext = { focusManager.moveFocus(FocusDirection.Next) }
                     )
                 )
 
@@ -204,6 +235,11 @@ fun LoginScreen(navController: NavController) {
                         focusedContainerColor = Color.Transparent, // 내부 배경 투명
                         unfocusedContainerColor = Color.Transparent, // 내부 배경 투명
                         disabledContainerColor = Color.Transparent // 비활성화 상태도 투명
+                    ),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(
+                        onDone = { focusManager.clearFocus() }
                     )
                 )
 
@@ -212,8 +248,11 @@ fun LoginScreen(navController: NavController) {
                 // Sign In 버튼
                 Button(
                     onClick = {
+
                         // ✅ 로그인 완료 후 MainScreen으로 이동
-                        val loginResult = LoginRequest(id.value, password.value)
+                        val fcmTokenCheck = fcmToken.value ?: ""  // 토큰이 빈 값일 때
+                        val loginResult = LoginRequest(id.value, password.value, fcmTokenCheck)
+                        Log.d("fcmToken", "LoginScreen: $loginResult")
                         authViewModel.login(loginResult, context)
 
                     },
@@ -261,8 +300,33 @@ fun LoginScreen(navController: NavController) {
 @Composable
 fun LoginPreview() {
     val navController = rememberNavController()
-    val context = LocalContext.current
-    val authDataStore = AuthDataStore(context)
-
     LoginScreen(navController)
+}
+
+fun findConnectedNodes(context: Context, token: String){
+    Wearable.getNodeClient(context).connectedNodes
+        .addOnSuccessListener { nodes ->
+            if (nodes.isNotEmpty()) {
+                val nodeId = nodes[0].id // 첫 번째 노드의 ID 가져오기
+                sendTokenToNode(context, nodeId, token) // 메시지 전송 함수 호출
+            }
+        }
+        .addOnFailureListener { exception ->
+            // 오류 처리
+        }
+
+
+}
+
+fun sendTokenToNode(context: Context, nodeId: String, token: String) {
+    val messagePath = "/jwt_token"
+    val messageData = token
+
+    Wearable.getMessageClient(context).sendMessage(nodeId, messagePath, messageData.toByteArray())
+        .addOnSuccessListener {
+            // 성공적으로 메시지 전송
+        }
+        .addOnFailureListener {
+            // 메시지 전송 실패 처리
+        }
 }

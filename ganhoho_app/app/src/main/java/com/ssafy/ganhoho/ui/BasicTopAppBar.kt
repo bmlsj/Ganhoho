@@ -44,7 +44,10 @@ fun BasicTopAppBar(navController: NavController) {
                 )
             }
 
-            IconButton(onClick = { /* TODO: 프로필 버튼 기능 추가 */ }) {
+            IconButton(onClick = {
+                // 알림 조회 페이지로 이동
+                navController.navigate("noti")
+            }) {
                 Icon(
                     painter = painterResource(id = R.drawable.notification),
                     contentDescription = "알림 페이지",

@@ -36,6 +36,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.kizitonwose.calendar.compose.ContentHeightMode
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
@@ -44,6 +46,7 @@ import com.kizitonwose.calendar.core.OutDateStyle
 import com.kizitonwose.calendar.core.yearMonth
 import com.ssafy.ganhoho.data.model.dto.schedule.MySchedule
 import com.ssafy.ganhoho.data.model.dto.schedule.WorkScheduleDto
+import com.ssafy.ganhoho.fcm.LocationWorker
 import com.ssafy.ganhoho.ui.BasicTopAppBar
 import com.ssafy.ganhoho.util.convertWorkScheduleToMySchedule
 import com.ssafy.ganhoho.util.parsedColor
@@ -58,6 +61,7 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 
 @Composable
@@ -88,6 +92,9 @@ fun HomeScreen(navController: NavController) {
     // 토큰 로드하기
     val token = authViewModel.accessToken.collectAsState().value
     val context = LocalContext.current
+
+//    val workManager = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES).build() // 최소 단위가 15분으로 일정 시간마다 일 하는 기능
+//    WorkManager.getInstance(context).enqueue(workManager)
 
     LaunchedEffect(token) {
         if (token.isNullOrEmpty()) {

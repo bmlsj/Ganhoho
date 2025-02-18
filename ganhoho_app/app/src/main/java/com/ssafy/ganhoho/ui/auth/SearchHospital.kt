@@ -32,7 +32,6 @@ import androidx.navigation.NavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.ssafy.ganhoho.data.model.response.auth.SearchResultItem
-import com.ssafy.ganhoho.util.requestLocationPermission
 import com.ssafy.ganhoho.viewmodel.HospitalSearchViewModel
 
 @Composable
@@ -49,7 +48,7 @@ fun SearchHospital(navController: NavController) {
     val currentLocation = remember { mutableStateOf<Pair<Double, Double>?>(null) }
 
     SideEffect {
-        requestLocationPermission(context) // 🔥 권한 요청 추가
+//        requestLocationPermission(context) // 🔥 권한 요청 추가
         getCurrentLocation(context, fusedLocationProviderClient) { location ->
             currentLocation.value = location
         }
@@ -160,7 +159,7 @@ fun HospitalItem(hospital: SearchResultItem, navController: NavController) {
                 // ✅ 병원을 선택하면 이전 화면(JoinScreen)으로 돌아가면서 데이터 전달
                 navController.previousBackStackEntry?.savedStateHandle?.set(
                     "selectedHospital",
-                    hospital.name
+                    hospital
                 )
                 navController.popBackStack()
             }
