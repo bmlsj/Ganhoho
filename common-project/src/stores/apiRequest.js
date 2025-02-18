@@ -306,7 +306,6 @@ export const useApiStore = defineStore('api', () => {
         currentYear.value = null;
         currentMonth.value = null;
         isDataLoaded.value = false;
-        medicineId.value = null
 
         // 새로 fetch
         await fetchData();
