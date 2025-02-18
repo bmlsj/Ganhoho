@@ -1,27 +1,26 @@
 package com.ssafy.ganhoho.ui
 
 import android.annotation.SuppressLint
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.FabPosition
 import androidx.compose.material.Scaffold
+import androidx.compose.material.BottomAppBar
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
@@ -29,8 +28,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.datastore.core.DataStore
-import androidx.lifecycle.ReportFragment.Companion.reportFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -38,7 +35,6 @@ import com.kakao.vectormap.KakaoMapSdk
 import com.ssafy.ganhoho.BuildConfig.KAKAO_NATIVE_APP_KEY
 import com.ssafy.ganhoho.R
 import com.ssafy.ganhoho.base.SecureDataStore
-import com.ssafy.ganhoho.base.TokenManager
 import com.ssafy.ganhoho.data.model.response.group.GroupViewModelFactory
 import com.ssafy.ganhoho.repository.GroupRepository
 import com.ssafy.ganhoho.ui.auth.AuthDataStore
@@ -64,7 +60,7 @@ class MainActivity : ComponentActivity() {
         )[GroupViewModel::class.java]
 
         val token = SecureDataStore.getAccessToken(applicationContext)
-      //  handleDeepLink(intent, groupViewModel, token.toString())
+        //  handleDeepLink(intent, groupViewModel, token.toString())
         val deepLinkUri = intent?.data  // 딥링크 데이터
 
         // 저장된 토큰 불러오기
@@ -76,9 +72,6 @@ class MainActivity : ComponentActivity() {
         )
 
         setContent {
-            val navController = rememberNavController()
-            val isLoggedIn by authDataStore.isLoggedIn.collectAsState(initial = false) //  로그인 상태 확인
-
             GANHOHOTheme {
                 Surface(
                     color = MaterialTheme.colorScheme.background
@@ -89,35 +82,8 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // 딥링크 관리
-//    private fun handleDeepLink(intent: Intent, viewModel: GroupViewModel, token: String) {
-//        val data: Uri? = intent.data
-//        data?.let { uri ->
-//            val inviteCode = uri.getQueryParameter("groupCode")
-//            if (!inviteCode.isNullOrEmpty()) {
-//                Log.d("DeepLink", "초대 코드 감지: $inviteCode")
-//
-////                val token = TokenManager.getAccessToken()
-//
-//                viewModel.joinGroupByInviteCode(token, inviteCode,
-//                    onSuccess = { inviteLink ->
-//                        Log.d("DeepLink", "초대 수락 성공! inviteLink: $inviteLink")
-//
-//                        // 그룹 리스트 화면으로 이동
-//                        val groupIntent = Intent(this, MainActivity::class.java).apply {
-//                            putExtra("navigateTo", "group")
-//                        }
-//                        startActivity(groupIntent)
-//                        finish() // 현재 액티비티 종료 (기존 화면이 남아 있지 않도록)
-//                    },
-//                    onFailure = { error ->
-//                        Log.e("DeepLink", "초대 수락 실패: $error")
-//                    }
-//                )
-//            }
-//        }
-//    }
 }
+
 
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
@@ -136,9 +102,7 @@ fun MainScreen() {
 
         Scaffold(
             floatingActionButton = {
-
                 val fabOffsetX = calculateFabOffset(currentRoute, itemWidth)
-
                 FloatingActionButton(
                     onClick = {
                         if (currentRoute != "home") {
@@ -148,17 +112,17 @@ fun MainScreen() {
                     containerColor = Color(0xFF79C7E3),
                     shape = CircleShape,
                     modifier = Modifier
-                        .offset(x = fabOffsetX, y = (-10).dp) // FAB 이동
+                        .offset(x = fabOffsetX, y = (10).dp) // FAB 이동
                         .size(70.dp)
                 ) {
                     Icon(
                         painter = painterResource(
                             id = when (currentRoute) {
-                                "work" -> R.drawable.nav_work
-                                "pill" -> R.drawable.nav_pill
-                                "group" -> R.drawable.nav_group
-                                "friend" -> R.drawable.nav_friend
-                                else -> R.drawable.nav_home
+                                "work" -> R.drawable.icon_nav_work
+                                "pill" -> R.drawable.icon_nav_pill
+                                "group" -> R.drawable.icon_nav_group
+                                "friend" -> R.drawable.icon_nav_friend
+                                else -> R.drawable.icon_nav_home
                             }
                         ),
                         contentDescription = "FAB Icon",
@@ -174,58 +138,20 @@ fun MainScreen() {
                 CustomBottomNavigation(navController)
             },
         ) { innerPadding ->
-
-            AppNavHost(navController = navController, modifier = Modifier.padding(innerPadding))
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                AppNavHost(
+                    navController = navController,
+                    modifier = Modifier
+                        .padding(innerPadding)
+                )
+            }
         }
     }
-
-
 }
 
-// ✅ Cutout 이동을 동적으로 처리
-//@SuppressLint("UnusedBoxWithConstraintsScope")
-//@Composable
-//fun CustomBottomAppBar(
-//    selectedItem: Int,
-//    itemWidth: Dp,
-//    content: @Composable () -> Unit
-//) {
-//    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-//        val fabOffsetX = calculateFabOffset(selectedItem, itemWidth)
-//        val density = LocalDensity.current
-//
-//        Box(modifier = Modifier.fillMaxWidth()) {
-//            Canvas(modifier = Modifier.fillMaxWidth()) {
-//                val offsetXPx = with(density) { fabOffsetX.toPx() }
-//                drawCutout(offsetXPx)
-//            }
-//            content()
-//        }
-//    }
-//}
-//
-//// ✅ Cutout을 FAB 위치에 맞춰 이동
-//fun DrawScope.drawCutout(offsetX: Float) {
-//    val cutoutRadius = 36.dp.toPx()
-//    val cutoutY = size.height
-//
-//    drawIntoCanvas { canvas ->
-//        val path = Path().apply {
-//            moveTo(0f, cutoutY)
-//            lineTo(offsetX - cutoutRadius, cutoutY)
-//            cubicTo(
-//                offsetX - cutoutRadius / 2, cutoutY - cutoutRadius,
-//                offsetX + cutoutRadius / 2, cutoutY - cutoutRadius,
-//                offsetX + cutoutRadius, cutoutY
-//            )
-//            lineTo(size.width, cutoutY)
-//            lineTo(size.width, size.height)
-//            lineTo(0f, size.height)
-//            close()
-//        }
-//        canvas.drawPath(path, Paint().apply { color = Color.White })
-//    }
-//}
 
 // ✅ FAB 버튼 위치 계산
 @Composable

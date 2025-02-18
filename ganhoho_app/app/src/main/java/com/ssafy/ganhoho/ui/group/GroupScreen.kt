@@ -166,7 +166,7 @@ fun GroupScreen(
                 Text("그룹 추가", color = Color.White)
             }
 
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.weight(0.2f))
 
         }
     }
