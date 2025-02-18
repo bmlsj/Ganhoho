@@ -1,9 +1,11 @@
 package com.ssafy.ganhoho.fcm
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.util.Log
@@ -14,6 +16,8 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.gson.JsonObject
 import com.ssafy.ganhoho.R
 import com.ssafy.ganhoho.base.SecureDataStore
@@ -38,48 +42,53 @@ class LocationWorker(context: Context, params: WorkerParameters) : CoroutineWork
             != PackageManager.PERMISSION_GRANTED) {
             return Result.failure()
         }
-        val distance = getLocation()
-        val subscriptionInfo = getSubscriptionInfo()
-        val token = getAccessToken()
-        token?.let {
-            if(distance > 0) {
-                if(distance > 300 && subscriptionInfo == true) { // 이제 퇴근함
-                    // 구독해제하는 걸로 api 던지기
-                    val jsonObject = JsonObject().apply {
-                        addProperty("isSubscribed", false)
-                    }
-                    val requestBody = RequestBody.create(
-                        "application/json".toMediaTypeOrNull(),
-                        jsonObject.toString()
-                    )
-                    repository.changeSubscription(token, requestBody).let {
-                        it.onSuccess {
-                            SecureDataStore.saveSubscriptionInfo(mContext, false)
-                            createNotification("퇴근","집가자")
-                        }
-                    }
-                } else if(distance <= 300 && subscriptionInfo == false) { // 이제 출근함
-                    // 구독하는 걸로 api 던지기
-                    val jsonObject = JsonObject().apply {
-                        addProperty("isSubscribed", true)
-                    }
-                    val requestBody = RequestBody.create(
-                        "application/json".toMediaTypeOrNull(),
-                        jsonObject.toString()
-                    )
-                    repository.changeSubscription(token, requestBody).let {
-                        it.onSuccess {
-                            SecureDataStore.saveSubscriptionInfo(mContext, true)
-                            createNotification("출근","일하자")
-                        }
-                    }
-                } else {
-                    createNotification("api 요청 안함","같은 상태 :${subscriptionInfo}")
-                }
-            } else {
-                createNotification("위치 찾기 불가능","${subscriptionInfo}")
-            }
-        }
+        Log.d("LocationService", "tlfgod")
+        val service = Intent(mContext, LocationForegroundService::class.java)
+        ContextCompat.startForegroundService(mContext, service)
+//        LocationForegroundService()
+//        val distance = getLocation()
+//        val subscriptionInfo = getSubscriptionInfo()
+//        val token = getAccessToken()
+//        token?.let {
+//            if(distance > 0) {
+//                if(distance > 300 && subscriptionInfo == true) { // 이제 퇴근함
+//                    // 구독해제하는 걸로 api 던지기
+//                    val jsonObject = JsonObject().apply {
+//                        addProperty("isSubscribed", false)
+//                    }
+//                    val requestBody = RequestBody.create(
+//                        "application/json".toMediaTypeOrNull(),
+//                        jsonObject.toString()
+//                    )
+//                    repository.changeSubscription(token, requestBody).let {
+//                        it.onSuccess {
+//                            SecureDataStore.saveSubscriptionInfo(mContext, false)
+//                            createNotification("퇴근","집가자")
+//                        }
+//                    }
+//                } else if(distance <= 300 && subscriptionInfo == false) { // 이제 출근함
+//                    // 구독하는 걸로 api 던지기
+//                    val jsonObject = JsonObject().apply {
+//                        addProperty("isSubscribed", true)
+//                    }
+//                    val requestBody = RequestBody.create(
+//                        "application/json".toMediaTypeOrNull(),
+//                        jsonObject.toString()
+//                    )
+//                    repository.changeSubscription(token, requestBody).let {
+//                        it.onSuccess {
+//                            SecureDataStore.saveSubscriptionInfo(mContext, true)
+//                            createNotification("출근","일하자")
+//                        }
+//                    }
+//                } else {
+//                    createNotification("api 요청 안함","같은 상태 :${subscriptionInfo}")
+//                }
+//            } else {
+//                createNotification("위치 찾기 불가능","${subscriptionInfo}")
+//            }
+//        }
+        Log.d("LocationService", "Rmxdlqslek~~")
         return Result.success()
     }
     private val mContext = context
@@ -87,7 +96,7 @@ class LocationWorker(context: Context, params: WorkerParameters) : CoroutineWork
     private val repository = NotificationRepository()
 
     suspend fun getLocation(): Float = suspendCancellableCoroutine { cont ->
-        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(applicationContext)
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(mContext)
 
         fusedLocationClient.getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY,null)
             .addOnSuccessListener { location: Location? ->
@@ -141,6 +150,7 @@ class LocationWorker(context: Context, params: WorkerParameters) : CoroutineWork
         return SecureDataStore.getAccessToken(mContext).first()
     }
 
+    @SuppressLint("MissingPermission")
     private fun createNotification(title: String, message: String) {
         val notificationManager =
             mContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -172,6 +182,22 @@ class LocationWorker(context: Context, params: WorkerParameters) : CoroutineWork
 
         NotificationManagerCompat.from(mContext).notify(0, notificationBuilder);
 
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun getCurrentLocation() {
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000).build()
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(mContext)
+        val cancellationToken = CancellationTokenSource().token
+        fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, cancellationToken)
+            .addOnSuccessListener { location ->
+                location?.let {
+                    Log.d("LocationWorker", "Lat: ${it.latitude}, Lng: ${it.longitude}")
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("LocationWorker", "Failed to get location", e)
+            }
     }
 
 }

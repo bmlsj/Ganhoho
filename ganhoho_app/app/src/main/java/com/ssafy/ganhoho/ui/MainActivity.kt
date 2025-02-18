@@ -164,27 +164,31 @@ fun CheckPermissionAndInitFCM() {
     val context = LocalContext.current // ✅ LocalContext 가져오기
 
     var permissionGranted by remember { mutableStateOf(false) } // ✅ 올바른 선언
-
+    var backgroundPermissionGranted by remember { mutableStateOf(false) }
     // 🔹 권한 요청 런처
+    val backgroundPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        backgroundPermissionGranted = isGranted
+
+        if (backgroundPermissionGranted) {
+            // 📌 3. 백그라운드 권한 승인 시 원하는 기능 실행
+            scheduleLocationWorker(context)
+
+        }
+    }
+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { result ->
-        val allPermissionsGranted = result.values.all { it } // ✅ Boolean 값 저장
-        permissionGranted = allPermissionsGranted // ✅ 직접 할당
+        val allPermissionsGranted = result.values.all { it }
         if (allPermissionsGranted) {
-            requestBackgroundLocationPermission(context)
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//                ActivityCompat.requestPermissions(
-//                    context as Activity,
-//                    arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
-//                    10
-//                )
-//            } else {
-//                // Android 10 미만에서는 백그라운드 위치 권한이 필요 없으므로 바로 실행
-//                initFCM()
-//                scheduleLocationWorker(context)
-//            }
-        } // ✅ true일 때 실행
+            permissionGranted = allPermissionsGranted // ✅ 직접 할당
+            backgroundPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            Log.d(TAG, "CheckPermissionAndInitFCM: rnjsgks ccpzmcpzm")
+        } else{
+            Log.d(TAG, "CheckPermissionAndInitFCM: ")
+        }
     }
 
     // 🔹 앱 실행 시 권한 자동 체크
@@ -193,8 +197,10 @@ fun CheckPermissionAndInitFCM() {
             permissionLauncher.launch(permissions)
         } else {
             permissionGranted = true
-            scheduleLocationWorker(context)
             initFCM()
+            if(!PermissionChecker.hasPermissions(context, arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION))) backgroundPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            Log.d(TAG, "CheckPermissionAndInitFCM: rnjsgks dlTdma")
+            scheduleLocationWorker(context)
         }
     }
 }
@@ -217,9 +223,10 @@ fun scheduleLocationWorker(context: Context) {
     val workManager = WorkManager.getInstance(context)
     // 기존 작업이 등록되어 있는지 확인
     workManager.getWorkInfosByTag("LocationWorker").get().let { workInfos ->
-        if (workInfos.isNullOrEmpty()) {
+//        if (workInfos.isNullOrEmpty()) {
             // 기존에 등록된 작업이 없으면 새로 등록
             val workRequest = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES)
+                .setInitialDelay(2, TimeUnit.MINUTES)
                 .addTag("LocationWorker") // 중복 실행 방지용 태그 추가
                 .setConstraints(
                     Constraints.Builder()
@@ -230,12 +237,12 @@ fun scheduleLocationWorker(context: Context) {
 
             workManager.enqueueUniquePeriodicWork(
                 "LocationWorker",
-                ExistingPeriodicWorkPolicy.KEEP, // 기존 작업 유지
+                ExistingPeriodicWorkPolicy.REPLACE, // 기존 작업 유지
                 workRequest
             )
-        } else{
-            Log.d(TAG, "scheduleLocationWorker: already scheduled")
-        }
+//        } else{
+//            Log.d(TAG, "scheduleLocationWorker: already scheduled")
+//        }
     }
 }
 
