@@ -37,7 +37,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.google.gson.Gson
 import com.ssafy.ganhoho.data.model.response.group.GroupViewModelFactory
-import com.ssafy.ganhoho.data.repository.GroupRepository
+import com.ssafy.ganhoho.repository.GroupRepository
 import com.ssafy.ganhoho.ui.group.common.GroupItem
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.BottomNavViewModel
@@ -47,10 +47,11 @@ import com.ssafy.ganhoho.viewmodel.GroupViewModel
 fun GroupScreen(
     navController: NavHostController,
     bottomNavViewModel: BottomNavViewModel = viewModel(),
-    repository: GroupRepository
+//    repository: GroupRepository
 ) {
 
     val authViewModel: AuthViewModel = viewModel()
+    val repository = GroupRepository()
 
     // 토큰 로드하기
     val token = authViewModel.accessToken.collectAsState().value

@@ -54,7 +54,7 @@ import com.ssafy.ganhoho.data.model.dto.group.GroupDto
 import com.ssafy.ganhoho.data.model.dto.group.WorkScheduleDto
 import com.ssafy.ganhoho.data.model.response.group.GroupMemberResponse
 import com.ssafy.ganhoho.data.model.response.group.GroupViewModelFactory
-import com.ssafy.ganhoho.data.repository.GroupRepository
+import com.ssafy.ganhoho.repository.GroupRepository
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.GroupViewModel
 import java.time.LocalDate
@@ -103,7 +103,6 @@ fun EachGroupScreen(
             Log.d("token", token)
         }
     }
-
 
     LaunchedEffect(groupId) {
         if (groupId != 0) {

@@ -1,5 +1,7 @@
 package com.ssafy.ganhoho.ui.splash
 
+import android.net.Uri
+import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -27,8 +29,10 @@ fun AnimatedSplashScreen(navController: NavController) {
     LaunchedEffect(Unit) {
         scale.animateTo(1f, animationSpec = tween(1000)) // 1초 동안 확대
         delay(1000)
+
         navController.navigate("login") {
             popUpTo("splash") { inclusive = true }
+
         }
     }
 

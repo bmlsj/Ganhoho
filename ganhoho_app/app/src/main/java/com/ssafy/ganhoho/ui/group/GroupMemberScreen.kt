@@ -46,7 +46,7 @@ import androidx.navigation.NavController
 import com.ssafy.ganhoho.base.TokenManager
 import com.ssafy.ganhoho.data.model.dto.group.GroupDto
 import com.ssafy.ganhoho.data.model.response.group.GroupMemberResponse
-import com.ssafy.ganhoho.data.repository.GroupRepository
+import com.ssafy.ganhoho.repository.GroupRepository
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.GroupViewModel
 import java.time.LocalDate

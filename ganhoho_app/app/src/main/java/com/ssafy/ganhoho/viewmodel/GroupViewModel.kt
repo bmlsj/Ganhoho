@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.ssafy.ganhoho.data.model.dto.group.GroupDto
 import com.ssafy.ganhoho.data.model.response.group.GroupMemberResponse
 import com.ssafy.ganhoho.data.model.response.group.MemberMonthlyScheduleResponse
-import com.ssafy.ganhoho.data.repository.GroupRepository
+import com.ssafy.ganhoho.repository.GroupRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

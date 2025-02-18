@@ -1,4 +1,4 @@
-package com.ssafy.ganhoho.data.repository
+package com.ssafy.ganhoho.repository
 
 
 import android.util.Log

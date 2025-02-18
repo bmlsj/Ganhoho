@@ -2,7 +2,7 @@ package com.ssafy.ganhoho.data.model.response.group
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.ssafy.ganhoho.data.repository.GroupRepository
+import com.ssafy.ganhoho.repository.GroupRepository
 import com.ssafy.ganhoho.viewmodel.GroupViewModel
 
 // GroupRepository와 TokenManager를 주입을 위한

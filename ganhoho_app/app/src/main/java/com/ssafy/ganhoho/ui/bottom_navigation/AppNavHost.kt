@@ -8,10 +8,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.google.gson.Gson
-import com.ssafy.ganhoho.base.TokenManager
 import com.ssafy.ganhoho.data.model.dto.group.GroupDto
 import com.ssafy.ganhoho.data.model.response.group.GroupViewModelFactory
-import com.ssafy.ganhoho.data.repository.GroupRepository
+import com.ssafy.ganhoho.repository.GroupRepository
 import com.ssafy.ganhoho.ui.friend.FriendScreen
 import com.ssafy.ganhoho.ui.group.EachGroupScreen
 import com.ssafy.ganhoho.ui.group.GroupScreen
@@ -46,8 +45,7 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         composable("group") {
             GroupScreen(
                 navController = navController,
-                bottomNavViewModel = bottomNavViewModel,
-                repository = groupRepository
+                bottomNavViewModel = bottomNavViewModel
             )
         }
         composable("friend") { FriendScreen(navController) }
@@ -61,8 +59,7 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
 
             GroupScreen(
                 navController = navController,
-                bottomNavViewModel = bottomNavViewModel,
-                repository = groupRepository
+                bottomNavViewModel = bottomNavViewModel
             )
         }
 

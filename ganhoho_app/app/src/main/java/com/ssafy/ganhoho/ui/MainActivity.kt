@@ -29,15 +29,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.datastore.core.DataStore
+import androidx.lifecycle.ReportFragment.Companion.reportFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.kakao.vectormap.KakaoMapSdk
 import com.ssafy.ganhoho.BuildConfig.KAKAO_NATIVE_APP_KEY
 import com.ssafy.ganhoho.R
+import com.ssafy.ganhoho.base.SecureDataStore
 import com.ssafy.ganhoho.base.TokenManager
 import com.ssafy.ganhoho.data.model.response.group.GroupViewModelFactory
-import com.ssafy.ganhoho.data.repository.GroupRepository
+import com.ssafy.ganhoho.repository.GroupRepository
 import com.ssafy.ganhoho.ui.auth.AuthDataStore
 import com.ssafy.ganhoho.ui.bottom_navigation.AppNavHost
 import com.ssafy.ganhoho.ui.bottom_navigation.CustomBottomNavigation
@@ -50,18 +53,19 @@ class MainActivity : ComponentActivity() {
     private val authViewModel: AuthViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val authDataStore = AuthDataStore(applicationContext) //DataStore 생성
 
-        val tokenManager = TokenManager
+        val authDataStore = AuthDataStore(applicationContext) //DataStore 생성
         val repository = GroupRepository()
 
         // 앱 실행 시 딥링크 처리
         val groupViewModel: GroupViewModel = ViewModelProvider(
             this,
             GroupViewModelFactory(repository)
-        ).get(GroupViewModel::class.java)
+        )[GroupViewModel::class.java]
 
-        handleDeepLink(intent, groupViewModel)
+        val token = SecureDataStore.getAccessToken(applicationContext)
+      //  handleDeepLink(intent, groupViewModel, token.toString())
+        val deepLinkUri = intent?.data  // 딥링크 데이터
 
         // 저장된 토큰 불러오기
         authViewModel.loadTokens(this)
@@ -79,55 +83,40 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // MainScreen()
-                    MainNavHost()
+                    MainNavHost(deepLinkUri)
                 }
             }
         }
     }
 
     // 딥링크 관리
-    private fun handleDeepLink(intent: Intent, viewModel: GroupViewModel) {
-        val data: Uri? = intent.data
-        data?.let { uri ->
-            val inviteCode = uri.getQueryParameter("groupCode")
-            if (!inviteCode.isNullOrEmpty()) {
-                Log.d("DeepLink", "초대 코드 감지: $inviteCode")
-
-                val token = TokenManager.getAccessToken()
-
-                if (token != null) {
-                    // 로그인 되어 있다면 초대 코드로 그룹 가입 처리 후 그룹 화면으로 이동
-
-                    viewModel.joinGroupByInviteCode(token, inviteCode,
-                        onSuccess = { inviteLink ->
-                            Log.d("DeepLink", "초대 수락 성공! inviteLink: $inviteLink")
-
-                            // 그룹 리스트 화면으로 이동
-                            val groupIntent = Intent(this, MainActivity::class.java).apply {
-                                putExtra("navigateTo", "group")
-                            }
-                            startActivity(groupIntent)
-                            finish() // 현재 액티비티 종료 (기존 화면이 남아 있지 않도록)
-                        },
-                        onFailure = { error ->
-                            Log.e("DeepLink", "초대 수락 실패: $error")
-                        }
-                    )
-                } else {
-                    // 로그인 상태가 아니라면 로그인 화면으로 이동
-                    Log.e("DeepLink", "토큰 없음. 로그인 필요")
-                    val loginIntent = Intent(this, MainActivity::class.java).apply {
-                        putExtra("navigateTo", "login")
-                    }
-                    startActivity(loginIntent)
-                    finish()
-                }
-
-
-            }
-        }
-    }
+//    private fun handleDeepLink(intent: Intent, viewModel: GroupViewModel, token: String) {
+//        val data: Uri? = intent.data
+//        data?.let { uri ->
+//            val inviteCode = uri.getQueryParameter("groupCode")
+//            if (!inviteCode.isNullOrEmpty()) {
+//                Log.d("DeepLink", "초대 코드 감지: $inviteCode")
+//
+////                val token = TokenManager.getAccessToken()
+//
+//                viewModel.joinGroupByInviteCode(token, inviteCode,
+//                    onSuccess = { inviteLink ->
+//                        Log.d("DeepLink", "초대 수락 성공! inviteLink: $inviteLink")
+//
+//                        // 그룹 리스트 화면으로 이동
+//                        val groupIntent = Intent(this, MainActivity::class.java).apply {
+//                            putExtra("navigateTo", "group")
+//                        }
+//                        startActivity(groupIntent)
+//                        finish() // 현재 액티비티 종료 (기존 화면이 남아 있지 않도록)
+//                    },
+//                    onFailure = { error ->
+//                        Log.e("DeepLink", "초대 수락 실패: $error")
+//                    }
+//                )
+//            }
+//        }
+//    }
 }
 
 @SuppressLint("UseOfNonLambdaOffsetOverload")
