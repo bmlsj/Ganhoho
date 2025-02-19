@@ -11,11 +11,11 @@ pinia.use(piniaPluginPersistedstate);
 app.use(pinia);
 app.use(router);
 if (!window.receiveToken) {
-  window.receiveToken = function(access_token, refresh_token) {
-    localStorage.setItem("token", access_token);
-    localStorage.setItem("refresh_token", refresh_token);
+  window.receiveToken = function(user_id, access_token) {
+    localStorage.setItem("user_id", user_id);
+    localStorage.setItem("refresh_token", access_token);
     document.dispatchEvent(new CustomEvent('tokenReceived', {
-      detail: { access_token, refresh_token }
+      detail: { user_id, access_token }
     }));
     console.log("Token dispatched via custom event.");
   }

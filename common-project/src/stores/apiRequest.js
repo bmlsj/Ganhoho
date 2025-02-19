@@ -46,8 +46,8 @@ export const useApiStore = defineStore('api', () => {
 
   const medicineId = ref(null);
 
-  const token = ref(localStorage.getItem("token") || null);
-  const refreshToken = ref(localStorage.getItem("refresh_token") || null);
+  const userId = ref(localStorage.getItem("user_id") || null);
+  const token = ref(localStorage.getItem("access_token") || null);
 
   //token.value ="eyJhbGciOiJIUzI1NiJ9.eyJtZW1iZXJJZCI6OCwiaWF0IjoxNzM5NjgzMjYzLCJleHAiOjE3Mzk3Njk2NjN9.5KmPHuxwU_GMkUXFENU3EU_FfHRHU6FeGM04kse40Mc"
   // 토큰 변경 감지를 위한 watch 추가
@@ -70,11 +70,11 @@ export const useApiStore = defineStore('api', () => {
     localStorage.removeItem('schedule-store');
   };
 
-  const setToken = (access_token, refresh_token) => {
-    token.value = access_token;
+  const setToken = (user_id, access_token) => {
+    userId.value = access_token;
     refreshToken.value = refresh_token;
-    localStorage.setItem("token", access_token);
-    localStorage.setItem("refresh_token", refresh_token);
+    localStorage.setItem("token", user_id);
+    localStorage.setItem("refresh_token", access_token);
   }
 
   // (예시) 토큰 디버그 로그 -> 마스킹 처리

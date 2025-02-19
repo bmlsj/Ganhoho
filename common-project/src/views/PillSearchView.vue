@@ -84,9 +84,9 @@ onMounted(async () => {
 
   // ✅ 앱에서 호출할 전역 함수 등록
   document.addEventListener('tokenReceived', (e) => {
-    const { access_token, refresh_token } = e.detail
+    const { user_id, access_token } = e.detail
     console.log("Component - Token received via event:", access_token)
-    apiStore.setToken(access_token, refresh_token)
+    apiStore.setToken(user_id, access_token)
   })
 
   // ① 네이티브 앱에게 카메라를 열도록 요청하는 함수 등록

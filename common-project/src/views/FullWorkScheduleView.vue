@@ -160,6 +160,12 @@ onMounted(async () => {
   if (tutorialStep.value === 1 && isFirstVisit.value) {
     document.addEventListener('click', nextTutorialStep)
   }
+
+  document.addEventListener('tokenReceived', (e) => {
+    const { user_id, access_token } = e.detail
+    console.log("Component - Token received via event:", access_token)
+    apiStore.setToken(user_id, access_token)
+  })
 })
 
 onUnmounted(() => {
