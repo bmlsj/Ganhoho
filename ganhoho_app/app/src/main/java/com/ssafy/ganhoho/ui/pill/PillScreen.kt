@@ -22,32 +22,34 @@ import androidx.navigation.NavController
 import com.ssafy.ganhoho.BuildConfig.WEBVIEW_PILL_URL
 import com.ssafy.ganhoho.util.WebViewWithToken
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
+import com.ssafy.ganhoho.viewmodel.MemberViewModel
 
 @Composable
 fun PillScreen(navController: NavController) {
 
     val authViewModel: AuthViewModel = viewModel()
+    val memberViewModel: MemberViewModel = viewModel()
 
     // 토큰 로드하기
     val token = authViewModel.accessToken.collectAsState().value
+    val mypageInfo = memberViewModel.mypageInfo.collectAsState().value
     val refreshToken = authViewModel.refreshToken.collectAsState().value
     val context = LocalContext.current
 
+    val loginId = mypageInfo?.getOrNull()?.loginId ?: ""
+    Log.d("mypageInfo", loginId)
+
     LaunchedEffect(token) {
         if (token.isNullOrEmpty()) {
             authViewModel.loadTokens(context)
+            if (token != null) {
+                memberViewModel.getMyPageInfo(token)
+            }
         } else {
             Log.d("token", token)
         }
     }
 
-    LaunchedEffect(token) {
-        if (token.isNullOrEmpty()) {
-            authViewModel.loadTokens(context)
-        } else {
-            Log.d("token", token)
-        }
-    }
 
     // ✅ Base64 이미지 상태 (카메라 촬영 후 저장됨)
     var capturedImageBase64 by remember { mutableStateOf<String?>(null) }
@@ -66,7 +68,8 @@ fun PillScreen(navController: NavController) {
         if (token != null && refreshToken != null) {
             WebViewWithToken(
                 url = WEBVIEW_PILL_URL,
-                token = token,
+                userId = loginId,
+                accessToken = token,
                 refreshToken = refreshToken
             )
         }

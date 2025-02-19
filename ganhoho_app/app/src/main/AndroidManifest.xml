@@ -52,8 +52,6 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
 
-
-
             </intent-filter>
             <intent-filter>
                 <!-- 그룹 초대 : 웹앱 딥링크 관련 설정 -->
@@ -61,6 +59,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
             </intent-filter>
         </activity>
 
