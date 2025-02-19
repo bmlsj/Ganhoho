@@ -84,18 +84,23 @@ export const useApiStore = defineStore('api', () => {
     const storedToken = localStorage.getItem("token");
     if (newAccessToken !== storedToken) {
       console.log("새로운 토큰이 감지되었습니다. 상태 초기화 후 데이터를 새로 불러옵니다.");
-      localStorage.removeItem('schedule-store');
-      sessionStorage.removeItem('schedule-store');
-      resetScheduleData();
+      // 기존 persist 데이터 삭제 (localStorage와 sessionStorage 모두)
+      localStorage.removeItem('schedule-store-default');
+      localStorage.removeItem(`schedule-store-${userId.value}`);
+      sessionStorage.removeItem('schedule-store-default');
+      sessionStorage.removeItem(`schedule-store-${userId.value}`);
       
-      // useApiStore().$reset();
-
+      // 상태 초기화
+      resetScheduleData();
+  
       token.value = newAccessToken;
       userId.value = newUserId;
       localStorage.setItem("user_id", newUserId);
       localStorage.setItem("token", newAccessToken);
-
-
+  
+      // 필요하다면 store의 $reset() 호출
+      useApiStore().$reset();
+  
       fetchData();
     } else {
       console.log("토큰이 변경되지 않았습니다.");
@@ -434,7 +439,7 @@ export const useApiStore = defineStore('api', () => {
     enabled: true,
     strategies: [
       {
-        key: 'schedule-store',
+        key: `schedule-store-${localStorage.getItem("user_id") || "default"}`,
         storage: localStorage,
         paths: ['people', 'currentYear', 'currentMonth', 'isDataLoaded', 'token']
       }
