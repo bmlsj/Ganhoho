@@ -85,7 +85,9 @@ export const useApiStore = defineStore('api', () => {
     if (newAccessToken !== storedToken) {
       console.log("새로운 토큰이 감지되었습니다. 상태 초기화 후 데이터를 새로 불러옵니다.");
       localStorage.removeItem('schedule-store');
+      sessionStorage.removeItem('schedule-store');
       resetScheduleData();
+      
       // useApiStore().$reset();
 
       token.value = newAccessToken;
