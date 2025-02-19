@@ -164,7 +164,7 @@ onMounted(async () => {
   document.addEventListener('tokenReceived', (e) => {
     const { access_token, refresh_token } = e.detail
     console.log("Component - Token received via event:", access_token)
-    apiStore.setToken(access_token, refresh_token)
+    store.setToken(access_token, refresh_token)
   })
 })
 console.log(access_token)
