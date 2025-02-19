@@ -384,7 +384,7 @@ export const useApiStore = defineStore('api', () => {
   };
 }, {
   persist: {
-    enabled: true,
+    enabled: false,
     strategies: [
       {
         key: 'schedule-store',
