@@ -85,10 +85,10 @@ class LocationWorker(context: Context, params: WorkerParameters) : CoroutineWork
                         }
                     }
                 } else {
-                    createNotification("api 요청 안함","같은 상태 :${subscriptionInfo}")
+//                    createNotification("api 요청 안함","같은 상태 :${subscriptionInfo}")
                 }
             } else {
-                createNotification("위치 찾기 불가능","${subscriptionInfo}")
+//                createNotification("위치 찾기 불가능","${subscriptionInfo}")
             }
         }
         return Result.success()
