@@ -1,15 +1,18 @@
 package com.ssafy.ganhoho.ui
 
+import android.content.Context
 import android.net.Uri
 import android.util.Log
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -23,6 +26,7 @@ import com.ssafy.ganhoho.ui.auth.SearchHospital
 import com.ssafy.ganhoho.ui.group.GroupScreen
 import com.ssafy.ganhoho.ui.splash.AnimatedSplashScreen
 import com.ssafy.ganhoho.viewmodel.GroupViewModel
+import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 /**
@@ -35,14 +39,15 @@ fun MainNavHost(deepLinkUri: Uri?) {
     val context = LocalContext.current
     val groupViewModel: GroupViewModel = viewModel()
 
-    val token =
-        SecureDataStore.getAccessToken(context).collectAsState(initial = null).value
-    Log.d("DeepLink", "토큰 가져오기 완료: $token")
+//    val token =
+//        SecureDataStore.getAccessToken(context).collectAsState(initial = null).value
+//    Log.d("DeepLink", "토큰 가져오기 완료: $token")
 
+    val token = ""
     val deepLinkState by remember { mutableStateOf(deepLinkUri) }
 
     // ✅ 딥링크 처리 함수 호출
-    HandleDeepLink(deepLinkState, token, navController, groupViewModel)
+    HandleDeepLink(deepLinkState, context, navController, groupViewModel)
 
 
     NavHost(
@@ -79,45 +84,51 @@ fun MainNavHost(deepLinkUri: Uri?) {
 @Composable
 fun HandleDeepLink(
     deepLinkUri: Uri?,
-    token: String?,
+    context: Context,
     navController: NavController,
     groupViewModel: GroupViewModel
 ) {
     // ✅ 이미 처리한 초대 코드 추적하여 중복 실행 방지
     val processedInviteCode by remember { mutableStateOf<String?>(null) }
 
-    // 딥링크 처리
-    LaunchedEffect(deepLinkUri, token) {
+    val coroutineScope = rememberCoroutineScope()
 
-        val inviteCode = deepLinkUri?.getQueryParameter("groupCode")
+    DisposableEffect(Unit) {
+        val job = coroutineScope.launch {
+            SecureDataStore.getAccessToken(context).collect{ token ->
+                Log.d("DisposableEffect", "HandleDeepLink: $token")
+                val inviteCode = deepLinkUri?.getQueryParameter("groupCode")
 
-        if (!inviteCode.isNullOrEmpty() && inviteCode != processedInviteCode) {
-            Log.d("DeepLink", "초대코드 감지: $inviteCode")
+                if (!inviteCode.isNullOrEmpty() && inviteCode != processedInviteCode) {
+                    Log.d("DeepLink", "초대코드 감지: $inviteCode")
 
-            if (token != null) {
-                Log.d("DeepLink", "토큰 확인 완료 : $token")
+                    if (token != null) {
+                        Log.d("DeepLink", "토큰 확인 완료 : $token")
 
-                // 그룹 가입 후 그룹 화면으로 이동
-                groupViewModel.joinGroupByInviteCode(token, inviteCode,
-                    onSuccess = {
-                        Log.d("DeepLink", "초대 수락 성공! 그룹 화면으로 이동")
+                        // 그룹 가입 후 그룹 화면으로 이동
+                        groupViewModel.joinGroupByInviteCode(token, inviteCode,
+                            onSuccess = {
+                                Log.d("DeepLink", "초대 수락 성공! 그룹 화면으로 이동")
 
-                        navController.navigate("main") {
-                            popUpTo("splash") { inclusive = true }
-                        }
+                                navController.navigate("main") {
+                                    popUpTo("splash") { inclusive = true }
+                                }
 
-                        // ✅ Main 이동 후 AppNavHost에서 그룹 화면으로 이동
-                        navController.navigate("group")
-                    },
-                    onFailure = { error ->
-                        Log.e("DeepLink", "초대 수락 실패: $error")
+                                // ✅ Main 이동 후 AppNavHost에서 그룹 화면으로 이동
+                                navController.navigate("group")
+                            },
+                            onFailure = { error ->
+                                Log.e("DeepLink", "초대 수락 실패: $error")
 
 
-                    })
-            } else {
-                Log.e("DeepLink", "토큰 없음. 로그인 필요")
-                navController.navigate("login")
+                            })
+                    } else {
+                        Log.e("DeepLink", "토큰 없음. 로그인 필요")
+                        navController.navigate("login")
+                    }
+                }
             }
         }
+        onDispose { job.cancel() }
     }
 }
