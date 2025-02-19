@@ -29,16 +29,10 @@ import com.ssafy.ganhoho.viewmodel.MemberViewModel
 fun PillScreen(navController: NavController) {
 
     val authViewModel: AuthViewModel = viewModel()
-    val memberViewModel: MemberViewModel = viewModel()
-
     // 토큰 로드하기
     val token = authViewModel.accessToken.collectAsState().value
     val refreshToken = authViewModel.refreshToken.collectAsState().value
     val context = LocalContext.current
-
-    val memberInfoState = memberViewModel.mypageInfo.collectAsState().value
-    val memberInfo = memberInfoState?.getOrNull() ?: MyPageResponse(-1, "", "", "", "")
-
 
     LaunchedEffect(token) {
         if (token.isNullOrEmpty()) {
@@ -46,18 +40,6 @@ fun PillScreen(navController: NavController) {
         } else {
             Log.d("token", token)
         }
-    }
-
-    // ✅ 토큰이 존재하면 사용자 정보 요청
-    LaunchedEffect(token) {
-        token?.let {
-            memberViewModel.getMyPageInfo(it)
-        }
-    }
-
-    val loginId = memberInfo.loginId
-    if (token != null) {
-        Log.d("mypageInfo", "$token $loginId")
     }
 
     // ✅ Base64 이미지 상태 (카메라 촬영 후 저장됨)
@@ -74,11 +56,10 @@ fun PillScreen(navController: NavController) {
         verticalArrangement = Arrangement.Center
     ) {
 
-        if (token != null && refreshToken != null) {
+        if (token != null && refreshToken != null ) {
             WebViewWithToken(
                 url = WEBVIEW_PILL_URL,
-                userId = loginId,
-                accessToken = token,
+                token = token,
                 refreshToken = refreshToken
             )
         }

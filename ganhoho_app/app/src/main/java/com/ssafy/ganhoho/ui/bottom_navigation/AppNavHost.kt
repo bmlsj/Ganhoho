@@ -2,6 +2,8 @@ package com.ssafy.ganhoho.ui.bottom_navigation
 
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -10,6 +12,7 @@ import com.google.gson.Gson
 import com.ssafy.ganhoho.data.model.dto.group.GroupDto
 import com.ssafy.ganhoho.data.model.response.group.GroupViewModelFactory
 import com.ssafy.ganhoho.repository.GroupRepository
+import com.ssafy.ganhoho.ui.AuthActivity
 import com.ssafy.ganhoho.ui.auth.SearchHospital
 import com.ssafy.ganhoho.ui.friend.FriendScreen
 import com.ssafy.ganhoho.ui.group.EachGroupScreen
@@ -19,6 +22,7 @@ import com.ssafy.ganhoho.ui.home.HomeScreen
 import com.ssafy.ganhoho.ui.mypage.MyPageScreen
 import com.ssafy.ganhoho.ui.mypage.NotificationScreen
 import com.ssafy.ganhoho.ui.mypage.UpdateMemberInfo
+import com.ssafy.ganhoho.ui.nav_host.Route
 import com.ssafy.ganhoho.ui.pill.PillScreen
 import com.ssafy.ganhoho.ui.work_schedule.WorkScreen
 import com.ssafy.ganhoho.viewmodel.BottomNavViewModel
@@ -32,43 +36,30 @@ import java.time.format.DateTimeFormatter
  * 바텀 네비게이션을 나타내는 네비게이션
  */
 @Composable
-fun AppNavHost(navController: NavHostController) {
+fun AppNavHost(navController: NavHostController, yearMonth: String) {
     val bottomNavViewModel: BottomNavViewModel = viewModel()
     val groupRepository = GroupRepository()
 
-    val yearMonth: String = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"))
-
     NavHost(
         navController = navController,
-        startDestination = "home"
+        startDestination = Route.Home.route // ✅ 홈을 기본 화면으로 설정
     ) {
-        composable("work") { WorkScreen(navController) }
-        composable("pill") { PillScreen(navController) }
-        composable("home") { HomeScreen(navController) }
-        composable("group") {
+        composable(Route.Work.route) { WorkScreen(navController) }
+        composable(Route.Pill.route) { PillScreen(navController) }
+        composable(Route.Home.route) { HomeScreen(navController) }
+        composable(Route.Group.route) {
             GroupScreen(
                 navController = navController,
                 bottomNavViewModel = bottomNavViewModel
             )
         }
-        composable("friend") { FriendScreen(navController) }
-        composable("mypage") { MyPageScreen(navController) }
-        composable("noti") { NotificationScreen(navController) }
-        composable("update") { UpdateMemberInfo(navController) }  // 회원정보 수정 화면
-        composable("hospitalInfo") { SearchHospital(navController) }
+        composable(Route.Friend.route) { FriendScreen(navController) }
+        composable(Route.Mypage.route) { MyPageScreen(navController) }
+        composable(Route.Notification.route) { NotificationScreen(navController) }
+        composable(Route.UpdateInfo.route) { UpdateMemberInfo(navController) }
+        composable(Route.HospitalInfo.route) { SearchHospital(navController) }
 
-        // 그룹 화면
-        composable("group/{groupIconType}") { backStackEntry ->
-            val groupIconType =
-                backStackEntry.arguments?.getString("groupIconType")?.toIntOrNull() ?: 1
-            val groupViewModel: GroupViewModel = viewModel()
-
-            GroupScreen(
-                navController = navController,
-                bottomNavViewModel = bottomNavViewModel
-            )
-        }
-
+        // ✅ 그룹 화면 (딥링크 가능)
         composable("EachGroupScreen/{groupJson}") { backStackEntry ->
             val groupJson = backStackEntry.arguments?.getString("groupJson")
             val group = groupJson?.let {
@@ -99,23 +90,5 @@ fun AppNavHost(navController: NavHostController) {
             }
         }
 
-        composable("group/{groupId}") { backStackEntry ->
-            var groupId = backStackEntry.arguments?.getString("groupId")?.toIntOrNull()
-            if (groupId == null) {
-                Log.e("DEBUG_NAV", "groupId가 null이므로 네비게이션 실패")
-                return@composable
-            }
-
-            Log.d("DEBUG_NAV", "EachGroupScreen으로 이동 - groupId: $groupId")
-
-            EachGroupScreen(
-                navController = navController,
-                group = GroupDto(groupId, "Sample Group", 1, 5), // 필요시 수정
-                groupMember = getSampleMembers(),
-                repository = groupRepository,
-                groupId = groupId,
-                yearMonth = yearMonth
-            )
-        }
     }
 }

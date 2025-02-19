@@ -1,5 +1,10 @@
 package com.ssafy.ganhoho.ui.splash
 
+import android.annotation.SuppressLint
+import android.graphics.PixelFormat
+import android.net.Uri
+import android.util.Log
+import android.view.SurfaceView
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -14,13 +19,16 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -29,35 +37,71 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.ssafy.ganhoho.R
+import com.ssafy.ganhoho.ui.AuthActivity
+import com.ssafy.ganhoho.ui.nav_host.Route
+import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+private const val TAG = "AnimatedSplashScreen"
+@SuppressLint("ContextCastToActivity")
 @Composable
-fun AnimatedSplashScreen(navController: NavController) {
+fun AnimatedSplashScreen(navController: NavController, deepLinkUri: Uri?) {
 
     val characterScale1 = remember { Animatable(0f) } // 캐릭터 1 크기 애니메이션
     val characterScale2 = remember { Animatable(0f) } // 캐릭터 2 크기 애니메이션
 
+    val authViewModel: AuthViewModel = viewModel()
+    val context = LocalContext.current as AuthActivity
+    var isCheckingLogin by remember {
+        mutableStateOf(true)
+    }
+    val userInfo = authViewModel.userInfo.collectAsState().value
+
+    // ✅ 애니메이션 실행 (1초)
     LaunchedEffect(Unit) {
         launch {
             characterScale1.animateTo(1f, animationSpec = tween(500))
             delay(500)
             characterScale2.animateTo(1f, animationSpec = tween(500))
         }
+        authViewModel.checkAutoLogin(context)
+        delay(2000)  // 네트워크 요청이 끝나기 전에 네비게이션 실행 방지
+        isCheckingLogin = false
+    }
 
-        delay(1500) // 스플래시 지속 시간
-
-        // 동작 후 로그인으로 이동
-        navController.navigate("login") {
-            popUpTo("splash") { inclusive = true }
+    // ✅ 스플래시 화면 최소 2초 유지 후 이동
+    LaunchedEffect(userInfo, isCheckingLogin) {
+        if (!isCheckingLogin) {
+//            delay(3000) // ⏳ 추가 딜레이 (2초 유지 보장)
+            if (userInfo != null) {
+                Log.d("SplashScreen", "자동 로그인 성공 → 메인 이동")
+                context.navigateToMain(deepLinkUri)
+            } else {
+                Log.d("SplashScreen", "자동 로그인 실패 → 로그인 이동")
+                navController.navigate(Route.Login.route) {
+                    popUpTo(Route.Splash.route) { inclusive = true }
+                }
+            }
         }
     }
 
     val normalFont = FontFamily(Font(R.font.scdream5))
     val lightFont = FontFamily(Font(R.font.scdream3))
+    AndroidView(
+        factory = { context ->
+            SurfaceView(context).apply {
+                setZOrderOnTop(true)
+                holder.setFormat(PixelFormat.TRANSLUCENT)
+            }
+        },
+        modifier = Modifier.fillMaxSize()
+    )
 
     Box(
         modifier = Modifier
@@ -147,7 +191,7 @@ fun AnimatedSplashScreen(navController: NavController) {
                 fontSize = 15.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
-                .fillMaxWidth()
+                    .fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(61.dp))
@@ -156,25 +200,4 @@ fun AnimatedSplashScreen(navController: NavController) {
 
     }
 
-//    Box(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .background(Color(0xFF79C7E3)),
-//        contentAlignment = Alignment.Center
-//    ) {
-//        Text(
-//            text = "GANHOHO",
-//            fontSize = 32.sp * scale.value, // 확대 애니메이션 적용
-//            fontWeight = FontWeight.Bold,
-//            color = Color.White
-//        )
-//    }
-
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewAnimatedSplashScreen() {
-    val navController = rememberNavController()
-    AnimatedSplashScreen(navController)
 }

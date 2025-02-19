@@ -33,10 +33,6 @@ fun WorkScreen(navController: NavController) {
     val refreshToken = authViewModel.refreshToken.collectAsState().value
     val context = LocalContext.current
 
-    val memberInfoState = memberViewModel.mypageInfo.collectAsState().value
-    val memberInfo = memberInfoState?.getOrNull() ?: MyPageResponse(-1, "", "", "", "")
-
-
     LaunchedEffect(token) {
         if (token.isNullOrEmpty()) {
             authViewModel.loadTokens(context)
@@ -44,18 +40,6 @@ fun WorkScreen(navController: NavController) {
             Log.d("token", token)
         }
     }
-
-
-    // ✅ 토큰이 존재하면 사용자 정보 요청
-    LaunchedEffect(token) {
-        token?.let {
-            memberViewModel.getMyPageInfo(it)
-        }
-    }
-
-
-    val loginId = memberInfo.loginId
-    Log.d("work_mypageInfo", "$token $loginId")
 
 
     // 웹뷰 구성
@@ -68,8 +52,7 @@ fun WorkScreen(navController: NavController) {
         if (token != null && refreshToken != null) {
             WebViewWithToken(
                 url = WEBVIEW_WORK_URL,
-                userId = loginId,
-                accessToken = token,
+                token = token,
                 refreshToken = refreshToken,
                 enableCamera = false // ✅ 카메라 기능 비활성화
             )
