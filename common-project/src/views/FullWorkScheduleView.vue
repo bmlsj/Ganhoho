@@ -167,7 +167,6 @@ onMounted(async () => {
     store.setToken(access_token, refresh_token)
   })
 })
-console.log(access_token)
 onUnmounted(() => {
   document.removeEventListener('click', nextTutorialStep)
 })
