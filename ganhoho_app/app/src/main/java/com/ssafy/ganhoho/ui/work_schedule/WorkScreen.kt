@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ssafy.ganhoho.BuildConfig.WEBVIEW_WORK_URL
+import com.ssafy.ganhoho.data.model.response.member.MyPageResponse
 import com.ssafy.ganhoho.util.WebViewWithToken
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.MemberViewModel
@@ -29,12 +30,11 @@ fun WorkScreen(navController: NavController) {
 
     // 토큰 로드하기
     val token = authViewModel.accessToken.collectAsState().value
-    val mypageInfo = memberViewModel.mypageInfo.collectAsState().value
     val refreshToken = authViewModel.refreshToken.collectAsState().value
     val context = LocalContext.current
 
-    val loginId = mypageInfo?.getOrNull()?.loginId ?: ""
-    Log.d("mypageInfo", loginId)
+    val memberInfoState = memberViewModel.mypageInfo.collectAsState().value
+    val memberInfo = memberInfoState?.getOrNull() ?: MyPageResponse(-1, "", "", "", "")
 
 
     LaunchedEffect(token) {
@@ -44,6 +44,19 @@ fun WorkScreen(navController: NavController) {
             Log.d("token", token)
         }
     }
+
+
+    // ✅ 토큰이 존재하면 사용자 정보 요청
+    LaunchedEffect(token) {
+        token?.let {
+            memberViewModel.getMyPageInfo(it)
+        }
+    }
+
+
+    val loginId = memberInfo.loginId
+    Log.d("work_mypageInfo", "$token $loginId")
+
 
     // 웹뷰 구성
     Column(

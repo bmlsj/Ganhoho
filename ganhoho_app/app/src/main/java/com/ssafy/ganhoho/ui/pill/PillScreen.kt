@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ssafy.ganhoho.BuildConfig.WEBVIEW_PILL_URL
+import com.ssafy.ganhoho.data.model.response.member.MyPageResponse
 import com.ssafy.ganhoho.util.WebViewWithToken
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.MemberViewModel
@@ -32,24 +33,32 @@ fun PillScreen(navController: NavController) {
 
     // 토큰 로드하기
     val token = authViewModel.accessToken.collectAsState().value
-    val mypageInfo = memberViewModel.mypageInfo.collectAsState().value
     val refreshToken = authViewModel.refreshToken.collectAsState().value
     val context = LocalContext.current
 
-    val loginId = mypageInfo?.getOrNull()?.loginId ?: ""
-    Log.d("mypageInfo", loginId)
+    val memberInfoState = memberViewModel.mypageInfo.collectAsState().value
+    val memberInfo = memberInfoState?.getOrNull() ?: MyPageResponse(-1, "", "", "", "")
+
 
     LaunchedEffect(token) {
         if (token.isNullOrEmpty()) {
             authViewModel.loadTokens(context)
-            if (token != null) {
-                memberViewModel.getMyPageInfo(token)
-            }
         } else {
             Log.d("token", token)
         }
     }
 
+    // ✅ 토큰이 존재하면 사용자 정보 요청
+    LaunchedEffect(token) {
+        token?.let {
+            memberViewModel.getMyPageInfo(it)
+        }
+    }
+
+    val loginId = memberInfo.loginId
+    if (token != null) {
+        Log.d("mypageInfo", "$token $loginId")
+    }
 
     // ✅ Base64 이미지 상태 (카메라 촬영 후 저장됨)
     var capturedImageBase64 by remember { mutableStateOf<String?>(null) }
