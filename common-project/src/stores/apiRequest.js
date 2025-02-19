@@ -51,7 +51,25 @@ export const useApiStore = defineStore('api', () => {
   const refreshToken = ref(null); // 초기값 null로 변경  // 수정됨
 
   //token.value ="eyJhbGciOiJIUzI1NiJ9.eyJtZW1iZXJJZCI6OCwiaWF0IjoxNzM5NjgzMjYzLCJleHAiOjE3Mzk3Njk2NjN9.5KmPHuxwU_GMkUXFENU3EU_FfHRHU6FeGM04kse40Mc"
+// 토큰 변경 감지를 위한 watch 추가
+watch(token, async (newToken, oldToken) => {
+  if (newToken !== oldToken) {
+    console.log("토큰 변경 감지: 스케줄 데이터 초기화");
+    resetScheduleData();
+  }
+});
 
+// 스케줄 데이터만 초기화하는 함수
+const resetScheduleData = () => {
+  people.value = [];
+  calendar.value = [];
+  currentYear.value = null;
+  currentMonth.value = null;
+  isDataLoaded.value = false;
+  
+  // localStorage의 스케줄 관련 캐시 데이터만 삭제
+  localStorage.removeItem('schedule-store');
+};
   const setToken = (user_id, access_token, refresh_token) => { // 수정됨
     userId.value = user_id; // 현재 로그인한 사용자 ID 저장  // 수정됨
     token.value = access_token;
@@ -378,6 +396,7 @@ export const useApiStore = defineStore('api', () => {
     setToken,
     loadUserData, 
     logout, 
+    resetScheduleData,
     token,
     refreshToken,
     medicineId,
