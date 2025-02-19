@@ -84,16 +84,10 @@ onMounted(async () => {
 
   // ✅ 앱에서 호출할 전역 함수 등록
   document.addEventListener('tokenReceived', (e) => {
-  const { user_id, access_token, refresh_token } = e.detail; // 수정됨: user_id 추가
-  if (!user_id) {
-    console.error("🚨 tokenReceived: user_id가 없습니다.");
-    return;
-  }
-  console.log("Component - Token received via event:", access_token);
-
-  // 계정별로 저장된 토큰을 Pinia store에 설정
-  apiStore.setToken(user_id, access_token, refresh_token); // 수정됨: user_id 추가
-});
+    const { access_token, refresh_token } = e.detail
+    console.log("Component - Token received via event:", access_token)
+    apiStore.setToken(access_token, refresh_token)
+  })
 
   // ① 네이티브 앱에게 카메라를 열도록 요청하는 함수 등록
   window.openNativeCamera = function() {

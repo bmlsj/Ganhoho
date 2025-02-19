@@ -46,15 +46,17 @@ export const useApiStore = defineStore('api', () => {
 
   const medicineId = ref(null);
 
-  const userId = ref(localStorage.getItem("userId") || null); // 현재 로그인한 사용자 ID 추가  // 수정됨
-  const token = ref(null); // 초기값 null로 변경  // 수정됨
-  const refreshToken = ref(null); // 초기값 null로 변경  // 수정됨
+  const token = ref(localStorage.getItem("token") || null);
+  const refreshToken = ref(localStorage.getItem("refresh_token") || null);
 
   //token.value ="eyJhbGciOiJIUzI1NiJ9.eyJtZW1iZXJJZCI6OCwiaWF0IjoxNzM5NjgzMjYzLCJleHAiOjE3Mzk3Njk2NjN9.5KmPHuxwU_GMkUXFENU3EU_FfHRHU6FeGM04kse40Mc"
 // 토큰 변경 감지를 위한 watch 추가
+
 watch(token, async (newToken, oldToken) => {
   if (newToken !== oldToken) {
     console.log("토큰 변경 감지: 스케줄 데이터 초기화");
+    console.log(newToken)
+    console.log(oldToken)
     resetScheduleData();
   }
 });
@@ -70,42 +72,13 @@ const resetScheduleData = () => {
   // localStorage의 스케줄 관련 캐시 데이터만 삭제
   localStorage.removeItem('schedule-store');
 }
-  const setToken = (user_id, access_token, refresh_token) => { // 수정됨
-    userId.value = user_id; // 현재 로그인한 사용자 ID 저장  // 수정됨
-    token.value = access_token;
-    refreshToken.value = refresh_token;
 
-    localStorage.setItem("userId", user_id); // 현재 로그인한 사용자 ID 저장  // 수정됨
-    localStorage.setItem(`user_${user_id}_token`, access_token); // 계정별 저장  // 수정됨
-    localStorage.setItem(`user_${user_id}_refresh_token`, refresh_token); // 계정별 저장  // 수정됨
-  };
- /**
-   * 🔹 로그아웃 (현재 사용자 데이터만 삭제)
-   */
- const logout = () => { // 수정됨
-  if (userId.value) {
-    localStorage.removeItem(`user_${userId.value}_token`); // 현재 계정의 데이터만 삭제  // 수정됨
-    localStorage.removeItem(`user_${userId.value}_refresh_token`); // 현재 계정의 데이터만 삭제  // 수정됨
-    localStorage.removeItem("userId"); // 사용자 ID 삭제  // 수정됨
-  }
-  userId.value = null;
-  token.value = null;
-  refreshToken.value = null;
-};
-  /**
-   * 🔹 로그인한 계정의 토큰 불러오기
-   */
-  const loadUserData = () => { // 수정됨
-    if (!userId.value) return;
-    const storedToken = localStorage.getItem(`user_${userId.value}_token`);
-    const storedRefreshToken = localStorage.getItem(`user_${userId.value}_refresh_token`);
-    if (storedToken) token.value = storedToken;
-    if (storedRefreshToken) refreshToken.value = storedRefreshToken;
-  };
-
-  loadUserData(); // 수정됨
-  // (예시) 토큰 디버그 로그 -> 마스킹 처리
-  // console.log("현재 토큰:", maskToken(token.value));
+const setToken = (access_token, refresh_token) => {
+  token.value = access_token;
+  refreshToken.value = refresh_token;
+  localStorage.setItem("token", access_token);
+  localStorage.setItem("refresh_token", refresh_token);
+}
 
   const fetchData = async () => {
     try {
@@ -394,8 +367,6 @@ const resetScheduleData = () => {
     fetchMedicineDetail,
     uploadMedicineImage,
     setToken,
-    loadUserData, 
-    logout, 
     resetScheduleData,
     token,
     refreshToken,
@@ -408,7 +379,7 @@ const resetScheduleData = () => {
       {
         key: 'schedule-store',
         storage: localStorage,
-        paths: ['people', 'currentYear', 'currentMonth', 'isDataLoaded', 'token']
+        paths: ['people', 'currentYear', 'currentMonth', 'isDataLoaded',]
       }
     ]
   }
