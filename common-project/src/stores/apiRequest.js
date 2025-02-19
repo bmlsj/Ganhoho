@@ -46,18 +46,46 @@ export const useApiStore = defineStore('api', () => {
 
   const medicineId = ref(null);
 
-  const token = ref(localStorage.getItem("token") || null);
-  const refreshToken = ref(localStorage.getItem("refresh_token") || null);
+  const userId = ref(localStorage.getItem("userId") || null); // 현재 로그인한 사용자 ID 추가  // 수정됨
+  const token = ref(null); // 초기값 null로 변경  // 수정됨
+  const refreshToken = ref(null); // 초기값 null로 변경  // 수정됨
 
   //token.value ="eyJhbGciOiJIUzI1NiJ9.eyJtZW1iZXJJZCI6OCwiaWF0IjoxNzM5NjgzMjYzLCJleHAiOjE3Mzk3Njk2NjN9.5KmPHuxwU_GMkUXFENU3EU_FfHRHU6FeGM04kse40Mc"
 
-  const setToken = (access_token, refresh_token) => {
+  const setToken = (user_id, access_token, refresh_token) => { // 수정됨
+    userId.value = user_id; // 현재 로그인한 사용자 ID 저장  // 수정됨
     token.value = access_token;
     refreshToken.value = refresh_token;
-    localStorage.setItem("token", access_token);
-    localStorage.setItem("refresh_token", refresh_token);
-  }
 
+    localStorage.setItem("userId", user_id); // 현재 로그인한 사용자 ID 저장  // 수정됨
+    localStorage.setItem(`user_${user_id}_token`, access_token); // 계정별 저장  // 수정됨
+    localStorage.setItem(`user_${user_id}_refresh_token`, refresh_token); // 계정별 저장  // 수정됨
+  };
+ /**
+   * 🔹 로그아웃 (현재 사용자 데이터만 삭제)
+   */
+ const logout = () => { // 수정됨
+  if (userId.value) {
+    localStorage.removeItem(`user_${userId.value}_token`); // 현재 계정의 데이터만 삭제  // 수정됨
+    localStorage.removeItem(`user_${userId.value}_refresh_token`); // 현재 계정의 데이터만 삭제  // 수정됨
+    localStorage.removeItem("userId"); // 사용자 ID 삭제  // 수정됨
+  }
+  userId.value = null;
+  token.value = null;
+  refreshToken.value = null;
+};
+  /**
+   * 🔹 로그인한 계정의 토큰 불러오기
+   */
+  const loadUserData = () => { // 수정됨
+    if (!userId.value) return;
+    const storedToken = localStorage.getItem(`user_${userId.value}_token`);
+    const storedRefreshToken = localStorage.getItem(`user_${userId.value}_refresh_token`);
+    if (storedToken) token.value = storedToken;
+    if (storedRefreshToken) refreshToken.value = storedRefreshToken;
+  };
+
+  loadUserData(); // 수정됨
   // (예시) 토큰 디버그 로그 -> 마스킹 처리
   // console.log("현재 토큰:", maskToken(token.value));
 
@@ -67,7 +95,6 @@ export const useApiStore = defineStore('api', () => {
         console.log("📢 기존 데이터 있음 → GET 요청 생략");
         return;
       }
-      // 마스킹된 URL만 로그에 찍기
       console.log("🔍 API 요청 URL:", maskURL(`${API_URL}/api/schedules/ocr`));
 
       const response = await axios.get(`${API_URL}/api/schedules/ocr`, {
@@ -85,15 +112,15 @@ export const useApiStore = defineStore('api', () => {
           currentYear.value = firstPerson.year;
           currentMonth.value = firstPerson.month;
 
-          const typeMapping = { OF: "Off", E: "Eve", D: "Day", N: "Nig" }
+          const typeMapping = { OF: "Off", E: "Eve", D: "Day", N: "Nig" };
           people.value = responseData.map((person) => ({
             name: person.name,
             schedule: person.scheduleData.reduce((acc, day) => {
-              acc[day.day] = typeMapping[day.type] || day.type
-              return acc
+              acc[day.day] = typeMapping[day.type] || day.type;
+              return acc;
             }, {}),
-          }))
-          console.log("피!!!플!!!!:",people.value)
+          }));
+
           isDataLoaded.value = true;
           generateCalendar();
         }
@@ -101,55 +128,32 @@ export const useApiStore = defineStore('api', () => {
     } catch (error) {
       console.error('데이터 가져오기 실패:', error);
     }
-  };
-
+  }
+  
   const generateCalendar = () => {
-    if (!currentYear.value || !currentMonth.value) {
-      console.log("currentYear나 currentMonth가 설정되어 있지 않습니다:", currentYear.value, currentMonth.value);
-      return;
-    }
-  
-    console.log("달력 생성 시작 - 연도:", currentYear.value, "월:", currentMonth.value);
-  
-    // 1일의 요일(0: 일요일 ~ 6: 토요일)과 마지막 날짜 계산
+    if (!currentYear.value || !currentMonth.value) return;
     let firstDay = new Date(currentYear.value, currentMonth.value - 1, 1).getDay();
     const lastDate = new Date(currentYear.value, currentMonth.value, 0).getDate();
-    console.log("첫번째 날의 요일 인덱스:", firstDay);
-    console.log("해당 월의 마지막 날짜:", lastDate);
-  
+
     let calendarData = [];
-    // 인덱스를 1부터 사용하기 위해 첫 번째 요소를 null로 시작
     let week = [null, ...new Array(7).fill(null)];
-    console.log("초기 week 배열:", week);
-  
-    // 첫 주의 시작 전 빈 칸 설정 (이미 null로 채워져 있지만, 디버깅용으로 반복문 기록)
+
     for (let i = 1; i <= firstDay; i++) {
       week[i] = null;
     }
-    console.log("빈 칸 설정 후 week 배열:", week);
-  
-    // 날짜를 week 배열에 채워 넣기
+
     for (let day = 1; day <= lastDate; day++) {
-      // 현재 요일 위치: (firstDay % 7) + 1 인덱스에 할당
       const index = (firstDay % 7) + 1;
       week[index] = day;
-      console.log(`날짜 ${day}는 인덱스 ${index}에 할당됨 -> week:`, week);
       firstDay++;
-  
-      // 한 주가 끝났거나 마지막 날짜인 경우 week 배열을 calendarData에 저장
+
       if (firstDay % 7 === 0 || day === lastDate) {
-        console.log(
-          `한 주가 완료되었거나 마지막 날짜에 도달 (firstDay: ${firstDay}, day: ${day}). week 배열 저장:`,
-          week
-        );
-        calendarData.push([...week]); // 현재 week 배열 복사해서 추가
+        calendarData.push([...week]);
         week = [null, ...new Array(7).fill(null)];
-        console.log("다음 주를 위해 week 배열 초기화:", week);
       }
     }
-  
+
     calendar.value = calendarData;
-    console.log("최종 생성된 달력 데이터:", calendar.value);
   };
   
 
@@ -372,6 +376,8 @@ export const useApiStore = defineStore('api', () => {
     fetchMedicineDetail,
     uploadMedicineImage,
     setToken,
+    loadUserData, 
+    logout, 
     token,
     refreshToken,
     medicineId,
