@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import axios from 'axios';
 // 1) 방금 만든 마스킹 함수 가져오기
 import { maskURL, maskToken } from '@/utils/mask.js';
@@ -69,7 +69,7 @@ const resetScheduleData = () => {
   
   // localStorage의 스케줄 관련 캐시 데이터만 삭제
   localStorage.removeItem('schedule-store');
-};
+}
   const setToken = (user_id, access_token, refresh_token) => { // 수정됨
     userId.value = user_id; // 현재 로그인한 사용자 ID 저장  // 수정됨
     token.value = access_token;
