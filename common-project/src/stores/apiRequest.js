@@ -403,7 +403,7 @@ const resetScheduleData = () => {
   };
 }, {
   persist: {
-    enabled: false,
+    enabled: true,
     strategies: [
       {
         key: 'schedule-store',
