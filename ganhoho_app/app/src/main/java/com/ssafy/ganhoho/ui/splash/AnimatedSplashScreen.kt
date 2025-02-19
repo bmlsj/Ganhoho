@@ -27,6 +27,7 @@ import com.ssafy.ganhoho.ui.nav_host.Route
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import kotlinx.coroutines.delay
 
+private const val TAG = "AnimatedSplashScreen"
 @SuppressLint("ContextCastToActivity")
 @Composable
 fun AnimatedSplashScreen(navController: NavController, deepLinkUri: Uri?) {
@@ -60,9 +61,6 @@ fun AnimatedSplashScreen(navController: NavController, deepLinkUri: Uri?) {
             delay(500) // ⏳ 추가 딜레이 (2초 유지 보장)
             if (userInfo != null) {
                 Log.d("SplashScreen", "자동 로그인 성공 → 메인 이동")
-//                navController.navigate(Route.Main.route) {
-//                    popUpTo(Route.Splash.route) { inclusive = true }
-//                }
                 context.navigateToMain(deepLinkUri)
             } else {
                 Log.d("SplashScreen", "자동 로그인 실패 → 로그인 이동")

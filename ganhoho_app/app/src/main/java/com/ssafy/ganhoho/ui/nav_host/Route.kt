@@ -18,6 +18,9 @@ sealed class Route(val route: String) {
     object Friend : Route("friend")
     object Group : Route("group")
 
+    object GroupInvite : Route("group?groupCode={groupCode}") {
+        fun createRoute(groupCode: String): String = "group?groupCode=$groupCode"
+    }
     object Mypage : Route("mypage")
     object Notification : Route("noti")
     object UpdateInfo : Route("update")  // 마이페이지 수정
