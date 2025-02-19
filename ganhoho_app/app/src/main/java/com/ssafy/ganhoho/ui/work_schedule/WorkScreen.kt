@@ -18,17 +18,24 @@ import androidx.navigation.NavController
 import com.ssafy.ganhoho.BuildConfig.WEBVIEW_WORK_URL
 import com.ssafy.ganhoho.util.WebViewWithToken
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
+import com.ssafy.ganhoho.viewmodel.MemberViewModel
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun WorkScreen(navController: NavController) {
 
     val authViewModel: AuthViewModel = viewModel()
+    val memberViewModel: MemberViewModel = viewModel()
 
     // 토큰 로드하기
     val token = authViewModel.accessToken.collectAsState().value
+    val mypageInfo = memberViewModel.mypageInfo.collectAsState().value
     val refreshToken = authViewModel.refreshToken.collectAsState().value
     val context = LocalContext.current
+
+    val loginId = mypageInfo?.getOrNull()?.loginId ?: ""
+    Log.d("mypageInfo", loginId)
+
 
     LaunchedEffect(token) {
         if (token.isNullOrEmpty()) {
@@ -48,8 +55,9 @@ fun WorkScreen(navController: NavController) {
         if (token != null && refreshToken != null) {
             WebViewWithToken(
                 url = WEBVIEW_WORK_URL,
-                token,
-                refreshToken,
+                userId = loginId,
+                accessToken = token,
+                refreshToken = refreshToken,
                 enableCamera = false // ✅ 카메라 기능 비활성화
             )
         }

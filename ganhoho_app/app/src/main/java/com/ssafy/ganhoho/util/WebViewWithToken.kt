@@ -30,7 +30,8 @@ import java.io.ByteArrayOutputStream
 @Composable
 fun WebViewWithToken(
     url: String,
-    token: String,
+    userId: String,
+    accessToken: String,
     refreshToken: String,
     enableCamera: Boolean = true
 ) {
@@ -123,7 +124,7 @@ fun WebViewWithToken(
                             override fun onPageFinished(view: WebView?, url: String?) {
                                 super.onPageFinished(view, url)
                                 evaluateJavascript(
-                                    "javascript:receiveToken('$token', '$refreshToken')",
+                                    "javascript:receiveToken('${userId}', '${accessToken}', '$refreshToken')",
                                     null
                                 )
                             }
