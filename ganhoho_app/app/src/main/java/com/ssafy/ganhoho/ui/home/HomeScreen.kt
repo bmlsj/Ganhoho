@@ -137,14 +137,6 @@ fun HomeScreen(navController: NavController) {
         }  // 월이 바뀔때마다 일정 다시 로드
     }
 
-//    // 📌 캘린더의 현재 보이는 달이 변경될 때 상태 업데이트
-//    LaunchedEffect(calendarState.firstVisibleMonth) {
-//        currentMonthState.value = calendarState.firstVisibleMonth.yearMonth
-//        if (token != null) {
-//            scheduleViewModel.getMySchedule(token)
-//        }  // 월이 바뀔때마다 일정 다시 로드
-//    }
-
     Column(
         modifier = Modifier
             .padding(10.dp)
@@ -170,13 +162,16 @@ fun HomeScreen(navController: NavController) {
         HorizontalCalendar(
             state = calendarState,
             dayContent = { day ->
-                DayContent(
-                    myScheduleList,
-                    myWorkSchedule,
-                    day,
-                    currentMonthState.value,
-                    navController
-                )
+                if (token != null) {
+                    DayContent(
+                        myScheduleList,
+                        myWorkSchedule,
+                        day,
+                        currentMonthState.value,
+                        navController,
+                        token
+                    )
+                }
             },
             monthHeader = {
                 MonthHeader(daysOfWeek)
@@ -233,9 +228,11 @@ fun DayContent(
     myWorkScheduleList: List<WorkScheduleDto>,
     day: CalendarDay,
     currentMonth: YearMonth,
-    navController: NavController
+    navController: NavController,
+    token: String
 ) {
 
+    val scheduleViewModel : ScheduleViewModel = viewModel()
     val date = day.date
     val isOutDate = date.yearMonth != currentMonth  // ✅ outDate 여부 확인
 
@@ -272,6 +269,12 @@ fun DayContent(
         LocalTime.parse(it.startDt)
     }
 
+    // ✅ BottomSheet가 닫힐 때 일정 다시 불러오기
+    LaunchedEffect(showBottomSheet.value) {
+        if (!showBottomSheet.value) {
+            scheduleViewModel.getMySchedule(token)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -348,7 +351,7 @@ fun DayContent(
                                 color = Color.Black,
                                 maxLines = 2,
                                 softWrap = true, // ✅ 자동 줄바꿈 활성화
-                                 overflow = TextOverflow.Ellipsis, // ✅ 너무 길면 ... 표시 => ???
+                                overflow = TextOverflow.Ellipsis, // ✅ 너무 길면 ... 표시 => ???
                                 lineHeight = 3.sp,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier
@@ -402,6 +405,3 @@ fun DayContent(
 // ✅ YearMonth 확장 함수 추가 (YearMonth 비교를 쉽게 하기 위함)
 val LocalDateTime.yearMonth: YearMonth
     get() = YearMonth.of(this.year, this.month)
-
-
-

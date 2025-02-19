@@ -378,8 +378,12 @@ fun AddDateBottomSheet(
                                 scheduleId = newEditSchedule.scheduleId,
                                 request = newEditSchedule
                             )
+                            // 수정 후 갱신
+                            scheduleViewModel.getMySchedule(token)
+
                         } else if (token != null) { // 개인 스케쥴 추가
                             scheduleViewModel.addMySchedule(token = token, request = newSchedule)
+                            scheduleViewModel.getMySchedule(token)
                         }
 
                     } catch (e: Exception) {
