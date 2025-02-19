@@ -61,6 +61,7 @@ import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
 
+
 @Composable
 fun EachGroupScreen(
     navController: NavController,
@@ -76,7 +77,6 @@ fun EachGroupScreen(
         LocalContext.current as ViewModelStoreOwner,
         GroupViewModelFactory(repository)
     )[GroupViewModel::class.java]
-
 
     val currentDate = LocalDate.now()
     val currentYear = currentDate.year
@@ -101,6 +101,13 @@ fun EachGroupScreen(
             authViewModel.loadTokens(context)
         } else {
             Log.d("token", token)
+        }
+    }
+
+    LaunchedEffect(token) {
+        if (groupId != null && token != null) {
+            viewModel.fetchMemberSchedules(groupId, yearMonth, token)
+            viewModel.fetchMemberList(groupId, token)
         }
     }
 
@@ -130,7 +137,6 @@ fun EachGroupScreen(
 //                    }
 //                )
 
-//                val token = tokenManager.getAccessToken() ?: return@LaunchedEffect
                 if (token != null) {
                     viewModel.fetchGroupInviteLink(token, groupId,
                         onSuccess = { link ->
@@ -141,274 +147,264 @@ fun EachGroupScreen(
                         })
                 }
             }
-
         }
-
-
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(
-        ) { paddingValues ->
-            Box(modifier = Modifier.fillMaxSize()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                ) {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(top = 39.dp, start = 10.dp, end = 15.dp, bottom = 60.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(10.dp)
+        ) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 39.dp, start = 10.dp, end = 15.dp, bottom = 60.dp)
+            ) {
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.Bottom
                     ) {
-                        item {
+                        val groupIcon = getGroupIconResource(group.groupIconType)
+
+                        Image(
+                            painter = painterResource(groupIcon),
+                            contentDescription = "그룹 아이콘",
+                            modifier = Modifier
+                                .size(35.dp)
+                                .padding(bottom = 5.dp)
+                        )
+                        Text(  // 그룹 이름
+                            text = group.groupName,
+                            fontSize = 30.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Row(  // 그룹원 목록 열기
+                            horizontalArrangement = Arrangement.Start,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .padding(bottom = 2.dp)
+                                .clickable {
+                                    if (!isMemberScreenVisible) { // 이미 열려 있으면 다시 변경하지 않음
+                                        Log.d("EachGroupScreen", "🔄 그룹원 목록 열기")
+
+                                        isMemberScreenVisible = true
+                                    }
+                                }
+
+                        ) {
+                            Image(
+                                painter = painterResource(R.drawable.icon_group_person),
+                                contentDescription = "그룹 인원 수",
+                                modifier = Modifier.size(17.dp)
+                            )
+
+                            Text(
+                                text = "${group.groupMemberCount}",
+                                fontSize = 12.sp,
+                                color = Color.Gray,
+                                modifier = Modifier.padding(start = 4.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 60.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        listOf("일", "월", "화", "수", "목", "금", "토").forEach { day ->
+                            Text(
+                                text = day,
+                                fontSize = 14.sp,
+                                textAlign = TextAlign.Center,
+                                fontWeight = if (day == LocalDate.now().dayOfWeek.getDisplayName(
+                                        TextStyle.SHORT, Locale.KOREAN
+                                    )
+                                ) FontWeight.Bold else FontWeight.Normal,
+                                color = if (day == "일") Color(0xFFE61818) else Color.Black,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+
+                    Divider(
+                        color = Color(0xFFE0E0E0),
+                        thickness = 0.7.dp,
+                        modifier = Modifier
+                            .padding(vertical = 4.dp, horizontal = 8.dp)
+                            .padding(top = 14.dp, bottom = 13.dp)
+                    )
+                }
+
+                val adjustedSchedules = memberSchedules.map {
+                    Log.d(
+                        "DEBUG_MEMBER_SCHEDULE",
+                        "Member: ${it.name}, Schedule Size: ${it.schedules.size}"
+                    )
+
+                    it.copy(
+                        schedules = adjustWorkSchedule(
+                            it.schedules,
+                            currentYear,
+                            currentMonth
+                        ),
+                        ward = it.ward ?: "미정"
+                    )
+                }
+
+
+                itemsIndexed(weeks) { weekIndex, weekDays ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 60.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        weekDays.forEach { date ->
+                            Text(
+                                text = date.ifEmpty { " " },
+                                fontSize = 16.sp,
+                                textAlign = TextAlign.Center,
+                                fontWeight = if (date == today.dayOfMonth.toString()) FontWeight.Bold else FontWeight.Normal, // 오늘 날짜는 굵게
+                                color = if (date == today.dayOfMonth.toString()) Color(
+                                    0xFF1A85AB
+                                ) else Color.Black, // 오늘 날짜는 굵게
+
+                                modifier = Modifier
+                                    .padding(top = 10.dp, bottom = 5.dp)
+                                    .weight(1f)
+
+                            )
+                        }
+                    }
+
+                    adjustedSchedules.forEach { schedule ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(32.dp)
+                        ) {
+                            Text(
+                                text = schedule.name,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.width(60.dp)
+                            )
+
+                            val weekSchedule =
+                                schedule.schedules.chunked(7).getOrNull(weekIndex)
+                                    ?: emptyList()
+
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.Bottom
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                val groupIcon = getGroupIconResource(group.groupIconType)
+                                weekDays.forEachIndexed { index, _ ->
+                                    val workSchedule = weekSchedule.getOrNull(index)
 
-                                Image(
-                                    painter = painterResource(groupIcon),
-                                    contentDescription = "그룹 아이콘",
-                                    modifier = Modifier
-                                        .size(35.dp)
-                                        .padding(bottom = 5.dp)
-                                )
-                                Text(  // 그룹 이름
-                                    text = group.groupName,
-                                    fontSize = 30.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-
-                                Row(  // 그룹원 목록 열기
-                                    horizontalArrangement = Arrangement.Start,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .padding(bottom = 2.dp)
-                                        .clickable {
-                                            if (!isMemberScreenVisible) { // 이미 열려 있으면 다시 변경하지 않음
-                                                Log.d("EachGroupScreen", "🔄 그룹원 목록 열기")
-
-                                                isMemberScreenVisible = true
-                                            }
-                                        }
-
-                                ) {
-                                    Image(
-                                        painter = painterResource(R.drawable.icon_group_person),
-                                        contentDescription = "그룹 인원 수",
-                                        modifier = Modifier.size(17.dp)
-                                    )
-
-                                    Text(
-                                        text = "${group.groupMemberCount}",
-                                        fontSize = 12.sp,
-                                        color = Color.Gray,
-                                        modifier = Modifier.padding(start = 4.dp)
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 60.dp),
-                                horizontalArrangement = Arrangement.SpaceEvenly
-                            ) {
-                                listOf("일", "월", "화", "수", "목", "금", "토").forEach { day ->
-                                    Text(
-                                        text = day,
-                                        fontSize = 14.sp,
-                                        textAlign = TextAlign.Center,
-                                        fontWeight = if (day == LocalDate.now().dayOfWeek.getDisplayName(
-                                                TextStyle.SHORT, Locale.KOREAN
-                                            )
-                                        ) FontWeight.Bold else FontWeight.Normal,
-                                        color = if (day == "일") Color(0xFFE61818) else Color.Black,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                }
-                            }
-
-                            Divider(
-                                color = Color(0xFFE0E0E0),
-                                thickness = 0.7.dp,
-                                modifier = Modifier
-                                    .padding(vertical = 4.dp, horizontal = 8.dp)
-                                    .padding(top = 14.dp, bottom = 13.dp)
-                            )
-                        }
-
-                        val adjustedSchedules = memberSchedules.map {
-                            Log.d(
-                                "DEBUG_MEMBER_SCHEDULE",
-                                "Member: ${it.name}, Schedule Size: ${it.schedules.size}"
-                            )
-
-                            it.copy(
-                                schedules = adjustWorkSchedule(
-                                    it.schedules,
-                                    currentYear,
-                                    currentMonth
-                                ),
-                                ward = it.ward ?: "미정"
-                            )
-                        }
-
-
-                        itemsIndexed(weeks) { weekIndex, weekDays ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 60.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceEvenly
-                            ) {
-                                weekDays.forEach { date ->
-                                    Text(
-                                        text = date.ifEmpty { " " },
-                                        fontSize = 16.sp,
-                                        textAlign = TextAlign.Center,
-                                        fontWeight = if (date == today.dayOfMonth.toString()) FontWeight.Bold else FontWeight.Normal, // 오늘 날짜는 굵게
-                                        color = if (date == today.dayOfMonth.toString()) Color(
-                                            0xFF1A85AB
-                                        ) else Color.Black, // 오늘 날짜는 굵게
-
+                                    Box(
+                                        contentAlignment = Alignment.Center,
                                         modifier = Modifier
-                                            .padding(top = 10.dp, bottom = 5.dp)
+                                            .background(
+                                                getShiftColor(workSchedule?.workType ?: ""),
+                                                shape = RoundedCornerShape(5.dp)
+                                            )
+                                            .height(24.dp)
                                             .weight(1f)
-
-                                    )
-                                }
-                            }
-
-                            adjustedSchedules.forEach { schedule ->
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(32.dp)
-                                ) {
-                                    Text(
-                                        text = schedule.name,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier.width(60.dp)
-                                    )
-
-                                    val weekSchedule =
-                                        schedule.schedules.chunked(7).getOrNull(weekIndex)
-                                            ?: emptyList()
-
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
-                                        weekDays.forEachIndexed { index, _ ->
-                                            val workSchedule = weekSchedule.getOrNull(index)
-
-                                            Box(
-                                                contentAlignment = Alignment.Center,
-                                                modifier = Modifier
-                                                    .background(
-                                                        getShiftColor(workSchedule?.workType ?: ""),
-                                                        shape = RoundedCornerShape(5.dp)
-                                                    )
-                                                    .height(24.dp)
-                                                    .weight(1f)
-                                            ) {
-                                                Text(
-                                                    text = workSchedule?.workType ?: "",
-                                                    fontSize = 10.sp,
-                                                    fontWeight = FontWeight.Medium,
-                                                    color = Color.Black,
-                                                    modifier = Modifier.padding(end = 10.dp),
-                                                    textAlign = TextAlign.Start
-                                                )
-                                            }
-                                        }
+                                        Text(
+                                            text = workSchedule?.workType ?: "",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = Color.Black,
+                                            modifier = Modifier.padding(end = 10.dp),
+                                            textAlign = TextAlign.Start
+                                        )
                                     }
                                 }
                             }
-
-                            Spacer(modifier = Modifier.height(8.dp))
                         }
                     }
-                }
 
-                val backgroundAlpha by animateFloatAsState(
-                    targetValue = if (isMemberScreenVisible) 0.3f else 0f,
-                    animationSpec = tween(durationMillis = 300)
-                )
-
-                if (isMemberScreenVisible || backgroundAlpha > 0f) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.Black.copy(alpha = backgroundAlpha))
-                            .clickable {
-                                if (isMemberScreenVisible) {  // 현재 열려 있을 때만 닫음
-                                    isMemberScreenVisible = false
-                                }
-                            }
-                    )
-
-                }
-
-
-                AnimatedVisibility(
-                    visible = isMemberScreenVisible,
-                    enter = slideInHorizontally(
-                        initialOffsetX = { it },
-                        animationSpec = tween(800)
-                    ),
-                    exit = slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(800)),
-                    modifier = Modifier
-                        .zIndex(2f)
-                ) {
-                    // 사이드 메뉴 (그룹원 리스트)
-                    group.groupId?.let {
-                        GroupMemberScreen(
-                            members = groupMember,
-                            isVisible = isMemberScreenVisible,
-                            onClose = {
-                                isMemberScreenVisible = false
-                            },
-
-                            navController = navController,
-                            groupId = it,
-                            viewModel = viewModel,
-                            repository = repository,
-                            tokenManager = TokenManager,
-                            group = group
-                        )
-                    }
-
-                    // 다이얼로그 (그룹 탈퇴)
-                    GroupLeaveDialog(
-                        isVisible = isDialogVisible,
-                        onConfirm = {
-                            isDialogVisible = false // 다이얼로그 닫기
-                        },
-                        onDismiss = {
-                            isDialogVisible = false
-                        },
-                        navController = navController,
-                        repository = repository,
-                        group = group
-                    )
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         }
+
+        val backgroundAlpha by animateFloatAsState(
+            targetValue = if (isMemberScreenVisible) 0.3f else 0f,
+            animationSpec = tween(durationMillis = 300)
+        )
+
+        if (isMemberScreenVisible || backgroundAlpha > 0f) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = backgroundAlpha))
+                    .clickable {
+                        if (isMemberScreenVisible) {  // 현재 열려 있을 때만 닫음
+                            isMemberScreenVisible = false
+                        }
+                    }
+            )
+
+        }
+
+
+        AnimatedVisibility(
+            visible = isMemberScreenVisible,
+            enter = slideInHorizontally(
+                initialOffsetX = { it },
+                animationSpec = tween(800)
+            ),
+            exit = slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(800)),
+            modifier = Modifier
+                .zIndex(2f)
+        ) {
+            // 사이드 메뉴 (그룹원 리스트)
+            group.groupId?.let {
+                GroupMemberScreen(
+                    members = groupMember,
+                    isVisible = isMemberScreenVisible,
+                    onClose = {
+                        isMemberScreenVisible = false
+                    },
+
+                    navController = navController,
+                    groupId = it,
+                    viewModel = viewModel,
+                    repository = repository,
+                    tokenManager = TokenManager,
+                    group = group
+                )
+            }
+
+            // 다이얼로그 (그룹 탈퇴)
+            GroupLeaveDialog(
+                isVisible = isDialogVisible,
+                onConfirm = {
+                    isDialogVisible = false // 다이얼로그 닫기
+                },
+                onDismiss = {
+                    isDialogVisible = false
+                },
+                navController = navController,
+                repository = repository,
+                group = group
+            )
+        }
     }
-
 }
-
 
 fun adjustWorkSchedule(
     schedule: List<WorkScheduleDto?>,
@@ -493,67 +489,3 @@ fun getSampleMembers(): List<GroupMemberResponse> {
 
         )
 }
-
-//fun getSampleSchedules(): List<MemberMonthlyScheduleResponse> {
-//    val currentDate = LocalDate.now()
-//    val nextMonthDate = currentDate.lengthOfMonth()
-//
-//    return listOf(
-//        MemberMonthlyScheduleResponse(
-//            memberId = 1,
-//            name = "서정후",
-//            loginId = "john_doe",
-//            hospital = "서울병원",
-//            ward = "응급실",
-//            schedules = List(nextMonthDate) { i ->
-//                val day = "%02d".format(i + 1)
-//                WorkScheduleDto(
-//                    LocalDateTime.parse("2025-02-${day}T00:00:00"),
-//                    listOf("Nig", "Off", "Eve", "Day").random()
-//                )
-//            }
-//        ),
-//        MemberMonthlyScheduleResponse(
-//            memberId = 2,
-//            name = "한아영",
-//            loginId = "han_ahyoung",
-//            hospital = "서울병원",
-//            ward = "응급실",
-//            schedules = List(nextMonthDate) { i ->
-//                val day = "%02d".format(i + 1)
-//                WorkScheduleDto(
-//                    LocalDateTime.parse("2025-02-${day}T00:00:00"),
-//                    listOf("Nig", "Off", "Eve", "Day").random()
-//                )
-//            }
-//        ),
-//        MemberMonthlyScheduleResponse(
-//            memberId = 3,
-//            name = "이승지",
-//            loginId = "lee_seungji",
-//            hospital = "서울병원",
-//            ward = "응급실",
-//            schedules = List(nextMonthDate) { i ->
-//                val day = "%02d".format(i + 1)
-//                WorkScheduleDto(
-//                    LocalDateTime.parse("2025-02-${day}T00:00:00"),
-//                    listOf("Nig", "Off", "Eve", "Day").random()
-//                )
-//            }
-//        )
-//    )
-//}
-
-
-//@Preview(showBackground = true)
-//@Composable
-//fun PreviewEachGroupScreen() {
-//    val navController = TestNavHostController(LocalContext.current)
-//
-//    EachGroupScreen(
-//        navController = navController,
-//        group = getSampleGroup(2),
-//        groupMember = getSampleMembers(),
-//        memberSchedule = getSampleSchedules(),
-//    )
-//}

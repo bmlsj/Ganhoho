@@ -190,6 +190,7 @@ fun AddDateBottomSheet(
         val result = scheduleViewModel.editMyScheduleResult.value
         if (result?.isSuccess == true) {
             Log.d("AddDateBottomSheet", "✅ 일정 수정 성공 -> 모달 닫기 및 데이터 새로고침")
+            scheduleViewModel.setMyScheduleInit()
             if (token != null) {
                 scheduleViewModel.fetchMySchedules(token)
             }

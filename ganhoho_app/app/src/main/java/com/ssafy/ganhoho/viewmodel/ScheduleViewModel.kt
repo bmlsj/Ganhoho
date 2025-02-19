@@ -176,4 +176,8 @@ class ScheduleViewModel() : ViewModel() {
             _deleteMyScheduleResult.value = response
         }
     }
+
+    fun setMyScheduleInit() {
+        _editMyScheduleResult.value = null
+    }
 }

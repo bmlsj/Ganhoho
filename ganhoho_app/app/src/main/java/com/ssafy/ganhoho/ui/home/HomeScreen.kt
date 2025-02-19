@@ -94,9 +94,6 @@ fun HomeScreen(navController: NavController) {
     val token = authViewModel.accessToken.collectAsState().value
     val context = LocalContext.current
 
-//    val workManager = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES).build() // 최소 단위가 15분으로 일정 시간마다 일 하는 기능
-//    WorkManager.getInstance(context).enqueue(workManager)
-
     LaunchedEffect(token) {
         if (token.isNullOrEmpty()) {
             authViewModel.loadTokens(context)
