@@ -1,6 +1,8 @@
 package com.ssafy.ganhoho.ui.auth
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -56,6 +58,8 @@ import com.google.android.gms.wearable.Wearable
 import com.google.firebase.messaging.FirebaseMessaging
 import com.ssafy.ganhoho.R
 import com.ssafy.ganhoho.data.model.dto.auth.LoginRequest
+import com.ssafy.ganhoho.ui.AuthActivity
+import com.ssafy.ganhoho.ui.nav_host.Route
 import com.ssafy.ganhoho.ui.theme.BackgroundBlue40
 import com.ssafy.ganhoho.ui.theme.FieldGray
 import com.ssafy.ganhoho.ui.theme.FieldLightGray
@@ -63,8 +67,9 @@ import com.ssafy.ganhoho.ui.theme.PrimaryBlue
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import kotlin.math.sin
 
+@SuppressLint("ContextCastToActivity")
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(navController: NavController, deepLinkUri: Uri?) {
 
     // 입력 필드 상태
     val id = remember { mutableStateOf("") }
@@ -72,17 +77,21 @@ fun LoginScreen(navController: NavController) {
     val passwordVisible = remember { mutableStateOf(false) }
 
     val authViewModel: AuthViewModel = viewModel()
-    val context = LocalContext.current
+    val context = LocalContext.current as AuthActivity
     val focusManager = LocalFocusManager.current
 
     // 로그인 결과 상태 감지
      val loginResult = authViewModel.loginResult.collectAsState().value
     LaunchedEffect(loginResult) {
-        if (loginResult != null) {
-            if(loginResult.isSuccess){
-                navController.navigate("main"){
-                    popUpTo("login") {inclusive = true}
-                }
+        loginResult?.let {
+            if (it.isSuccess) {
+                Log.d("LoginScreen", "로그인 성공 → 메인 이동")
+//                navController.navigate(Route.Main.route) {
+//                    popUpTo(Route.Login.route) { inclusive = true }
+//                }
+                context.navigateToMain(deepLinkUri)
+            } else {
+                Log.e("LoginScreen", "로그인 실패: error")
             }
         }
     }
@@ -255,6 +264,7 @@ fun LoginScreen(navController: NavController) {
                         Log.d("fcmToken", "LoginScreen: $loginResult")
                         authViewModel.login(loginResult, context)
 
+
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -300,7 +310,7 @@ fun LoginScreen(navController: NavController) {
 @Composable
 fun LoginPreview() {
     val navController = rememberNavController()
-    LoginScreen(navController)
+   // LoginScreen(navController)
 }
 
 fun findConnectedNodes(context: Context, token: String){

@@ -39,6 +39,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.work.Constraints
@@ -57,6 +59,8 @@ import com.ssafy.ganhoho.ui.auth.AuthDataStore
 import com.ssafy.ganhoho.fcm.LocationWorker
 import com.ssafy.ganhoho.ui.bottom_navigation.AppNavHost
 import com.ssafy.ganhoho.ui.bottom_navigation.CustomBottomNavigation
+import com.ssafy.ganhoho.ui.nav_host.MainNavHost
+import com.ssafy.ganhoho.ui.nav_host.Route
 import com.ssafy.ganhoho.ui.theme.GANHOHOTheme
 import com.ssafy.ganhoho.util.PermissionChecker
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
@@ -64,6 +68,7 @@ import com.ssafy.ganhoho.viewmodel.GroupViewModel
 import java.util.concurrent.TimeUnit
 
 private const val TAG = "MainActivity"
+
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 class MainActivity : ComponentActivity() {
 
@@ -71,32 +76,32 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val authDataStore = AuthDataStore(applicationContext) //DataStore 생성
-        val repository = GroupRepository()
-
-        // 앱 실행 시 딥링크 처리
-        val groupViewModel: GroupViewModel = ViewModelProvider(
-            this,
-            GroupViewModelFactory(repository)
-        )[GroupViewModel::class.java]
-
-        val token = SecureDataStore.getAccessToken(applicationContext)
-        //  handleDeepLink(intent, groupViewModel, token.toString())
+//        val authDataStore = AuthDataStore(applicationContext) //DataStore 생성
+//        val repository = GroupRepository()
+//
+//        // 앱 실행 시 딥링크 처리
+//        val groupViewModel: GroupViewModel = ViewModelProvider(
+//            this,
+//            GroupViewModelFactory(repository)
+//        )[GroupViewModel::class.java]
+//
+//        val token = SecureDataStore.getAccessToken(applicationContext)
         val deepLinkUri = intent?.data  // 딥링크 데이터
 
         // 저장된 토큰 불러오기
-        authViewModel.loadTokens(this)
-        // 카카오 맵
-        KakaoMapSdk.init(
-            this@MainActivity,
-            KAKAO_NATIVE_APP_KEY
-        )
+//        authViewModel.loadTokens(this)
+//        // 카카오 맵
+//        KakaoMapSdk.init(
+//            this@MainActivity,
+//            KAKAO_NATIVE_APP_KEY
+//        )
         setContent {
             GANHOHOTheme {
                 Surface(
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainNavHost(deepLinkUri)
+                    val navController = rememberNavController()
+                    MainNavHost(navController, deepLinkUri)
                 }
             }
         }
@@ -106,14 +111,12 @@ class MainActivity : ComponentActivity() {
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
-fun MainScreen() {
-    val context = LocalContext.current // ✅ LocalContext 가져오기
-    val navController = rememberNavController()
+fun MainScreen(navController: NavHostController, yearMonth: String) {
 
     // 현재 활성화된 경로(route)를 추적
     val currentBackStackEntry =
         navController.currentBackStackEntryAsState().value  // currentRoute 자동 업데이트
-    val currentRoute = currentBackStackEntry?.destination?.route ?: "home"
+    val currentRoute = currentBackStackEntry?.destination?.route ?: Route.Home.route
 
     BoxWithConstraints {
         val screenWidth = with(LocalDensity.current) { constraints.maxWidth.toDp() }
@@ -158,14 +161,12 @@ fun MainScreen() {
             bottomBar = {
                 CustomBottomNavigation(navController)
             },
-        ) { innerPadding ->
+        ) {  innerPadding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
             ) {
-                AppNavHost(
-                    navController = navController
-                )
+                AppNavHost(navController, yearMonth)
                 CheckPermissionAndInitFCM()
             }
 
@@ -178,7 +179,11 @@ fun MainScreen() {
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun CheckPermissionAndInitFCM() {
-    val permissions = arrayOf(Manifest.permission.POST_NOTIFICATIONS, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+    val permissions = arrayOf(
+        Manifest.permission.POST_NOTIFICATIONS,
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.ACCESS_FINE_LOCATION
+    )
     val context = LocalContext.current // ✅ LocalContext 가져오기
 
     var permissionGranted by remember { mutableStateOf(false) } // ✅ 올바른 선언
@@ -214,7 +219,11 @@ fun CheckPermissionAndInitFCM() {
         } else {
             permissionGranted = true
             initFCM()
-            if(!PermissionChecker.hasPermissions(context, arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION))) backgroundPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            if (!PermissionChecker.hasPermissions(
+                    context,
+                    arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                )
+            ) backgroundPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
             else scheduleLocationWorker(context)
         }
     }
@@ -239,22 +248,22 @@ fun scheduleLocationWorker(context: Context) {
     // 기존 작업이 등록되어 있는지 확인
     workManager.getWorkInfosByTag("LocationWorker").get().let { workInfos ->
 //        if (workInfos.isNullOrEmpty()) {
-            // 기존에 등록된 작업이 없으면 새로 등록
-            val workRequest = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES)
-                .setInitialDelay(1, TimeUnit.MINUTES)
-                .addTag("LocationWorker") // 중복 실행 방지용 태그 추가
-                .setConstraints(
-                    Constraints.Builder()
-                        .setRequiredNetworkType(NetworkType.CONNECTED) // 네트워크 연결 필요 (선택)
-                        .build()
-                )
-                .build()
-
-            workManager.enqueueUniquePeriodicWork(
-                "LocationWorker",
-                ExistingPeriodicWorkPolicy.REPLACE,
-                workRequest
+        // 기존에 등록된 작업이 없으면 새로 등록
+        val workRequest = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES)
+            .setInitialDelay(1, TimeUnit.MINUTES)
+            .addTag("LocationWorker") // 중복 실행 방지용 태그 추가
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED) // 네트워크 연결 필요 (선택)
+                    .build()
             )
+            .build()
+
+        workManager.enqueueUniquePeriodicWork(
+            "LocationWorker",
+            ExistingPeriodicWorkPolicy.REPLACE,
+            workRequest
+        )
 //        } else{
 //            Log.d(TAG, "scheduleLocationWorker: already scheduled")
 //        }
@@ -275,10 +284,10 @@ fun calculateFabOffset(currentRoute: String, itemWidth: Dp): Dp {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
-@Preview(showBackground = true)
-@Composable
-fun MainActivityPreview() {
-    MainScreen()
-}
-
+//@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+//@Preview(showBackground = true)
+//@Composable
+//fun MainActivityPreview() {
+//    MainScreen()
+//}
+//

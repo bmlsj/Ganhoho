@@ -40,6 +40,7 @@ import com.google.gson.JsonObject
 import com.ssafy.ganhoho.R
 import com.ssafy.ganhoho.base.SecureDataStore
 import com.ssafy.ganhoho.data.model.response.member.MyPageResponse
+import com.ssafy.ganhoho.ui.AuthActivity
 import com.ssafy.ganhoho.ui.MainActivity
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.MemberViewModel
@@ -189,7 +190,7 @@ fun MyPageScreen(navController: NavController) {
                         authViewModel.logout(token, context, requestBody)
 
                         // 🔥 모든 화면 스택 제거 후 로그인 화면으로 이동
-                        val intent = Intent(context, MainActivity::class.java)
+                        val intent = Intent(context, AuthActivity::class.java)
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                         context.startActivity(intent)
                     }
