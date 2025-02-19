@@ -20,7 +20,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +48,11 @@ fun DayBottomSheet(
 
     val selectedEventForEdit = remember { mutableStateOf<MySchedule?>(null) }  // 일정 수정을 위한 상태 저장
     val showAddDateBottomSheet = remember { mutableStateOf(false) } // ✅ 일정 추가 모달 상태 추가
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+
+    LaunchedEffect(Unit) {
+        sheetState.expand() // 바텀시트가 처음 열릴 때 확장되도록 설정
+    }
 
     if (showBottomSheet.value || showAddDateBottomSheet.value) {
         ModalBottomSheet(
@@ -54,8 +61,10 @@ fun DayBottomSheet(
                 showAddDateBottomSheet.value = false
                 selectedEventForEdit.value = null  // 수정 모드 초기화
             },
-            containerColor = Color.White,
+            containerColor = Color.White
         ) {
+            
+
             AnimatedVisibility(
                 visible = !showAddDateBottomSheet.value, // ✅ 첫 번째 모달 : 일정 조회 모달
                 enter = slideInHorizontally(initialOffsetX = { it }),

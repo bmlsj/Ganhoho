@@ -11,7 +11,12 @@ import com.ssafy.ganhoho.R
 val inter = FontFamily(
     Font(R.font.inter, FontWeight.Bold),
     Font(R.font.inter, FontWeight.Normal),
-    Font(R.font.inter, FontWeight.SemiBold)
+    Font(R.font.inter, FontWeight.SemiBold),
+)
+
+val scdream = FontFamily(
+    Font(R.font.scdream5, FontWeight.Medium)
+
 )
 
 // Set of Material typography styles to start with

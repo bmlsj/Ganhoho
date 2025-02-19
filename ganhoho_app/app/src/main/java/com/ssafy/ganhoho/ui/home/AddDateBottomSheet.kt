@@ -52,6 +52,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -220,6 +221,8 @@ fun AddDateBottomSheet(
                     )
                 }
             },
+            textStyle = TextStyle(fontSize = 24.sp), //입력 텍스트 크기 지정
+
             modifier = Modifier
                 .fillMaxWidth(),
             colors = TextFieldDefaults.colors(
