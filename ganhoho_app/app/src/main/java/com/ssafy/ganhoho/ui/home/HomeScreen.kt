@@ -30,6 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -153,15 +154,15 @@ fun HomeScreen(navController: NavController) {
         //
         BasicTopAppBar(navController = navController)
         // 앱바와 헤더 사이 공간
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // 캘린더 헤더
         Text(
             text = "${currentMonthState.value.year}년 ${
                 currentMonthState.value.month.getDisplayName(TextStyle.FULL, Locale.KOREA)
             }",
-            style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.ExtraBold,
+            fontSize = 24.sp,
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
@@ -347,7 +348,7 @@ fun DayContent(
                                 color = Color.Black,
                                 maxLines = 2,
                                 softWrap = true, // ✅ 자동 줄바꿈 활성화
-                                // overflow = TextOverflow.Ellipsis, // ✅ 너무 길면 ... 표시 => ???
+                                 overflow = TextOverflow.Ellipsis, // ✅ 너무 길면 ... 표시 => ???
                                 lineHeight = 3.sp,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier

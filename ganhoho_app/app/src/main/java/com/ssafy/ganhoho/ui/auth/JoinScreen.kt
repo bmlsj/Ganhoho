@@ -28,7 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -77,10 +77,8 @@ fun JoinScreen(navController: NavController) {
     var password by remember { mutableStateOf(savedStateHandle?.get("password") ?: "") }
     var passwordVisible by remember { mutableStateOf(false) }
     var name by remember { mutableStateOf(savedStateHandle?.get("name") ?: "") }
-    var hospitalName by remember { mutableStateOf(savedStateHandle?.get("selectedHospital") ?: "") }
+    var hospital = remember { mutableStateOf<SearchResultItem?>(savedStateHandle?.get("selectedHospital")) }
     var ward by remember { mutableStateOf("") }
-    var hospitalLat by remember { mutableStateOf(savedStateHandle?.get("selectedHospital") ?: "") }
-    var hospitalLng by remember { mutableStateOf(savedStateHandle?.get("selectedHospital") ?: "") }
 
     // 아이디 중복 확인 결과
     val idCheckResult by authViewModel.isIdUsed.collectAsState()
@@ -103,11 +101,9 @@ fun JoinScreen(navController: NavController) {
     }
 
     // ✅ 병원 선택값이 변경되면 업데이트
-    LaunchedEffect(savedStateHandle?.get<String>("selectedHospital")) {
+    LaunchedEffect(savedStateHandle?.get<SearchResultItem>("selectedHospital")) {
         savedStateHandle?.get<SearchResultItem>("selectedHospital")?.let {
-            hospitalName = it.name
-            hospitalLat = it.y
-            hospitalLng = it.x
+            hospital.value = it
         }
     }
 
@@ -123,15 +119,12 @@ fun JoinScreen(navController: NavController) {
 
     // 병원 이름 받아오기
     LaunchedEffect(navController.currentBackStackEntry) {
-        val hospital = navController.currentBackStackEntry
+        val hospitals = navController.currentBackStackEntry
             ?.savedStateHandle
             ?.get<SearchResultItem>("selectedHospital")
 
-
-        if (hospital != null) {
-            hospitalName = hospital.name
-            hospitalLat = hospital.y
-            hospitalLng = hospital.x
+        if (hospitals != null) {
+            hospital.value = hospitals
         }
     }
 
@@ -336,8 +329,8 @@ fun JoinScreen(navController: NavController) {
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     OutlinedTextField(
-                        value = hospitalName,
-                        onValueChange = { hospitalName = it },
+                        value = hospital.value?.name ?: "",
+                        onValueChange = { hospital.value?.name = it },
                         label = { Text("병원명", color = FieldGray) },
                         leadingIcon = {
                             Row {
@@ -422,7 +415,7 @@ fun JoinScreen(navController: NavController) {
                 // Sign Up 버튼
                 Button(
                     onClick = {
-                        val signUpRequest = SignUpRequest(id, password, name, hospitalName, ward)
+                        val signUpRequest = SignUpRequest(id, password, name, hospital.value?.name, ward)
                         authViewModel.signUp(signUpRequest) // ✅ 회원가입 요청 보내기
                     },
                     modifier = Modifier
@@ -430,7 +423,8 @@ fun JoinScreen(navController: NavController) {
                         .height(50.dp)
                         .clickable {
                             val signUpRequest =
-                                SignUpRequest(id, password, name, hospitalName, ward)
+                                SignUpRequest(loginId= id, password = password,name= name, hospital = hospital.value?.name, ward = ward, hospitalLat = hospital.value?.y?.toDoubleOrNull(), hospitalLng = hospital.value?.x?.toDoubleOrNull())
+
                             authViewModel.signUp(signUpRequest = signUpRequest)
                         },
                     colors = ButtonDefaults.buttonColors(containerColor = if (idCheck) Color.Gray else PrimaryBlue),

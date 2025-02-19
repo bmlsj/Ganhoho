@@ -259,7 +259,7 @@ fun UpdateMemberInfo(navController: NavController) {
                 Button(
                     onClick = {
                         // 병원 찾기 페이지로 이동W
-                        navController.navigate("hospitalInfo")
+//                        navController.navigate("hospitalInfo")
                     }, colors = ButtonDefaults.buttonColors(
                         containerColor = PrimaryBlue
                     )

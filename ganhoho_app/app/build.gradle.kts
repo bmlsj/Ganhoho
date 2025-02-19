@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android) // Kotlin Android 플러그인
     alias(libs.plugins.compose.compiler) // Jetpack Compose 컴파일러 플러그인
     id("com.google.gms.google-services")
+    id("kotlin-parcelize")
 }
 
 // 1. 추가
