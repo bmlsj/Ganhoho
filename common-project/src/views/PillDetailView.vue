@@ -70,7 +70,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useApiStore } from '@/stores/apiRequest'
-import defaultImage from '@/assets/image-26920.png'
+import defaultImage from '@/assets/default-image.png'
 
 const route = useRoute()
 const apiStore = useApiStore()

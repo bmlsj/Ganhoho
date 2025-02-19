@@ -170,7 +170,7 @@ export const useApiStore = defineStore('api', () => {
 
       if (response.status === 200) {
         console.log('✅ 이미지 업로드 성공:', response.data);
-        alert('이미지 업로드 성공!');
+        //alert('이미지 업로드 성공!');
 
         // store 리셋
         people.value = [];
@@ -183,11 +183,11 @@ export const useApiStore = defineStore('api', () => {
         await fetchData();
       } else {
         console.error('업로드 실패:', response.data);
-        alert('업로드 실패');
+        //alert('업로드 실패');
       }
     } catch (error) {
       console.error('API 요청 오류:', error);
-      alert('서버 오류로 업로드 실패');
+      //alert('서버 오류로 업로드 실패');
     }
   };
 
@@ -293,7 +293,7 @@ export const useApiStore = defineStore('api', () => {
   const uploadMedicineImage = async (file) => {
     if (!file) {
       console.error("🚨 업로드할 파일이 없습니다.");
-      alert("이미지를 선택해 주세요.");
+      //alert("이미지를 선택해 주세요.");
       return;
     }
 
@@ -310,7 +310,7 @@ export const useApiStore = defineStore('api', () => {
 
       if (response.status === 200) {
         console.log("✅ 이미지 업로드 성공:", response.data);
-        alert("이미지 업로드 성공!");
+        //alert("이미지 업로드 성공!");
 
         // store 리셋
         people.value = [];
@@ -326,7 +326,8 @@ export const useApiStore = defineStore('api', () => {
         const id = response.data.medicineInfo?.[0]?.ITEM_SEQ;
         console.log("약!!!!!!!!!!!!!!!!!!!", id);
         if (!id) {
-          alert("인식에 실패했습니다. 다시 시도해 주세요.");
+          //alert("인식에 실패했습니다. 다시 시도해 주세요.");
+          console.log("인식에 실패했습니다. 다시 시도해 주세요.");
           return;
         }
         // medicineId 업데이트
@@ -337,16 +338,21 @@ export const useApiStore = defineStore('api', () => {
       if (error.response) {
         const { status, message } = error.response.data;
         if (status === 400) {
-          alert("🚨 잘못된 이미지 형식입니다. (INVALID_IMAGE_FORMAT)");
+          //alert("🚨 잘못된 이미지 형식입니다. (INVALID_IMAGE_FORMAT)");
+          console.log("🚨 잘못된 이미지 형식입니다. (INVALID_IMAGE_FORMAT)");
         } else if (status === 401) {
-          alert("🚨 인증되지 않은 사용자입니다. 로그인 후 이용해 주세요. (UNAUTHORIZED)");
+         // alert("🚨 인증되지 않은 사용자입니다. 로그인 후 이용해 주세요. (UNAUTHORIZED)");
+         console.log("🚨 인증되지 않은 사용자입니다. 로그인 후 이용해 주세요. (UNAUTHORIZED)");
         } else if (status === 404) {
-          alert("🚨 약 정보를 찾을 수 없습니다. (NOT_FOUND)");
+          //alert("🚨 약 정보를 찾을 수 없습니다. (NOT_FOUND)");
+          console.log("🚨 약 정보를 찾을 수 없습니다. (NOT_FOUND)");
         } else {
-          alert(`🚨 오류 발생: ${message}`);
+         // alert(`🚨 오류 발생: ${message}`);
+         console.log(`🚨 오류 발생: ${message}`);
         }
       } else {
-        alert("🚨 네트워크 오류가 발생했습니다.")
+       // alert("🚨 네트워크 오류가 발생했습니다.")
+       console.log("🚨 네트워크 오류가 발생했습니다.")
       }
     }
   };

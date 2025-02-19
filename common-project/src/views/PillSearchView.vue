@@ -24,7 +24,7 @@
            class="pill-card"
            @click="goToDetailPage(pill.id)">
         <div class="pill-image-container">
-          <img :src="pill.imageSrc || defaultImage" :alt="pill.name" class="pill-image" />
+          <img :src="medicineDetail?.ITEM_IMAGE || defaultImage" :alt="pill.name" class="pill-image" />
         </div>
         <div class="pill-info">
           <h3 class="pill-name">{{ pill.name }}</h3>
@@ -48,6 +48,7 @@ import { useApiStore } from "@/stores/apiRequest"
 import maskGroup from '@/assets/mask-group0.svg'
 import frameIcon from '@/assets/frame0.svg'
 import { storeToRefs } from 'pinia'
+import dafualtImage from '@/assets/default-image.png'
 
 const apiStore = useApiStore()
 const { medicineId } = storeToRefs(apiStore)
