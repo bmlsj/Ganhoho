@@ -209,7 +209,7 @@ export const useApiStore = defineStore('api', () => {
         params: {
           itemName: itemName.trim()
         },
-        timeout: 5000
+        timeout: 15000
       });
 
       if (response.status === 200 && response.data) {
