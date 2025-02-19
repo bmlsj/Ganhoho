@@ -38,6 +38,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.ganhoho.R
@@ -119,11 +120,6 @@ fun GroupBottomSheetContent(
             .background(
                 color = Color.White,
                 shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
-            )
-            .shadow(
-                elevation = 20.dp,
-                spotColor = Color(0x26000000),
-                ambientColor = Color(0x26000000)
             ),
         horizontalAlignment = Alignment.Start
     ) {
@@ -263,15 +259,3 @@ fun GroupBottomSheetContent(
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun GroupBottomSheetPreview() {
-//
-//
-//    GroupBottomSheet(
-//        isSheetOpen = true, // 바텀시트가 항상 열리도록 설정
-//        onDismiss = { },
-//        viewModel = fakeBottomNavViewModel,
-//        onAddGroup = { _, _ -> }
-//    )
-//}
