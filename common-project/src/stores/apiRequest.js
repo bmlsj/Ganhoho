@@ -403,7 +403,7 @@ export const useApiStore = defineStore('api', () => {
       {
         key: 'schedule-store',
         storage: localStorage,
-        paths: ['people', 'currentYear', 'currentMonth', 'isDataLoaded', ]
+        paths: ['people', 'currentYear', 'currentMonth', 'isDataLoaded', 'token']
       }
     ]
   }
