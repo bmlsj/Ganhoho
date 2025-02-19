@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import axios from 'axios';
 // 1) 방금 만든 마스킹 함수 가져오기
 import { maskURL, maskToken } from '@/utils/mask.js';
@@ -50,128 +50,107 @@ export const useApiStore = defineStore('api', () => {
   const refreshToken = ref(localStorage.getItem("refresh_token") || null);
 
   //token.value ="eyJhbGciOiJIUzI1NiJ9.eyJtZW1iZXJJZCI6OCwiaWF0IjoxNzM5NjgzMjYzLCJleHAiOjE3Mzk3Njk2NjN9.5KmPHuxwU_GMkUXFENU3EU_FfHRHU6FeGM04kse40Mc"
-// 토큰 변경 감지를 위한 watch 추가
 
-watch(token, async (newToken, oldToken) => {
-  if (newToken !== oldToken) {
-    console.log("토큰 변경 감지: 스케줄 데이터 초기화");
-    console.log(newToken)
-    console.log(oldToken)
-    resetScheduleData();
+  const setToken = (access_token, refresh_token) => {
+    token.value = access_token;
+    refreshToken.value = refresh_token;
+    localStorage.setItem("token", access_token);
+    localStorage.setItem("refresh_token", refresh_token);
   }
-});
 
-// 스케줄 데이터만 초기화하는 함수
-const resetScheduleData = () => {
-  people.value = [];
-  calendar.value = [];
-  currentYear.value = null;
-  currentMonth.value = null;
-  isDataLoaded.value = false;
-  
-  // localStorage의 스케줄 관련 캐시 데이터만 삭제
-  localStorage.removeItem('schedule-store');
-}
+  // (예시) 토큰 디버그 로그 -> 마스킹 처리
+  // console.log("현재 토큰:", maskToken(token.value));
 
-const setToken = (access_token, refresh_token) => {
-  token.value = access_token;
-  refreshToken.value = refresh_token;
-  localStorage.setItem("token", access_token);
-  localStorage.setItem("refresh_token", refresh_token);
-}
+  const fetchData = async () => {
+    try {
+      if (isDataLoaded.value) {
+        console.log("📢 기존 데이터 있음 → GET 요청 생략");
+        return;
+      }
+      // 마스킹된 URL만 로그에 찍기
+      console.log("🔍 API 요청 URL:", maskURL(`${API_URL}/api/schedules/ocr`));
 
-const fetchData = async () => {
-  try {
-    if (isDataLoaded.value) {
-      console.log("📢 기존 데이터 있음 → GET 요청 생략");
+      const response = await axios.get(`${API_URL}/api/schedules/ocr`, {
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+      });
+
+      if (response.status === 200) {
+        console.log("📢 API 응답 데이터:", response.data);
+        const responseData = response.data;
+
+        if (responseData.length > 0) {
+          const firstPerson = responseData[0];
+          currentYear.value = firstPerson.year;
+          currentMonth.value = firstPerson.month;
+
+          const typeMapping = { OF: "Off", E: "Eve", D: "Day", N: "Nig" }
+          people.value = responseData.map((person) => ({
+            name: person.name,
+            schedule: person.scheduleData.reduce((acc, day) => {
+              acc[day.day] = typeMapping[day.type] || day.type
+              return acc
+            }, {}),
+          }))
+          console.log("피!!!플!!!!:",people.value)
+          isDataLoaded.value = true;
+          generateCalendar();
+        }
+      }
+    } catch (error) {
+      console.error('데이터 가져오기 실패:', error);
+    }
+  };
+
+  const generateCalendar = () => {
+    if (!currentYear.value || !currentMonth.value) {
+      console.log("currentYear나 currentMonth가 설정되어 있지 않습니다:", currentYear.value, currentMonth.value);
       return;
     }
-    // 마스킹된 URL만 로그에 찍기
-    console.log("🔍 API 요청 URL:", maskURL(`${API_URL}/api/schedules/ocr`));
-
-    const response = await axios.get(`${API_URL}/api/schedules/ocr`, {
-      headers: {
-        Authorization: `Bearer ${token.value}`,
-      },
-    });
-
-    if (response.status === 200) {
-      console.log("📢 API 응답 데이터:", response.data);
-      const responseData = response.data;
-
-      if (responseData.length > 0) {
-        const firstPerson = responseData[0];
-        currentYear.value = firstPerson.year;
-        currentMonth.value = firstPerson.month;
-
-        const typeMapping = { OF: "Off", E: "Eve", D: "Day", N: "Nig" }
-        people.value = responseData.map((person) => ({
-          name: person.name,
-          schedule: person.scheduleData.reduce((acc, day) => {
-            acc[day.day] = typeMapping[day.type] || day.type
-            return acc
-          }, {}),
-        }))
-        console.log("피!!!플!!!!:",people.value)
-        isDataLoaded.value = true;
-        generateCalendar();
+  
+    console.log("달력 생성 시작 - 연도:", currentYear.value, "월:", currentMonth.value);
+  
+    // 1일의 요일(0: 일요일 ~ 6: 토요일)과 마지막 날짜 계산
+    let firstDay = new Date(currentYear.value, currentMonth.value - 1, 1).getDay();
+    const lastDate = new Date(currentYear.value, currentMonth.value, 0).getDate();
+    console.log("첫번째 날의 요일 인덱스:", firstDay);
+    console.log("해당 월의 마지막 날짜:", lastDate);
+  
+    let calendarData = [];
+    // 인덱스를 1부터 사용하기 위해 첫 번째 요소를 null로 시작
+    let week = [null, ...new Array(7).fill(null)];
+    console.log("초기 week 배열:", week);
+  
+    // 첫 주의 시작 전 빈 칸 설정 (이미 null로 채워져 있지만, 디버깅용으로 반복문 기록)
+    for (let i = 1; i <= firstDay; i++) {
+      week[i] = null;
+    }
+    console.log("빈 칸 설정 후 week 배열:", week);
+  
+    // 날짜를 week 배열에 채워 넣기
+    for (let day = 1; day <= lastDate; day++) {
+      // 현재 요일 위치: (firstDay % 7) + 1 인덱스에 할당
+      const index = (firstDay % 7) + 1;
+      week[index] = day;
+      console.log(`날짜 ${day}는 인덱스 ${index}에 할당됨 -> week:`, week);
+      firstDay++;
+  
+      // 한 주가 끝났거나 마지막 날짜인 경우 week 배열을 calendarData에 저장
+      if (firstDay % 7 === 0 || day === lastDate) {
+        console.log(
+          `한 주가 완료되었거나 마지막 날짜에 도달 (firstDay: ${firstDay}, day: ${day}). week 배열 저장:`,
+          week
+        );
+        calendarData.push([...week]); // 현재 week 배열 복사해서 추가
+        week = [null, ...new Array(7).fill(null)];
+        console.log("다음 주를 위해 week 배열 초기화:", week);
       }
     }
-  } catch (error) {
-    console.error('데이터 가져오기 실패:', error);
-  }
-};
-
   
-const generateCalendar = () => {
-  if (!currentYear.value || !currentMonth.value) {
-    console.log("currentYear나 currentMonth가 설정되어 있지 않습니다:", currentYear.value, currentMonth.value);
-    return;
-  }
-
-  console.log("달력 생성 시작 - 연도:", currentYear.value, "월:", currentMonth.value);
-
-  // 1일의 요일(0: 일요일 ~ 6: 토요일)과 마지막 날짜 계산
-  let firstDay = new Date(currentYear.value, currentMonth.value - 1, 1).getDay();
-  const lastDate = new Date(currentYear.value, currentMonth.value, 0).getDate();
-  console.log("첫번째 날의 요일 인덱스:", firstDay);
-  console.log("해당 월의 마지막 날짜:", lastDate);
-
-  let calendarData = [];
-  // 인덱스를 1부터 사용하기 위해 첫 번째 요소를 null로 시작
-  let week = [null, ...new Array(7).fill(null)];
-  console.log("초기 week 배열:", week);
-
-  // 첫 주의 시작 전 빈 칸 설정 (이미 null로 채워져 있지만, 디버깅용으로 반복문 기록)
-  for (let i = 1; i <= firstDay; i++) {
-    week[i] = null;
-  }
-  console.log("빈 칸 설정 후 week 배열:", week);
-
-  // 날짜를 week 배열에 채워 넣기
-  for (let day = 1; day <= lastDate; day++) {
-    // 현재 요일 위치: (firstDay % 7) + 1 인덱스에 할당
-    const index = (firstDay % 7) + 1;
-    week[index] = day;
-    console.log(`날짜 ${day}는 인덱스 ${index}에 할당됨 -> week:`, week);
-    firstDay++;
-
-    // 한 주가 끝났거나 마지막 날짜인 경우 week 배열을 calendarData에 저장
-    if (firstDay % 7 === 0 || day === lastDate) {
-      console.log(
-        `한 주가 완료되었거나 마지막 날짜에 도달 (firstDay: ${firstDay}, day: ${day}). week 배열 저장:`,
-        week
-      );
-      calendarData.push([...week]); // 현재 week 배열 복사해서 추가
-      week = [null, ...new Array(7).fill(null)];
-      console.log("다음 주를 위해 week 배열 초기화:", week);
-    }
-  }
-
-  calendar.value = calendarData;
-  console.log("최종 생성된 달력 데이터:", calendar.value);
-};
-
+    calendar.value = calendarData;
+    console.log("최종 생성된 달력 데이터:", calendar.value);
+  };
   
 
   const sendImageToAPI = async (file) => {
@@ -393,7 +372,6 @@ const generateCalendar = () => {
     fetchMedicineDetail,
     uploadMedicineImage,
     setToken,
-    resetScheduleData,
     token,
     refreshToken,
     medicineId,
@@ -405,7 +383,7 @@ const generateCalendar = () => {
       {
         key: 'schedule-store',
         storage: localStorage,
-        paths: ['people', 'currentYear', 'currentMonth', 'isDataLoaded','token']
+        paths: ['people', 'currentYear', 'currentMonth', 'isDataLoaded', 'token']
       }
     ]
   }
