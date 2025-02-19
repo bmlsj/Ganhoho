@@ -46,7 +46,6 @@ fun AnimatedSplashScreen(navController: NavController) {
             characterScale1.animateTo(1f, animationSpec = tween(500))
             delay(500)
             characterScale2.animateTo(1f, animationSpec = tween(500))
-
         }
 
         delay(1500) // 스플래시 지속 시간
