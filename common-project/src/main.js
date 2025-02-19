@@ -13,7 +13,7 @@ app.use(router);
 if (!window.receiveToken) {
   window.receiveToken = function(user_id, access_token) {
     localStorage.setItem("user_id", user_id);
-    localStorage.setItem("refresh_token", access_token);
+    localStorage.setItem("token", access_token);
     document.dispatchEvent(new CustomEvent('tokenReceived', {
       detail: { user_id, access_token }
     }));

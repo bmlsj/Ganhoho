@@ -47,7 +47,7 @@ export const useApiStore = defineStore('api', () => {
   const medicineId = ref(null);
 
   const userId = ref(localStorage.getItem("user_id") || null);
-  const token = ref(localStorage.getItem("access_token") || null);
+  const token = ref(localStorage.getItem("token") || null);
 
   //token.value ="eyJhbGciOiJIUzI1NiJ9.eyJtZW1iZXJJZCI6OCwiaWF0IjoxNzM5NjgzMjYzLCJleHAiOjE3Mzk3Njk2NjN9.5KmPHuxwU_GMkUXFENU3EU_FfHRHU6FeGM04kse40Mc"
   // 토큰 변경 감지를 위한 watch 추가
@@ -71,16 +71,16 @@ export const useApiStore = defineStore('api', () => {
   };
 
   const setToken = (user_id, access_token) => {
-    userId.value = access_token;
-    refreshToken.value = refresh_token;
-    localStorage.setItem("token", user_id);
-    localStorage.setItem("refresh_token", access_token);
+    userId.value = user_id;
+    token.value = access_token;
+    localStorage.setItem("user_id", user_id);
+    localStorage.setItem("token", access_token);
   }
 
   // (예시) 토큰 디버그 로그 -> 마스킹 처리
   // console.log("현재 토큰:", maskToken(token.value));
   // --- 추가: updateToken 함수 (토큰 비교 후 fetchData 호출) ---
-  const updateToken = (newAccessToken, newRefreshToken) => {
+  const updateToken = (newUserId, newAccessToken) => {
     const storedToken = localStorage.getItem("token");
     if (newAccessToken !== storedToken) {
       console.log("새로운 토큰이 감지되었습니다. 상태 초기화 후 데이터를 새로 불러옵니다.");
@@ -91,9 +91,9 @@ export const useApiStore = defineStore('api', () => {
       // useApiStore().$reset();
 
       token.value = newAccessToken;
-      refreshToken.value = newRefreshToken;
+      userId.value = newUserId;
+      localStorage.setItem("user_id", newUserId);
       localStorage.setItem("token", newAccessToken);
-      localStorage.setItem("refresh_token", newRefreshToken);
 
 
       fetchData();
@@ -403,8 +403,8 @@ export const useApiStore = defineStore('api', () => {
   // --- 추가: 외부(안드로이드)에서 토큰을 전달받을 때 호출되는 event listener ---
   if (typeof window !== 'undefined') {
     document.addEventListener('tokenReceived', (event) => {
-      const { access_token, refresh_token } = event.detail;
-      updateToken(access_token, refresh_token);
+      const { user_id, access_token } = event.detail;
+      updateToken(user_id, access_token);
     });
   }
   // --- 끝 ---
@@ -426,7 +426,7 @@ export const useApiStore = defineStore('api', () => {
     resetScheduleData,
     updateToken,
     token,
-    refreshToken,
+    userId,
     medicineId,
   };
 }, {
