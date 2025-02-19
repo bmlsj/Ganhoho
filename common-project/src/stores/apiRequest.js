@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref,watch } from 'vue';
 import axios from 'axios';
 // 1) 방금 만든 마스킹 함수 가져오기
 import { maskURL, maskToken } from '@/utils/mask.js';
@@ -50,6 +50,25 @@ export const useApiStore = defineStore('api', () => {
   const refreshToken = ref(localStorage.getItem("refresh_token") || null);
 
   //token.value ="eyJhbGciOiJIUzI1NiJ9.eyJtZW1iZXJJZCI6OCwiaWF0IjoxNzM5NjgzMjYzLCJleHAiOjE3Mzk3Njk2NjN9.5KmPHuxwU_GMkUXFENU3EU_FfHRHU6FeGM04kse40Mc"
+  // 토큰 변경 감지를 위한 watch 추가
+  watch(token, async (newToken, oldToken) => {
+    if (newToken !== oldToken) {
+      console.log("토큰 변경 감지: 스케줄 데이터 초기화");
+      resetScheduleData();
+    }
+  });
+  
+  // 스케줄 데이터만 초기화하는 함수
+  const resetScheduleData = () => {
+    people.value = [];
+    calendar.value = [];
+    currentYear.value = null;
+    currentMonth.value = null;
+    isDataLoaded.value = false;
+    
+    // localStorage의 스케줄 관련 캐시 데이터만 삭제
+    localStorage.removeItem('schedule-store');
+  };
 
   const setToken = (access_token, refresh_token) => {
     token.value = access_token;
@@ -372,6 +391,7 @@ export const useApiStore = defineStore('api', () => {
     fetchMedicineDetail,
     uploadMedicineImage,
     setToken,
+    resetScheduleData,
     token,
     refreshToken,
     medicineId,
@@ -383,7 +403,7 @@ export const useApiStore = defineStore('api', () => {
       {
         key: 'schedule-store',
         storage: localStorage,
-        paths: ['people', 'currentYear', 'currentMonth', 'isDataLoaded', 'token']
+        paths: ['people', 'currentYear', 'currentMonth', 'isDataLoaded', ]
       }
     ]
   }
