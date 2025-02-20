@@ -84,6 +84,8 @@ fun LoginScreen(navController: NavController, deepLinkUri: Uri?) {
 
     // 로그인 결과 상태 감지
      val loginResult = authViewModel.loginResult.collectAsState().value
+    val loginState = authViewModel.loginState.collectAsState()
+
     LaunchedEffect(loginResult) {
         loginResult?.let {
             if (it.isSuccess) {
@@ -300,11 +302,10 @@ fun LoginScreen(navController: NavController, deepLinkUri: Uri?) {
                     onClick = {
 
                         // ✅ 로그인 완료 후 MainScreen으로 이동
-                        val fcmTokenCheck = fcmToken.value ?: ""  // 토큰이 빈 값일 때
+                        val fcmTokenCheck = fcmToken.value ?: ""  // 토큰이 빈 값
                         val loginResult = LoginRequest(id.value, password.value, fcmTokenCheck)
                         Log.d("fcmToken", "LoginScreen: $loginResult")
                         authViewModel.login(loginResult, context)
-
 
                     },
                     modifier = Modifier
@@ -320,6 +321,19 @@ fun LoginScreen(navController: NavController, deepLinkUri: Uri?) {
                     )
                 }
 
+                // 로그인 상태 변화 감지해서 토스트 표시
+                LaunchedEffect(loginState.value){
+                    when(loginState.value){
+                        "success" -> {
+                            Toast.makeText(context, "로그인 성공!", Toast.LENGTH_SHORT).show()
+                            authViewModel.resetLoginState() // 상태 초기화 - 여러번 틀렸을 시에도 토스트 띄우기 위함
+                        }
+                        "failure" ->{
+                            Toast.makeText(context, "로그인 실패!", Toast.LENGTH_LONG).show()
+                            authViewModel.resetLoginState()
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.height(32.dp))
 
                 // 회원가입 텍스트
