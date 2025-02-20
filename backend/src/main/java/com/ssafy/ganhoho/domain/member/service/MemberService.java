@@ -10,7 +10,7 @@ import java.util.List;
 public interface MemberService {
     MemberInfoResponse getMemberInfo(Long memberId);
 
-    List<MemberInfoResponse> searchMembers(String loginId, String name);
+    List<MemberInfoResponse> searchMembers(String loginId);
 
     void withdrawal(Long memberId);
 
