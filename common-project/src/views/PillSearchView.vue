@@ -26,7 +26,7 @@
       >
         <div class="pill-image-container">
           <img 
-            :src="!medicineDetail?.imageSrc ? defaultImage : medicineDetail.imageSrc" 
+            :src="!pill.imageSrc ? defaultImage : pill.imageSrc"
             :alt="pill.name" 
             class="pill-image" 
           />
