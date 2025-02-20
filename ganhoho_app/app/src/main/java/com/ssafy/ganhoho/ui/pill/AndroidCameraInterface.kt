@@ -6,17 +6,20 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.os.Build
 import android.util.Base64
 import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.ssafy.ganhoho.ui.MainActivity
 import java.io.ByteArrayOutputStream
 
 class AndroidCameraInterface(
-    private val activity: Context,
+    private val activity: MainActivity,
     private val webView: WebView,
     private val cameraLauncher: ManagedActivityResultLauncher<Void?, Bitmap?> // 📌 결과를 Compose에 전달
 ) {
@@ -26,27 +29,25 @@ class AndroidCameraInterface(
     }
 
     // ✅ 웹에서 openNativeCamera() 호출 시 실행
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     @JavascriptInterface
     fun openCamera() {
-        // ✅ Context를 Activity로 변환 (Activity가 아닐 경우, 실행하지 않음)
-        val activity = activity as? Activity ?: return
 
         if (ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA)
             != PackageManager.PERMISSION_GRANTED
         ) {
             // 🚨 카메라 권한 요청
-            ActivityCompat.requestPermissions(
-                activity, arrayOf(Manifest.permission.CAMERA),
-                REQUEST_CAMERA_PERMISSION
-            )
+            activity.requestCameraPermission()
             Log.e("AndroidCameraInterface", "🚨 카메라 권한이 없어 요청함.")
+
+
         } else {
             launchCamera()
         }
     }
 
     // ✅ 카메라 실행을 따로 함수로 분리
-    private fun launchCamera() {
+    fun launchCamera() {
         try {
             Log.d("AndroidCameraInterface", "📸 카메라 실행됨!")
             cameraLauncher.launch(null) // 카메라 실행
