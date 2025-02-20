@@ -2,6 +2,7 @@ package com.ssafy.ganhoho.ui.mypage
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,6 +26,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,62 +49,89 @@ import com.ssafy.ganhoho.R
 import com.ssafy.ganhoho.data.model.dto.member.UpdateHospitalWardRequest
 import com.ssafy.ganhoho.data.model.response.auth.SearchResultItem
 import com.ssafy.ganhoho.data.model.response.member.MyPageResponse
+import com.ssafy.ganhoho.ui.nav_host.Route
 import com.ssafy.ganhoho.ui.theme.FieldGray
 import com.ssafy.ganhoho.ui.theme.PrimaryBlue
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.MemberViewModel
 
+private const val TAG = "UpdateMemberInfo"
 @Composable
 fun UpdateMemberInfo(navController: NavController) {
+    val context = LocalContext.current
 
-    // 변수
-    var id by remember { mutableStateOf("") }
-    var name by remember { mutableStateOf("") }
-    var hospital by remember { mutableStateOf("") }
-    var ward by remember { mutableStateOf("") }
+    // 1. NavController 상태 안정화
+    val backStackEntry by remember {
+        derivedStateOf { navController.currentBackStackEntry }
+    }
+    val savedStateHandle = backStackEntry?.savedStateHandle
 
+    // 2. ViewModel 안전한 초기화
     val memberViewModel: MemberViewModel = viewModel()
     val authViewModel: AuthViewModel = viewModel()
 
+    // 상태 변수
+    var id by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
+    var hospital by remember { mutableStateOf<SearchResultItem?>(null) }
+    var ward by remember { mutableStateOf("") }
+    var hospitalName by remember { mutableStateOf("") }
+
+    // 토큰 처리
     val token = authViewModel.accessToken.collectAsState().value
-    val context = LocalContext.current
 
-
-    LaunchedEffect(token) {
+    // 3. LaunchedEffect 최적화
+    LaunchedEffect(Unit) {
         if (token.isNullOrEmpty()) {
             authViewModel.loadTokens(context)
         } else {
-            // 마이페이지 정보 불러오기
             memberViewModel.getMyPageInfo(token)
         }
     }
 
+    LaunchedEffect(token) {
+        if (token != null) {
+            memberViewModel.getMyPageInfo(token)
+        }
+    }
+
+    LaunchedEffect(savedStateHandle) {
+        Log.d(TAG, "UpdateMemberInfo: savedStateHandle :${savedStateHandle?.get<SearchResultItem>("selectedHospital")}")
+        savedStateHandle?.get<SearchResultItem>("selectedHospital")?.let {
+            hospital = it
+            hospitalName = it.name
+            Log.d(TAG, "UpdateMemberInfo: hospital check in savedStateHandle :${hospital}")
+        }
+    }
+
+    // 회원 정보 관찰
     val memberInfoState = memberViewModel.mypageInfo.collectAsState().value
     val memberInfo = memberInfoState?.getOrNull() ?: MyPageResponse(-1, "", "", "", "")
 
-    // 회원 정보가 업데이트되면 UI에 반영
     LaunchedEffect(memberInfo) {
+        Log.d(TAG, "UpdateMemberInfo: memberInfo changed ${memberInfo}")
         id = memberInfo.loginId
         name = memberInfo.name
-        hospital = memberInfo.hospital ?: ""
+        if(savedStateHandle?.get<SearchResultItem>("selectedHospital") == null) hospitalName = memberInfo.hospital ?: ""
         ward = memberInfo.ward ?: ""
     }
 
+    // UI 구성
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xffE9F6FA)), // 배경 색상
+            .background(Color(0xffE9F6FA)),
         contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier
-                .shadow(6.dp, shape = RoundedCornerShape(40.dp)) // ✅ 그림자 조정
+                .shadow(6.dp, shape = RoundedCornerShape(40.dp))
                 .clip(RoundedCornerShape(40.dp))
                 .background(Color(0xffA5D8F3))
                 .padding(20.dp)
                 .fillMaxWidth(0.85f),
+            verticalArrangement = Arrangement.Center
         ) {
-
             Spacer(modifier = Modifier.height(30.dp))
             Text(
                 text = "내 정보 수정",
@@ -112,7 +141,7 @@ fun UpdateMemberInfo(navController: NavController) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // ID 입력
+            // ID 입력 필드
             OutlinedTextField(
                 value = id,
                 onValueChange = { id = it },
@@ -127,74 +156,22 @@ fun UpdateMemberInfo(navController: NavController) {
                     }
                 },
                 enabled = false,
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(30.dp),
                 colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Transparent, // 포커스 있을 때 테두리 제거
-                    unfocusedIndicatorColor = Color.Transparent, // 포커스 없을 때 테두리 제거
-                    disabledIndicatorColor = Color.Transparent, // 비활성화 시 테두리 제거
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
                     cursorColor = Color(0xffE5E5E5),
-                    focusedContainerColor = Color(0xffE5E5E5), // 내부 배경 투명
-                    unfocusedContainerColor = Color(0xffE5E5E5), // 내부 배경 투명
-                    disabledContainerColor = Color(0xffE5E5E5) // 비활성화 상태도 투명
+                    focusedContainerColor = Color(0xffE5E5E5),
+                    unfocusedContainerColor = Color(0xffE5E5E5),
+                    disabledContainerColor = Color(0xffE5E5E5)
                 ),
             )
 
-//            Spacer(modifier = Modifier.height(16.dp))
-
-            // PW 입력
-//            OutlinedTextField(
-//                value = password,
-//                onValueChange = { password = it },
-//                label = {
-//                    Text(
-//                        "PW", color = Color(0xFFC0C0C0)
-//                    )
-//                },
-//                leadingIcon = {
-//                    Row {
-//                        Spacer(modifier = Modifier.width(12.dp))
-//                        Icon(
-//                            imageVector = Icons.Default.Lock,
-//                            contentDescription = "Lock Icon",
-//                            tint = FieldGray,
-//                        )
-//                    }
-//                },
-//                trailingIcon = {
-//                    Row {
-//                        Icon(painter = if (passwordVisible) painterResource(id = R.drawable.visibility) else painterResource(
-//                            id = R.drawable.visibilty_off
-//                        ),
-//                            contentDescription = "Toggle Password Visibility",
-//                            modifier = Modifier
-//                                .clickable {
-//                                    passwordVisible = !passwordVisible
-//                                }
-//                                .size(22.dp),
-//                            tint = Color(0xFFC0C0C0))
-//                        Spacer(modifier = Modifier.width(12.dp))
-//                    }
-//                },
-//                modifier = Modifier.fillMaxWidth(),
-//                shape = RoundedCornerShape(30.dp),
-//                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-//                colors = TextFieldDefaults.colors(
-//                    focusedIndicatorColor = Color.Transparent, // 포커스 있을 때 테두리 제거
-//                    unfocusedIndicatorColor = Color.Transparent, // 포커스 없을 때 테두리 제거
-//                    disabledIndicatorColor = Color.Transparent, // 비활성화 시 테두리 제거
-//                    cursorColor = FieldGray,
-//                    focusedContainerColor = Color.White, // 내부 배경 투명
-//                    unfocusedContainerColor = Color.White, // 내부 배경 투명
-//                    disabledContainerColor = Color.White // 비활성화 상태도 투명
-//                )
-//            )
-
             Spacer(modifier = Modifier.height(16.dp))
 
-
-            // Name 입력
+            // 이름 입력 필드
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
@@ -208,30 +185,30 @@ fun UpdateMemberInfo(navController: NavController) {
                         )
                     }
                 },
+                enabled = false,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(30.dp),
                 colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Transparent, // 포커스 있을 때 테두리 제거
-                    unfocusedIndicatorColor = Color.Transparent, // 포커스 없을 때 테두리 제거
-                    disabledIndicatorColor = Color.Transparent, // 비활성화 시 테두리 제거
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
                     cursorColor = Color(0xffE5E5E5),
-                    focusedContainerColor = Color(0xffE5E5E5), // 내부 배경 투명
-                    unfocusedContainerColor = Color(0xffE5E5E5), // 내부 배경 투명
-                    disabledContainerColor = Color(0xffE5E5E5) // 비활성화 상태도 투명
+                    focusedContainerColor = Color(0xffE5E5E5),
+                    unfocusedContainerColor = Color(0xffE5E5E5),
+                    disabledContainerColor = Color(0xffE5E5E5)
                 )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Hospital 선택
+            // 병원 선택 섹션
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-
                 OutlinedTextField(
-                    value = hospital,
-                    onValueChange = { hospital = it },
+                    value = hospitalName,
+                    onValueChange = { hospitalName = it },
                     leadingIcon = {
                         Row {
                             Spacer(modifier = Modifier.width(12.dp))
@@ -246,32 +223,32 @@ fun UpdateMemberInfo(navController: NavController) {
                     modifier = Modifier.width(200.dp),
                     shape = RoundedCornerShape(30.dp),
                     colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent, // 포커스 있을 때 테두리 제거
-                        unfocusedIndicatorColor = Color.Transparent, // 포커스 없을 때 테두리 제거
-                        disabledIndicatorColor = Color.Transparent, // 비활성화 시 테두리 제거
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent,
                         cursorColor = FieldGray,
-                        focusedContainerColor = Color.White, // 내부 배경 투명
-                        unfocusedContainerColor = Color.White, // 내부 배경 투명
-                        disabledContainerColor = Color.White // 비활성화 상태도 투명
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        disabledContainerColor = Color.White
                     )
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Button(
                     onClick = {
-                        // 병원 찾기 페이지로 이동W
-//                        navController.navigate("hospitalInfo")
-                    }, colors = ButtonDefaults.buttonColors(
-                        containerColor = PrimaryBlue
-                    )
+                        savedStateHandle?.set("id", id)
+                        savedStateHandle?.set("name", name)
+                        savedStateHandle?.set("ward", ward)
+                        navController.navigate(Route.HospitalInfo.route)
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
                 ) {
                     Text(text = "찾기")
                 }
             }
 
-
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Ward 선택
+            // 병동 입력 필드
             OutlinedTextField(
                 value = ward,
                 onValueChange = { ward = it },
@@ -280,7 +257,7 @@ fun UpdateMemberInfo(navController: NavController) {
                         Spacer(modifier = Modifier.width(12.dp))
                         Icon(
                             painter = painterResource(id = R.drawable.hospital_room),
-                            contentDescription = "Name Icon",
+                            contentDescription = "Ward Icon",
                             tint = FieldGray,
                             modifier = Modifier.size(24.dp)
                         )
@@ -289,13 +266,13 @@ fun UpdateMemberInfo(navController: NavController) {
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(30.dp),
                 colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Transparent, // 포커스 있을 때 테두리 제거
-                    unfocusedIndicatorColor = Color.Transparent, // 포커스 없을 때 테두리 제거
-                    disabledIndicatorColor = Color.Transparent, // 비활성화 시 테두리 제거
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
                     cursorColor = FieldGray,
-                    focusedContainerColor = Color.White, // 내부 배경 투명
-                    unfocusedContainerColor = Color.White, // 내부 배경 투명
-                    disabledContainerColor = Color.White // 비활성화 상태도 투명
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    disabledContainerColor = Color.White
                 )
             )
 
@@ -304,11 +281,15 @@ fun UpdateMemberInfo(navController: NavController) {
             // 저장 버튼
             Button(
                 onClick = {
-                    // 회원정보 수정 저장
-                    Log.d("mypage", "$hospital ${ward}")
-                    val request = UpdateHospitalWardRequest(hospital, ward)
-                    if (token != null) {
-                        memberViewModel.updateHospitalAndWardInfo(token, request)
+                    val request = UpdateHospitalWardRequest(
+                        hospital?.name,
+                        ward,
+                        hospital?.y?.toDoubleOrNull(),
+                        hospital?.x?.toDoubleOrNull()
+                    )
+                    token?.let {
+                        Log.d(TAG, "UpdateMemberInfo: request ${request}")
+                        memberViewModel.updateHospitalAndWardInfo(it, request)
                         navController.popBackStack()
                     }
                 },
@@ -320,17 +301,13 @@ fun UpdateMemberInfo(navController: NavController) {
             ) {
                 Text(text = "저장", color = Color.White, fontSize = 16.sp)
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
         }
-
     }
-
 }
 
 @Preview(showBackground = true)
 @Composable
-fun Preview() {
+fun PreviewUpdateMemberInfo() {
     val navController = rememberNavController()
     UpdateMemberInfo(navController)
 }

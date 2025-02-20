@@ -1,5 +1,6 @@
 package com.ssafy.ganhoho.ui
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -36,8 +37,6 @@ class AuthActivity : ComponentActivity() {
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
-        window.setBackgroundDrawableResource(android.R.color.transparent)
-        window.setWindowAnimations(0)
         super.onCreate(savedInstanceState)
 
 
@@ -72,9 +71,9 @@ class AuthActivity : ComponentActivity() {
     fun navigateToMain(deepLinkUri: Uri?) {
         val intent = Intent(this, MainActivity::class.java).apply {
             deepLinkUri?.let { data = it }  // 딥링크 있으면 전달
-            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         startActivity(intent)
+        finish()
     }
 }
 

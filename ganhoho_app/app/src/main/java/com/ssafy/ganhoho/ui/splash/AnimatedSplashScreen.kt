@@ -1,6 +1,7 @@
 package com.ssafy.ganhoho.ui.splash
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.graphics.PixelFormat
 import android.net.Uri
 import android.util.Log
@@ -42,13 +43,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.ssafy.ganhoho.R
+import com.ssafy.ganhoho.base.SecureDataStore
 import com.ssafy.ganhoho.ui.AuthActivity
 import com.ssafy.ganhoho.ui.nav_host.Route
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.log
 
 private const val TAG = "AnimatedSplashScreen"
+
 @SuppressLint("ContextCastToActivity")
 @Composable
 fun AnimatedSplashScreen(navController: NavController, deepLinkUri: Uri?) {
@@ -56,34 +60,18 @@ fun AnimatedSplashScreen(navController: NavController, deepLinkUri: Uri?) {
     val characterScale1 = remember { Animatable(0f) } // 캐릭터 1 크기 애니메이션
     val characterScale2 = remember { Animatable(0f) } // 캐릭터 2 크기 애니메이션
 
-    val authViewModel: AuthViewModel = viewModel()
     val context = LocalContext.current as AuthActivity
-    var isCheckingLogin by remember {
-        mutableStateOf(true)
-    }
-    val userInfo = authViewModel.userInfo.collectAsState().value
 
     // ✅ 애니메이션 실행 (1초)
     LaunchedEffect(Unit) {
-        launch {
-            characterScale1.animateTo(1f, animationSpec = tween(500))
-            delay(500)
-            characterScale2.animateTo(1f, animationSpec = tween(500))
-        }
-        authViewModel.checkAutoLogin(context)
-        delay(2000)  // 네트워크 요청이 끝나기 전에 네비게이션 실행 방지
-        isCheckingLogin = false
-    }
-
-    // ✅ 스플래시 화면 최소 2초 유지 후 이동
-    LaunchedEffect(userInfo, isCheckingLogin) {
-        if (!isCheckingLogin) {
-//            delay(3000) // ⏳ 추가 딜레이 (2초 유지 보장)
-            if (userInfo != null) {
-                Log.d("SplashScreen", "자동 로그인 성공 → 메인 이동")
+        characterScale1.animateTo(1f, animationSpec = tween(500))
+        delay(500)
+        characterScale2.animateTo(1f, animationSpec = tween(500))
+        delay(500)
+        SecureDataStore.getAccessToken(context).collect { token ->
+            if (token != null) {
                 context.navigateToMain(deepLinkUri)
             } else {
-                Log.d("SplashScreen", "자동 로그인 실패 → 로그인 이동")
                 navController.navigate(Route.Login.route) {
                     popUpTo(Route.Splash.route) { inclusive = true }
                 }
@@ -116,14 +104,14 @@ fun AnimatedSplashScreen(navController: NavController, deepLinkUri: Uri?) {
         ) {
             Text(
                 text = "간호사를 위한",
-                fontSize = 26.sp ,
+                fontSize = 26.sp,
                 fontWeight = FontWeight.Medium,
                 fontFamily = normalFont,
                 color = Color(0xFF4D5860)
             )
             Text(
                 text = "올인원 업무•일정 관리 앱",
-                fontSize = 26.sp ,
+                fontSize = 26.sp,
                 fontWeight = FontWeight.Medium,
                 fontFamily = normalFont,
                 color = Color(0xFF4D5860),
@@ -142,7 +130,7 @@ fun AnimatedSplashScreen(navController: NavController, deepLinkUri: Uri?) {
         }
 
         Column(
-            modifier= Modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 270.dp)
 
@@ -180,11 +168,11 @@ fun AnimatedSplashScreen(navController: NavController, deepLinkUri: Uri?) {
         }
 
         // 팀 이름
-        Column (
-            modifier= Modifier
+        Column(
+            modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
-        ){
+        ) {
             Text(
                 text = "기획폭발단",
                 fontFamily = lightFont,
