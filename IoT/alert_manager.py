@@ -7,7 +7,8 @@ from config import SERVER_URL, QUEUE_CHECK_INTERVAL, RESEND_INTERVAL, MAX_RESEND
 
 async def send_to_server(session, bed_id, response_text, type_value):
     """서버에 알림 전송 (API 명세에 맞게)"""
-    url = SERVER_URL  # 예: "http://server-endpoint/api/notifications/button-pattens"
+    url = SERVER_URL  # 예: "http://server-endpoint/api/notifications/button-patterns"
+    print("URL 주소!!!!!!!!!!!!!!!!!:",url)
     message = f"{bed_id}에서 {response_text}호출"
     title = response_text
     data = {
