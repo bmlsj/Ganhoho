@@ -119,10 +119,10 @@
 <br>
 
 ## 📌산출물 
-- API 명세서 및 Swagger
-- ERD 다이어그램
+- [API 명세서 및 Swagger](docs/API설계서.md)
+- [ERD 다이어그램](docs/ERD.md)
 - 와이어프레임
-- 시스템 아키텍처
+- [시스템 아키텍처](docs/시스템아키텍처.md)
 - Flow Chart
 
 
