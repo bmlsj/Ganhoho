@@ -55,6 +55,7 @@
 <img src="https://img.shields.io/badge/Amazon%20EC2-FF9900?style=for-the-badge&logo=Amazon%20EC2&logoColor=white">
 <img src="https://img.shields.io/badge/jenkins-D24939?style=for-the-badge&logo=jenkins&logoColor=white">
 <img src="https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white">
+<img src="https://img.shields.io/badge/linux-FCC624?style=for-the-badge&logo=nginx&logoColor=white">
 
 <img src="https://img.shields.io/badge/firebase-000000?style=for-the-badge&logo=firebase&logoColor=white">
 <img src="https://img.shields.io/badge/CLOVA_OCR_API-000000?style=for-the-badge&logo=CLOVA_OCR_API&logoColor=white">
