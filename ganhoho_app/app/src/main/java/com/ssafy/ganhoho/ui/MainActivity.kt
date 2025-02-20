@@ -195,9 +195,9 @@ fun MainScreen(
                             id = when (currentRoute) {
                                 "work" -> R.drawable.icon_nav_work
                                 "pill" -> R.drawable.icon_nav_pill
-                                "group" -> R.drawable.icon_nav_group
+                                "home" -> R.drawable.icon_nav_home
                                 "friend" -> R.drawable.icon_nav_friend
-                                else -> R.drawable.icon_nav_home
+                                else -> R.drawable.icon_nav_group
                             }
                         ),
                         contentDescription = "FAB Icon",
@@ -375,6 +375,6 @@ fun calculateFabOffset(currentRoute: String, itemWidth: Dp): Dp {
         "home" -> 0.dp // 홈 위치 (중앙)
         "group" -> itemWidth  // 그룹 위치 (오른쪽)
         "friend" -> itemWidth * 2 // 그룹 위치 (오른쪽)
-        else -> 0.dp
+        else -> itemWidth
     }
 }
