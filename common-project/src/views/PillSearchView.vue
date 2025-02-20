@@ -90,7 +90,7 @@ onMounted(async () => {
   })
 
   // ① 네이티브 앱에게 카메라를 열도록 요청하는 함수 등록
-  const openNatvieCamera = () => {
+  const openNativeCamera = () => {
     console.log("window.openNativeCamera 호출됨");
     // iOS: WKWebView의 messageHandler 호출 예시
     if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.openCamera) {
@@ -166,8 +166,9 @@ const goToDetailPage = (medicineId) => {
 // ✅ 카메라 버튼 클릭 시 네이티브 함수 호출
 const triggerCamera = () => {
   console.log("triggerCamera 호출됨");
-  if (window.openNativeCamera && typeof window.openNativeCamera === "function") {
-    window.openNativeCamera();
+  if (typeof openNativeCamera === 'function') {
+    openNativeCamera()
+    console.log("openNativeCamera 함수 호출됨됨")
   } else {
     console.error("openNativeCamera 함수가 정의되지 않았습니다.");
   }
