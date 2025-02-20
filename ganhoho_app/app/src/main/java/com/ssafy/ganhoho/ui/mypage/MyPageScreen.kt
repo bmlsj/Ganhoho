@@ -2,6 +2,7 @@ package com.ssafy.ganhoho.ui.mypage
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -86,14 +87,21 @@ fun MyPageScreen(navController: NavController) {
         horizontalAlignment = Alignment.Start
     ) {
 
-        // 로고
-        Text(
-            text = "GANHOHO",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF79C7E3),
-            modifier = Modifier.padding(vertical = 20.dp)
+        // 로고 - 변경된 로고로 변경함
+        Image(
+            painter = painterResource(R.drawable.logo_image),
+            contentDescription = "간호호 로고",
+            modifier = Modifier
+                .size(80.dp)
+//                .padding(vertical = 20.dp)
         )
+//        Text(
+//            text = "GANHOHO",
+//            fontSize = 28.sp,
+//            fontWeight = FontWeight.Bold,
+//            color = Color(0xFF79C7E3),
+//            modifier = Modifier.padding(vertical = 20.dp)
+//        )
 
         // 프로필 카드
         Box(
