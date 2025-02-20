@@ -31,16 +31,11 @@ import okhttp3.Route
 
 class AuthActivity : ComponentActivity() {
 
-
     private val authViewModel: AuthViewModel by viewModels()
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
-        window.setBackgroundDrawableResource(android.R.color.transparent)
-        window.setWindowAnimations(0)
         super.onCreate(savedInstanceState)
-
-
 
         val authDataStore = AuthDataStore(applicationContext) //DataStore 생성
         val repository = GroupRepository()

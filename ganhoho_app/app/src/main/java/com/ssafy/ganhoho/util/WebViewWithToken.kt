@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import com.ssafy.ganhoho.ui.LoadingScreen
+import com.ssafy.ganhoho.ui.MainActivity
 import com.ssafy.ganhoho.ui.pill.AndroidCameraInterface
 import kotlinx.coroutines.delay
 import java.io.ByteArrayOutputStream
@@ -38,8 +39,6 @@ fun WebViewWithToken(
     refreshToken: String,
     enableCamera: Boolean = true
 ) {
-
-//    val context = LocalContext.current as? Activity
 
     // ✅ 파일 선택 콜백 변수 선언 (WebView -> Activity Result로 전달)
     var fileChooserCallback by remember {
@@ -94,7 +93,7 @@ fun WebViewWithToken(
 
                         // ✅ enableCamera가 true일 때만 JavaScript 인터페이스 추가
                         if (enableCamera) {
-                            addJavascriptInterface(AndroidCameraInterface(context, this, cameraLauncher),
+                            addJavascriptInterface(AndroidCameraInterface(context as MainActivity, this, cameraLauncher),
                                 "AndroidCameraInterface")
                         }
 

@@ -4,11 +4,14 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.runtime.*
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.webkit.WebView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -38,6 +41,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -57,8 +61,10 @@ import com.ssafy.ganhoho.repository.GroupRepository
 import com.ssafy.ganhoho.ui.bottom_navigation.AppNavHost
 import com.ssafy.ganhoho.ui.bottom_navigation.CustomBottomNavigation
 import com.ssafy.ganhoho.ui.nav_host.Route
+import com.ssafy.ganhoho.ui.pill.AndroidCameraInterface
 import com.ssafy.ganhoho.ui.theme.GANHOHOTheme
 import com.ssafy.ganhoho.util.PermissionChecker
+import com.ssafy.ganhoho.util.bitmapToBase64
 import com.ssafy.ganhoho.viewmodel.AuthViewModel
 import com.ssafy.ganhoho.viewmodel.GroupViewModel
 import kotlinx.coroutines.launch
@@ -70,6 +76,9 @@ private const val TAG = "MainActivity"
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 class MainActivity : ComponentActivity() {
+
+    private lateinit var androidCameraInterface: AndroidCameraInterface
+    private lateinit var webView: WebView
     val yearMonth: String = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"))
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,6 +103,51 @@ class MainActivity : ComponentActivity() {
                     MainScreen(navController, yearMonth, deepLinkUri, groupViewModel)
                 }
             }
+
+            val webView = WebView(this)
+            val cameraLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.TakePicturePreview(),
+                onResult = { bitmap: Bitmap? ->
+                    bitmap?.let {
+                        val base64Image = bitmapToBase64(it) // Base64 변환
+                        Log.d("webview", "캡처 이미지 변환 완료 ")
+                        webView.evaluateJavascript(
+                            "window.onImageCaptured('$base64Image')", null
+                        )
+                    }
+                }
+            )
+
+            androidCameraInterface = AndroidCameraInterface(this, webView, cameraLauncher)
+            webView.addJavascriptInterface(androidCameraInterface, "AndroidCameraInterface")
+
+        }
+
+    }
+
+    // ✅ Compose에서는 권한 요청을 ActivityResultLauncher를 통해 처리해야 함
+    private val cameraPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            Log.d("MainActivity", "✅ 카메라 권한 허용됨! 카메라 실행")
+            androidCameraInterface.launchCamera() // 🚀 카메라 실행
+        } else {
+            Log.e("MainActivity", "🚨 카메라 권한 거부됨!")
+        }
+    }
+
+    fun requestCameraPermission() {
+
+        Log.d("MainActivity", "📌 requestCameraPermission() 호출됨")
+        cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        } else {
+            androidCameraInterface.launchCamera() // ✅ 이미 권한 있으면 바로 실행
         }
     }
 }
@@ -101,7 +155,12 @@ class MainActivity : ComponentActivity() {
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
-fun MainScreen(navController: NavHostController, yearMonth: String, deepLinkUri: Uri?, groupViewModel: GroupViewModel) {
+fun MainScreen(
+    navController: NavHostController,
+    yearMonth: String,
+    deepLinkUri: Uri?,
+    groupViewModel: GroupViewModel
+) {
 
     val context = LocalContext.current
 
@@ -153,7 +212,7 @@ fun MainScreen(navController: NavHostController, yearMonth: String, deepLinkUri:
             bottomBar = {
                 CustomBottomNavigation(navController)
             },
-        ) {  innerPadding ->
+        ) { innerPadding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -169,7 +228,7 @@ fun MainScreen(navController: NavHostController, yearMonth: String, deepLinkUri:
 
     DisposableEffect(Unit) {
         val job = coroutineScope.launch {
-            SecureDataStore.getAccessToken(context).collect{ token ->
+            SecureDataStore.getAccessToken(context).collect { token ->
                 Log.d("DisposableEffect", "HandleDeepLink: $token")
                 val inviteCode = deepLinkUri?.getQueryParameter("groupCode")
 
@@ -198,7 +257,8 @@ fun MainScreen(navController: NavHostController, yearMonth: String, deepLinkUri:
                             })
                     } else {  // 토큰 없으니 내쫓기
                         val intent = Intent(context, AuthActivity::class.java)
-                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        intent.flags =
+                            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                         context.startActivity(intent)
                     }
                 }
@@ -311,23 +371,23 @@ fun scheduleLocationWorker(context: Context) {
     // 기존 작업이 등록되어 있는지 확인
     workManager.getWorkInfosByTag("LocationWorker").get().let { workInfos ->
         if (workInfos.isNullOrEmpty()) {
-        // 기존에 등록된 작업이 없으면 새로 등록
-        val workRequest = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES)
-            .setInitialDelay(1, TimeUnit.MINUTES)
-            .addTag("LocationWorker") // 중복 실행 방지용 태그 추가
-            .setConstraints(
-                Constraints.Builder()
-                    .setRequiredNetworkType(NetworkType.CONNECTED)
-                    .build()
-            )
-            .build()
+            // 기존에 등록된 작업이 없으면 새로 등록
+            val workRequest = PeriodicWorkRequestBuilder<LocationWorker>(15, TimeUnit.MINUTES)
+                .setInitialDelay(1, TimeUnit.MINUTES)
+                .addTag("LocationWorker") // 중복 실행 방지용 태그 추가
+                .setConstraints(
+                    Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.CONNECTED)
+                        .build()
+                )
+                .build()
 
-        workManager.enqueueUniquePeriodicWork(
-            "LocationWorker",
-            ExistingPeriodicWorkPolicy.KEEP,
-            workRequest
-        )
-        } else{
+            workManager.enqueueUniquePeriodicWork(
+                "LocationWorker",
+                ExistingPeriodicWorkPolicy.KEEP,
+                workRequest
+            )
+        } else {
             Log.d(TAG, "scheduleLocationWorker: already scheduled")
         }
     }
