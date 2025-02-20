@@ -50,7 +50,7 @@ fun CustomBottomNavigation(navController: NavController) {
     ) {
         items.forEach { (route, icon) ->
 
-            when (route) {
+            val title = when (route) {
                 "work" -> stringResource(id = R.string.nav_work)
                 "pill" -> stringResource(id = R.string.nav_pill)
                 "home" -> stringResource(id = R.string.nav_home)
@@ -91,7 +91,7 @@ fun CustomBottomNavigation(navController: NavController) {
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(  // 탭 이름
-                    text = route.uppercase(),
+                    text = title,
                     fontSize = 12.sp,
                     color = if (isSelected) Color.White else Color.Gray
                 )
