@@ -266,6 +266,7 @@ fun MainScreen(
         }
         onDispose { job.cancel() }
     }
+
 }
 
 
@@ -377,11 +378,3 @@ fun calculateFabOffset(currentRoute: String, itemWidth: Dp): Dp {
         else -> 0.dp
     }
 }
-
-//@RequiresApi(Build.VERSION_CODES.TIRAMISU)
-//@Preview(showBackground = true)
-//@Composable
-//fun MainActivityPreview() {
-//    MainScreen()
-//}
-//

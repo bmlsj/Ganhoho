@@ -124,19 +124,6 @@ fun EachGroupScreen(
             if (inviteCode.isNullOrEmpty()) {
                 Log.d("group_invite", "초대 코드 감지: $inviteCode")
 
-//                viewModel.joinGroupByInviteCode(inviteCode,
-//                    onSuccess = { id ->
-//                        Log.d("DeepLink", "초대 수락 성공! groupId: $id")
-//                        groupId = id
-//                        viewModel.fetchMemberList(groupId)
-//                        viewModel.fetchMemberSchedules(groupId, LocalDate.now().format(
-//                            DateTimeFormatter.ofPattern("yyyy-MM")))
-//                    },
-//                    onFailure = { error ->
-//                        Log.e("DeepLink",  "초대 수락 실패: $error")
-//                    }
-//                )
-
                 if (token != null) {
                     viewModel.fetchGroupInviteLink(token, groupId,
                         onSuccess = { link ->

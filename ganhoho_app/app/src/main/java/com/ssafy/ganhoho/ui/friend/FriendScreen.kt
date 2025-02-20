@@ -186,6 +186,7 @@ fun FriendScreen(navController: NavController) {
     LaunchedEffect(currentScreen.value) {
         Log.d("current", "화면 변경 ${currentScreen.value}")
         fetchFriendData()
+        searchText.value = ""
     }
 
 
@@ -332,6 +333,7 @@ fun FriendScreen(navController: NavController) {
                                     }
                                 )
                             }
+
                         } else {
                             item {
                                 Spacer(modifier = Modifier.height(50.dp))
@@ -440,7 +442,7 @@ fun FriendRequestBadge(friendRequestCount: Int, isSelected: Boolean) {
     Box { // 외부 Box
         // 친구 요청 아이콘 (예제 아이콘)
         Text(
-            "친구 요청",
+            "친구요청",
             fontSize = 20.sp,
             modifier = Modifier.padding(top = 2.dp, end = 8.dp),
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
