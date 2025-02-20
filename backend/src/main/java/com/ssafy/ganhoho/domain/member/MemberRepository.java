@@ -20,6 +20,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     List<Member> findMemberByNameContainingIgnoreCase(String name);
 
+    List<Member> findMembersByNameContainingIgnoreCaseOrLoginIdContainingIgnoreCase(String name, String loginId);
+
     @Transactional
     @Modifying(clearAutomatically = true)
     @Query("DELETE FROM Member member WHERE member.memberId = :memberId")
