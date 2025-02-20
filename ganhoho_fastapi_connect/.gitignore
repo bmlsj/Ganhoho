@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+venv/
+.idea/
+.vscode/
+
+
+# vision_api.json 차단
+pill_service/config/.ipynb_checkpoints/ganhoho-checkpoint.json
+pill_service/config/ganhoho.json
