@@ -8,13 +8,15 @@ import com.ssafy.ganhoho.domain.member.dto.MemberInfoResponse;
 import com.ssafy.ganhoho.global.constant.ErrorCode;
 import com.ssafy.ganhoho.global.error.CustomException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.ssafy.ganhoho.global.auth.SecurityUtil.getCurrentMemberId;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService{
@@ -26,19 +28,10 @@ public class MemberServiceImpl implements MemberService{
     }
 
     @Override
-    public List<MemberInfoResponse> searchMembers(String loginId, String name) {
+    public List<MemberInfoResponse> searchMembers(String loginId) {
         Long memberId = getCurrentMemberId();
 
-        List<Member> members;
-
-        // 이름 검색
-        if (name != null && !name.isEmpty()) {
-            members = memberRepository.findMemberByNameContainingIgnoreCase(name);
-        }
-        // Id
-        else {
-            members = memberRepository.findMemberByLoginIdContainingIgnoreCase(loginId);
-        }
+        List<Member> members = memberRepository.findMembersByNameContainingIgnoreCaseOrLoginIdContainingIgnoreCase(loginId, loginId);
 
         return MemberMapper.INSTANCE.membersToMemberInfoResponses(members.stream().filter(member -> member.getMemberId().equals(memberId) == false).collect(Collectors.toList()));
     }

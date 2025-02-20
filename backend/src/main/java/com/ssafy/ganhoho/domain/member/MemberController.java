@@ -30,14 +30,9 @@ public class MemberController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<MemberInfoResponse>> searchMember(@RequestParam(required = false) String friendLoginId,
-                                                                 @RequestParam(required = false) String friendName) {
+    public ResponseEntity<List<MemberInfoResponse>> searchMember(@RequestParam String friendLoginId) {
         // 두개중 하나는 포함되는지 검증
-        if ((friendLoginId == null || friendLoginId.isBlank()) && (friendName == null || friendName.isBlank())) {
-            return ResponseEntity.ok(new ArrayList<>());
-        }
-
-        return ResponseEntity.ok(memberService.searchMembers(friendLoginId, friendName));
+        return ResponseEntity.ok(memberService.searchMembers(friendLoginId));
     }
 
     @DeleteMapping("/withdrawal")
