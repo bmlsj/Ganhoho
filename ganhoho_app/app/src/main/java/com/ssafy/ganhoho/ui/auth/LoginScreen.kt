@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -120,13 +121,44 @@ fun LoginScreen(navController: NavController, deepLinkUri: Uri?) {
         Spacer(modifier = Modifier.height(100.dp))
 
         // 로고 영역
-        Text(
-            text = "간호호",
-            fontSize = 50.sp,
-            fontWeight = FontWeight.Bold,
-            color = PrimaryBlue,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
+        Column(
+            modifier = Modifier
+                .padding(start = 41.dp, end = 40.dp)
+                .fillMaxWidth()
+        ) {
+            Text(
+                text = "간호사를 위한",
+                fontSize = 26.sp ,
+                fontWeight = FontWeight.Medium,
+                //fontFamily = normalFont,
+                color = Color(0xFF4D5860)
+            )
+            Text(
+                text = "올인원 업무•일정 관리 앱",
+                fontSize = 26.sp ,
+                fontWeight = FontWeight.Medium,
+                //fontFamily = normalFont,
+                color = Color(0xFF4D5860),
+            )
+
+            Spacer(modifier = Modifier.height(22.dp))
+
+            Image(
+                painter = painterResource(R.drawable.logo_image_large),
+                contentDescription = "간호호 로고",
+                modifier = Modifier
+                    .size(160.dp, 59.dp)
+                    .align(Alignment.Start)
+            )
+
+        }
+//        Text(
+//            text = "간호호",
+//            fontSize = 50.sp,ㅅ
+//            fontWeight = FontWeight.Bold,
+//            color = PrimaryBlue,
+//            modifier = Modifier.padding(bottom = 8.dp)
+//        )
 
         Spacer(modifier = Modifier.height(100.dp))
 
