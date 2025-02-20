@@ -247,8 +247,6 @@ fun AddDateBottomSheet(
             ColorDropdownMenu(selectedColor)
             Spacer(modifier = Modifier.width(6.dp))
 
-            // 공개 비공개 버튼
-            ToggleButton(isPublic)
         }
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -257,7 +255,6 @@ fun AddDateBottomSheet(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // 시간 설정 부분
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -265,7 +262,35 @@ fun AddDateBottomSheet(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "시간 설정",
+                text = "공개 여부",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(start = 8.dp)
+            )
+
+            Switch(
+                checked = isPublic.value,
+                onCheckedChange = {
+                    isPublic.value = it
+                },
+                modifier = Modifier.scale(0.8f),
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = Color(0xff76F47E)
+                ),
+            )
+
+        }
+
+        // 공개 여부 부분
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "시간",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(start = 8.dp)
@@ -427,71 +452,6 @@ fun AddDateBottomSheet(
         Spacer(modifier = Modifier.height(50.dp))
 
 
-    }
-}
-
-@Composable
-fun ToggleButton(isPublic: MutableState<Boolean>) {
-    val toggleWidth = remember { mutableStateOf(100.dp) } // 기본값 설정 (초기값)
-    val toggleHeight = remember { mutableStateOf(40.dp) } // 기본 높이 설정
-    val buttonSize = remember { mutableStateOf(0.dp) } // 원형 버튼 크기
-
-    val toggleOffset by animateDpAsState(
-        targetValue = if (isPublic.value) 0.dp else toggleWidth.value / 2, // 반응형으로 이동
-        animationSpec = tween(durationMillis = 300), label = ""
-    )
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth(0.4f) // ✅ 너비를 60%로 설정하여 반응형 대응
-            .height(toggleHeight.value)
-            .padding(4.dp)
-            .clip(RoundedCornerShape(25.dp))
-            .background(Color(0xffDADADA)) // 배경색
-            .border(BorderStroke(1.dp, color = FieldLightGray), shape = RoundedCornerShape(25.dp))
-            .clickable { isPublic.value = !isPublic.value }
-            .onGloballyPositioned { coordinates ->
-                toggleWidth.value = coordinates.size.width.dp // ✅ 실제 너비 저장
-                toggleHeight.value = coordinates.size.height.dp // ✅ 실제 높이 저장
-                buttonSize.value = toggleHeight.value * 0.6f // ✅ 원형 버튼 크기를 높이에 맞게 조정
-            },
-        contentAlignment = Alignment.CenterStart
-    ) {
-        // 원형 이동 버튼
-        Box(
-            modifier = Modifier
-                .offset(x = toggleOffset)
-                .size(buttonSize.value)
-                .clip(CircleShape)
-                .background(Color.Gray)
-        )
-
-        // 텍스트 표시
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 15.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "공개",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f),
-                color = if (isPublic.value) Color.White else Color.Black,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.weight(0.5f))
-            Text(
-                text = "비공개",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f),
-                color = if (!isPublic.value) Color.White else Color.Black
-            )
-        }
     }
 }
 
