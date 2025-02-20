@@ -27,6 +27,9 @@ class AuthViewModel : ViewModel() {
     private val _loginResult = MutableStateFlow<Result<LoginResponse>?>(null)
     val loginResult: StateFlow<Result<LoginResponse>?> = _loginResult
 
+    private val _loginState = MutableStateFlow<String?>(null)  // 로그인 상태 추가 (로그인 실패 시 토스트 띄우기용)
+    val loginState: StateFlow<String?> = _loginState
+
     // 🔹 회원가입 결과 상태 관리
     private val _signUpResult = MutableStateFlow<Result<Boolean>?>(null)
     val signUpResult: StateFlow<Result<Boolean>?> = _signUpResult
@@ -104,6 +107,9 @@ class AuthViewModel : ViewModel() {
                 _refreshToken.value = response.refreshToken
                 _userInfo.value = response
 
+                _loginState.value = "success" //로그인 성공 상태로 업데이트
+                
+
                 // ✅ 저장 후 바로 불러와서 확인
                 val savedAccessToken = SecureDataStore.getAccessToken(context).first()
                 val savedRefreshToken = SecureDataStore.getRefreshToken(context).first()
@@ -116,11 +122,14 @@ class AuthViewModel : ViewModel() {
 
             }.onFailure { error ->
                 Log.e("AuthViewModel", "Login Failed: ${error.message}")
+                _loginState.value = "failure" //로그인 실패 상태 업데이트
             }
         }
     }
 
-
+    fun resetLoginState(){
+        _loginState.value = null // 상태 초기화해서 여러 번 시도해도 성공 여부가 감지되도록 함
+    }
 
     /**
      * 🔹 회원가입 요청

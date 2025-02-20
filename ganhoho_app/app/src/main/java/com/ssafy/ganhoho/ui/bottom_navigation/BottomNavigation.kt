@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,11 +33,11 @@ fun CustomBottomNavigation(navController: NavController) {
 
     // 리소스를 명확히 선언하여 수정
     val items = listOf(
-        Pair("work", R.drawable.icon_nav_work),
-        Pair("pill", R.drawable.icon_nav_pill),
-        Pair("home", R.drawable.icon_nav_home),
-        Pair("group", R.drawable.icon_nav_group),
-        Pair("friend", R.drawable.icon_nav_friend)
+        Triple("work", R.drawable.icon_nav_work, "근무일정"),
+        Triple("pill", R.drawable.icon_nav_pill, "알약찾기"),
+        Triple("home", R.drawable.icon_nav_home, "홈"),
+        Triple("group", R.drawable.icon_nav_group, "그룹"),
+        Triple("friend", R.drawable.icon_nav_friend, "친구")
     )
 
     val currentRoute = navController.currentBackStackEntryAsState().value
@@ -48,7 +49,7 @@ fun CustomBottomNavigation(navController: NavController) {
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        items.forEach { (route, icon) ->
+        items.forEach { (route, icon, title) ->
 
             when (route) {
                 "work" -> stringResource(id = R.string.nav_work)
@@ -85,15 +86,16 @@ fun CustomBottomNavigation(navController: NavController) {
             ) {
                 Icon(
                     painter = painterResource(id = icon),
-                    contentDescription = route,
-                    tint = if (isSelected) Color.White else Color.Gray,
+                    contentDescription = title,
+                    tint = if (isSelected) Color(0xFF79C7E3) else Color.Gray,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(  // 탭 이름
-                    text = route.uppercase(),
+                    text = title,
                     fontSize = 12.sp,
-                    color = if (isSelected) Color.White else Color.Gray
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                    color = if (isSelected) Color(0xFF79C7E3) else Color.Gray
                 )
             }
 

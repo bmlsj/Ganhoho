@@ -155,6 +155,7 @@ fun MyPageScreen(navController: NavController) {
                     Text(
                         text = "병동 | ",
                         fontSize = 14.sp,
+
                         color = Color.White
                     )
                     memberInfo.ward?.let {
