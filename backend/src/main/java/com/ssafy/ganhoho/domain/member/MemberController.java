@@ -3,12 +3,15 @@ package com.ssafy.ganhoho.domain.member;
 import com.ssafy.ganhoho.domain.member.dto.HospitalWardRequestBody;
 import com.ssafy.ganhoho.domain.member.dto.MemberInfoResponse;
 import com.ssafy.ganhoho.domain.member.service.MemberService;
+import com.ssafy.ganhoho.global.constant.ErrorCode;
+import com.ssafy.ganhoho.global.error.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.ssafy.ganhoho.global.auth.SecurityUtil.getCurrentMemberId;
@@ -27,8 +30,14 @@ public class MemberController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<MemberInfoResponse>> searchMember(@RequestParam String friendLoginId) {
-        return ResponseEntity.ok(memberService.searchMembers(friendLoginId));
+    public ResponseEntity<List<MemberInfoResponse>> searchMember(@RequestParam(required = false) String friendLoginId,
+                                                                 @RequestParam(required = false) String friendName) {
+        // 두개중 하나는 포함되는지 검증
+        if ((friendLoginId == null || friendLoginId.isBlank()) && (friendName == null || friendName.isBlank())) {
+            return ResponseEntity.ok(new ArrayList<>());
+        }
+
+        return ResponseEntity.ok(memberService.searchMembers(friendLoginId, friendName));
     }
 
     @DeleteMapping("/withdrawal")

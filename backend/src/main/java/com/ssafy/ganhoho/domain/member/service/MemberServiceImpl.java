@@ -26,10 +26,20 @@ public class MemberServiceImpl implements MemberService{
     }
 
     @Override
-    public List<MemberInfoResponse> searchMembers(String loginId) {
+    public List<MemberInfoResponse> searchMembers(String loginId, String name) {
         Long memberId = getCurrentMemberId();
 
-        List<Member> members = memberRepository.findMemberByLoginIdContainingIgnoreCase(loginId);
+        List<Member> members;
+
+        // 이름 검색
+        if (name != null && !name.isEmpty()) {
+            members = memberRepository.findMemberByNameContainingIgnoreCase(name);
+        }
+        // Id
+        else {
+            members = memberRepository.findMemberByLoginIdContainingIgnoreCase(loginId);
+        }
+
         return MemberMapper.INSTANCE.membersToMemberInfoResponses(members.stream().filter(member -> member.getMemberId().equals(memberId) == false).collect(Collectors.toList()));
     }
 
