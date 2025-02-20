@@ -267,34 +267,6 @@ fun MainScreen(
         onDispose { job.cancel() }
     }
 
-
-//    // ✅ 딥링크 감지 및 처리
-//    LaunchedEffect(deepLinkUri) {
-//        Log.d(TAG, "MainNavHost: deppLinkUri check ${deepLinkUri}")
-//        deepLinkUri?.let { uri ->
-//            val inviteCode = uri.getQueryParameter("groupCode")
-//
-//            groupViewModel.joinGroupByInviteCode(token, inviteCode,
-//                onSuccess = {
-//                    Log.d("DeepLink", "초대 수락 성공! 그룹 화면으로 이동")
-//
-//                    navController.navigate("main") {
-//                        popUpTo("splash") { inclusive = true }
-//                    }
-//
-//                    // ✅ Main 이동 후 AppNavHost에서 그룹 화면으로 이동
-//                    navController.navigate("group")
-//                },
-//                onFailure = { error ->
-//                    Log.e("DeepLink", "초대 수락 실패: $error")
-//
-//
-//                })
-//
-////            navController.navigate(Route.Group.route)
-//
-//        }
-//    }
 }
 
 
@@ -406,11 +378,3 @@ fun calculateFabOffset(currentRoute: String, itemWidth: Dp): Dp {
         else -> 0.dp
     }
 }
-
-//@RequiresApi(Build.VERSION_CODES.TIRAMISU)
-//@Preview(showBackground = true)
-//@Composable
-//fun MainActivityPreview() {
-//    MainScreen()
-//}
-//

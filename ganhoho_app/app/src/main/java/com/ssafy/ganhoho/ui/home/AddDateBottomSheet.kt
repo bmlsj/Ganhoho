@@ -103,7 +103,7 @@ fun AddDateBottomSheet(
         remember(eventToEdit) {
             mutableStateOf(
                 parsedColor(
-                    eventToEdit?.scheduleColor ?: "#FFFFFF"
+                    eventToEdit?.scheduleColor ?: "#BDE0FE"
                 )
             )
         }
@@ -207,47 +207,54 @@ fun AddDateBottomSheet(
     ) {
 
         // 일정 추가
-        TextField(
-            value = title.value,
-            onValueChange = {
-                Log.d("edit", "new data: $it")
-                title.value = it
-            },
-            placeholder = {
-                if (title.value.isEmpty()) {
-                    Text(
-                        "일정을 입력해주세요.",
-                        color = Color(0xFFC0C0C0),
-                        fontSize = 24.sp
-                    )
-                }
-            },
-            textStyle = TextStyle(fontSize = 24.sp), //입력 텍스트 크기 지정
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
 
-            modifier = Modifier
-                .fillMaxWidth(),
-            colors = TextFieldDefaults.colors(
-                focusedIndicatorColor = Color(0xFFEFEFEF),
-                unfocusedIndicatorColor = Color.Transparent,
-                cursorColor = Color.Blue,
-                focusedContainerColor = Color.Transparent, // 내부 배경 투명
-                unfocusedContainerColor = Color.Transparent, // 내부 배경 투명
-                disabledContainerColor = Color.Transparent // 비활성화 상태도 투명
+            ColorDropdownMenu(selectedColor)
+            TextField(
+                value = title.value,
+                onValueChange = {
+                    Log.d("edit", "new data: $it")
+                    title.value = it
+                },
+                placeholder = {
+                    if (title.value.isEmpty()) {
+                        Text(
+                            "일정을 입력해주세요.",
+                            color = Color(0xFFC0C0C0),
+                            fontSize = 24.sp
+                        )
+                    }
+                },
+                textStyle = TextStyle(fontSize = 24.sp), //입력 텍스트 크기 지정
+
+                modifier = Modifier
+                    .fillMaxWidth(),
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = Color(0xFFEFEFEF),
+                    unfocusedIndicatorColor = Color.Transparent,
+                    cursorColor = Color.Blue,
+                    focusedContainerColor = Color.Transparent, // 내부 배경 투명
+                    unfocusedContainerColor = Color.Transparent, // 내부 배경 투명
+                    disabledContainerColor = Color.Transparent // 비활성화 상태도 투명
+                )
             )
-        )
+        }
 
         Spacer(modifier = Modifier.height(10.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(45.dp),
-            verticalAlignment = Alignment.CenterVertically // ✅ 수직 정렬
-        ) {
-            // 컬러 드롭다운
-            ColorDropdownMenu(selectedColor)
-            Spacer(modifier = Modifier.width(6.dp))
-
-        }
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(45.dp),
+//            verticalAlignment = Alignment.CenterVertically // ✅ 수직 정렬
+//        ) {
+//            // 컬러 드롭다운
+//            ColorDropdownMenu(selectedColor)
+//            Spacer(modifier = Modifier.width(6.dp))
+//
+//        }
 
         Spacer(modifier = Modifier.height(10.dp))
         // ✅ 수정된 DateRangePicker 적용
@@ -475,9 +482,9 @@ fun ColorDropdownMenu(
         Color(0xFFFFC8DD),
     )
 
-    // ✅ 선택되지 않은 경우 기본 색상은 `gray`
+    // ✅ 선택되지 않은 경우 기본 색상
     val borderColor =
-        if (selectedColor.value == Color.White) Color.LightGray else selectedColor.value
+        if (selectedColor.value == Color(0x79C7E3)) Color.LightGray else selectedColor.value
 
     // 컬러 드롭다운
     Box(
