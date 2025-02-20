@@ -186,6 +186,7 @@ fun FriendScreen(navController: NavController) {
     LaunchedEffect(currentScreen.value) {
         Log.d("current", "화면 변경 ${currentScreen.value}")
         fetchFriendData()
+        searchText.value = ""
     }
 
 
@@ -332,6 +333,7 @@ fun FriendScreen(navController: NavController) {
                                     }
                                 )
                             }
+
                         } else {
                             item {
                                 Spacer(modifier = Modifier.height(50.dp))
