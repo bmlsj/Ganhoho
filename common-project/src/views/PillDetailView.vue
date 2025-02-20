@@ -119,28 +119,10 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 .container {
-  width: 90%;
-  height: 90%;
-  max-width: 1200px; /* 원하는 최대 크기 지정 가능 */
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background-color: white; /* 배경색 유지 */
-  border-radius: 15px; /* 모서리 둥글게 */
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
   padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .title {
