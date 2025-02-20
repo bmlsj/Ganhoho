@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
+private const val TAG = "MemberViewModel"
 class MemberViewModel() : ViewModel() {
 
     // 레포지토리
@@ -46,6 +47,7 @@ class MemberViewModel() : ViewModel() {
         viewModelScope.launch {
             val result = memberRepository.getMyPageInfo(token)
             _mypageInfo.value = result
+            Log.d(TAG, "getMyPageInfo: ${_mypageInfo.value}")
         }
     }
 

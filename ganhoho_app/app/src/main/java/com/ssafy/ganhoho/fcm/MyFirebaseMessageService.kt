@@ -22,8 +22,6 @@ class MyFirebaseMessageService : FirebaseMessagingService() {
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d(TAG, "onNewToken: $token")
-        // 서버로 토큰 업로드
-        // MainActivity.uploadToken(token)
     }
 
     // 메시지 수신 시 호출
@@ -39,16 +37,12 @@ class MyFirebaseMessageService : FirebaseMessagingService() {
             messageContent = remoteMessage.notification!!.body.toString()
         } else { // Data 메시지 처리 (Foreground와 Background 모두)
             val data = remoteMessage.data
-            Log.d(TAG, "Data received: $data")
             messageTitle = data["title"].orEmpty()
-            messageContent = data["body"].orEmpty()
+            messageContent = data["content"].orEmpty()
         }
 
         // 알림 생성 및 표시
         createNotification(messageTitle, messageContent)
-
-        // 서버에 알림 저장
-        //  saveNotificationToServer(messageTitle, messageContent, messageChannel)
 
     }
 
@@ -81,9 +75,6 @@ class MyFirebaseMessageService : FirebaseMessagingService() {
             .build()
 
         NotificationManagerCompat.from(this).notify(0, notificationBuilder);
-//        notificationManager.notify(0, notificationBuilder.build())
     }
-
-    //      private fun saveNotificationToServer(title: String, content: String, c
 
 }

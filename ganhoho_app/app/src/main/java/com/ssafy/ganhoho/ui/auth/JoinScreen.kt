@@ -55,6 +55,7 @@ import com.ssafy.ganhoho.R
 import com.ssafy.ganhoho.base.SecureDataStore
 import com.ssafy.ganhoho.data.model.dto.auth.SignUpRequest
 import com.ssafy.ganhoho.data.model.response.auth.SearchResultItem
+import com.ssafy.ganhoho.ui.nav_host.Route
 import com.ssafy.ganhoho.ui.theme.FieldGray
 import com.ssafy.ganhoho.ui.theme.FieldLightGray
 import com.ssafy.ganhoho.ui.theme.PrimaryBlue
@@ -111,7 +112,7 @@ fun JoinScreen(navController: NavController) {
     LaunchedEffect(signUpResult) {
         signUpResult?.onSuccess {
             Toast.makeText(context, "회원가입 성공!", Toast.LENGTH_SHORT).show()
-            navController.navigate("login") // ✅ 회원가입 성공하면 login 이동
+            navController.navigate(Route.Login.route) // ✅ 회원가입 성공하면 login 이동
         }?.onFailure { error ->
             // Toast.makeText(context, "회원가입 실패: ${error.message}", Toast.LENGTH_SHORT).show()
         }
@@ -365,7 +366,7 @@ fun JoinScreen(navController: NavController) {
                             savedStateHandle?.set("name", name)
 
                             // 병원 찾기 페이지로 이동
-                            navController.navigate("hospitalInfo")
+                            navController.navigate(Route.HospitalInfo.route)
                         },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = PrimaryBlue
@@ -448,7 +449,7 @@ fun JoinScreen(navController: NavController) {
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.clickable { /* 로그인 화면으로 이동 */
-                            navController.navigate("login")
+                            navController.navigate(Route.Login.route)
                         })
                 }
             }

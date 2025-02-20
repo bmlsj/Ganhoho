@@ -89,6 +89,8 @@ fun AppNavHost(navController: NavHostController, yearMonth: String) {
                 Log.e("Navigation", "group이 null이므로 EachGroupScreen을 열 수 없음")
             }
         }
+        // 병원 정보
+        composable(Route.HospitalInfo.route) { SearchHospital(navController) }
 
     }
 }

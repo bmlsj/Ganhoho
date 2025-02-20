@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -113,22 +115,61 @@ fun LoginScreen(navController: NavController, deepLinkUri: Uri?) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundBlue40), // 배경색 설정
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
+            .background(BackgroundBlue40) // 배경색 설정
     ) {
-        Spacer(modifier = Modifier.height(100.dp))
+        Spacer(modifier = Modifier.height(50.dp))
 
-        // 로고 영역
-        Text(
-            text = "간호호",
-            fontSize = 50.sp,
-            fontWeight = FontWeight.Bold,
-            color = PrimaryBlue,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp)
+                .background(BackgroundBlue40)
 
-        Spacer(modifier = Modifier.height(100.dp))
+        ){
+            // 로고 영역
+            Column(
+                modifier = Modifier
+                    .padding(start = 32.dp)
+            ) {
+                Text(
+                    text = "간호사를 위한",
+                    fontSize = 26.sp ,
+                    fontWeight = FontWeight.Medium,
+                    //fontFamily = normalFont,
+                    color = Color(0xFF4D5860)
+                )
+                Text(
+                    text = "올인원 업무•일정 관리 앱",
+                    fontSize = 26.sp ,
+                    fontWeight = FontWeight.Medium,
+                    //fontFamily = normalFont,
+                    color = Color(0xFF4D5860),
+                )
+
+                Spacer(modifier = Modifier.height(22.dp))
+
+                Image(
+                    painter = painterResource(R.drawable.logo_image_large),
+                    contentDescription = "간호호 로고",
+                    modifier = Modifier
+                        .size(160.dp, 59.dp)
+                        .align(Alignment.Start)
+                )
+
+            }
+
+            Image(
+                painter = painterResource(R.drawable.login_character),
+                contentDescription = "로그인 캐릭터 이미지",
+                modifier = Modifier
+                    .size(300.dp)
+                    .align(Alignment.TopEnd)
+                    //.padding(end=0.dp, top=100.dp)
+                    .offset(y = 100.dp)
+                    .offset(x = 38.dp)
+            )
+
+        }
 
         // 로그인 영역
         Box(
@@ -155,7 +196,7 @@ fun LoginScreen(navController: NavController, deepLinkUri: Uri?) {
                 // Login 텍스트
                 Text(
                     text = "로그인",
-                    fontSize = 35.sp,
+                    fontSize = 30.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black,
                     modifier = Modifier.align(Alignment.Start)
