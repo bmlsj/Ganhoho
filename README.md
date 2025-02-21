@@ -124,9 +124,8 @@
 - [시스템 아키텍처](docs/시스템아키텍처.md)
 - Flow Chart
 
-
-- 시연 영상
-- 영상 포폴
+- [시연 영상](https://www.youtube.com/watch?v=yBpvuW4fWwE)
+- [최종 발표 PPT](docs/12기_공통PJT_발표자료.pdf)
 
 
 <br>
@@ -134,34 +133,34 @@
 ##  📌결과물(UI/UX 화면)
 
 ### 1. 회원관리(로그인, 회원가입, 마이페이지)
-<img width=700 src="https://github.com/user-attachments/assets/a6dacc31-5e8b-404a-9e35-12922741d621">
+<img width=500 src="https://github.com/user-attachments/assets/df880362-6abd-4fd2-b76d-2411e8e37bf9">
 
-<img width=700 src="https://github.com/user-attachments/assets/ebdbde6f-e62b-4ac5-8edc-5c191c668604">
+<img width=500 src="https://github.com/user-attachments/assets/56944f2d-b0e5-4671-ac92-dc75d81c6a72">
+
 
 ### 2. 캘린더 화면(메인화면)
-<img width=700 src="https://github.com/user-attachments/assets/edbcf344-3f86-4c0d-bea5-5d06596422c4">
+<img width=500 src="https://github.com/user-attachments/assets/b33add34-dca9-4cc5-af88-d9d9aa258b54">
 
 
 ### 3. 근무 스케쥴 등록(OCR 인식)
-<img width=700 src="https://github.com/user-attachments/assets/7f8db58c-6b10-49ff-a633-daf8b134768a">
-
+<img width=500 src="https://github.com/user-attachments/assets/b3a74120-b72c-4f85-a08d-6b10182478dc">
 
 
 ### 4. AI 활용 알약 인식 및 검색
 
 - 카메라로 찍어서
 
-<img width=700 src="https://github.com/user-attachments/assets/ed24acd8-57ee-4c5a-9806-32b51848db8c">
+<img width=500 src="https://github.com/user-attachments/assets/8b818755-72ba-4a1e-b886-364073fb0fee">
 
 
 ### 5. 그룹 화면(그룹 초대, 그룹원 근무시간표 조회)
 
-<img width=700 src="https://github.com/user-attachments/assets/11319d1a-23a9-4ece-87e2-6880dc99587e">
+<img width=500 src="https://github.com/user-attachments/assets/b1cf6e7b-f1e0-4d80-9ff0-4c40f02b6cc8">
 
 
 ### 6. 친구 화면(친구 추가, 검색, 요청수락, 친구 일정보기)
 
-<img width=700 src="https://github.com/user-attachments/assets/9c59903c-b241-4f4b-9961-d91aed94014d">
+<img width=500 src="https://github.com/user-attachments/assets/36854642-c668-468a-aab9-d1b6eef07955">
 
 
 ### 7. 환자 침대당 알림 구현(FCM)
@@ -169,7 +168,7 @@
 - BLE 리모컨과 라즈베리 파이 통신으로 fcm 알림 서버로 전송
 
 
-<img width=700 src="https://github.com/user-attachments/assets/f87569da-86a9-41bb-9556-0c2f7f78c249">
+<img width=500 src="https://github.com/user-attachments/assets/cf01b813-9352-4a67-9a8d-c56476fc3f00">
 
 
 <br>
@@ -177,6 +176,8 @@
 
 ## 📌 후기
 
+<img width=500 src="https://github.com/user-attachments/assets/07852745-6fee-4ea4-b841-d6621655cc12">
 
+<img width=500 src="https://github.com/user-attachments/assets/61cb3f34-d57c-4253-9d9b-acc2ee1c94e3">
 
 <br>
