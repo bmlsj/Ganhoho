@@ -61,12 +61,12 @@ class MyFirebaseMessageService : FirebaseMessagingService() {
         notificationManager.createNotificationChannel(channel)
 
         // 🔹 작은 아이콘 설정 (이 아이콘이 없으면 앱이 크래시 발생!)
-        val smallIcon = R.drawable.icon_notification // 🚨 여기에 작은 아이콘을 설정해야 함!
+        val smallIcon = R.drawable.app_icon // 🚨 여기에 작은 아이콘을 설정해야 함!
 
         val notificationBuilder = NotificationCompat.Builder(this, "default")
             .setSmallIcon(smallIcon)  // 🔥 작은 아이콘 추가 (필수)
-            .setContentTitle(title)
-            .setContentText(message)
+            .setContentTitle(message)
+            .setContentText(title)
             .setAutoCancel(true)
             .setLocalOnly(false)
             .setPriority(NotificationCompat.PRIORITY_HIGH)

@@ -197,6 +197,7 @@ fun MainScreen(
                                 "pill" -> R.drawable.icon_nav_pill
                                 "home" -> R.drawable.icon_nav_home
                                 "friend" -> R.drawable.icon_nav_friend
+                                "noti" -> R.drawable.icon_nav_home
                                 else -> R.drawable.icon_nav_group
                             }
                         ),
@@ -375,6 +376,7 @@ fun calculateFabOffset(currentRoute: String, itemWidth: Dp): Dp {
         "home" -> 0.dp // 홈 위치 (중앙)
         "group" -> itemWidth  // 그룹 위치 (오른쪽)
         "friend" -> itemWidth * 2 // 그룹 위치 (오른쪽)
+        "noti" -> 0.dp
         else -> itemWidth
     }
 }
