@@ -24,6 +24,7 @@ class NotificationViewModel : ViewModel() {
             UserDataStore().getAccessToken()?.let {
                 notificationRepository.getNotifications(it).let { response ->
                     _notifications.value = response
+                    Log.d(TAG, "getNotifications: ${notifications.value?.size}")
                 }
             }
         }

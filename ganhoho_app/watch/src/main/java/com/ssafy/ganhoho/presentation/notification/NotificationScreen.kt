@@ -86,19 +86,19 @@ fun NotificationItem(notification: Notification, isSelected: Boolean) {
             .clip(RoundedCornerShape(30.dp))
             .background(if (notification.type == 1) borderColor else backgroundColor)
             .border(1.dp, color = borderColor, shape = RoundedCornerShape(30.dp)),
-        contentAlignment = Alignment.CenterStart
+        contentAlignment = Alignment.CenterStart,
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(20.dp),
             modifier = Modifier.padding(start = 20.dp)
         ) {
 
-            Text(
-                text = notification.title,
-                fontSize = fontSize.value.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
+//            Text(
+//                text = notification.title,
+//                fontSize = fontSize.value.sp,
+//                fontWeight = FontWeight.Bold,
+//                color = Color.White
+//            )
 
             Text(
                 text = notification.message,

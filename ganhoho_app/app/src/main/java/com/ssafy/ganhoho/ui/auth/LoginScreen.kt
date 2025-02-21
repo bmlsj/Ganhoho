@@ -59,6 +59,7 @@ import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.wearable.Wearable
 import com.google.firebase.messaging.FirebaseMessaging
 import com.ssafy.ganhoho.R
+import com.ssafy.ganhoho.base.SecureDataStore
 import com.ssafy.ganhoho.data.model.dto.auth.LoginRequest
 import com.ssafy.ganhoho.ui.AuthActivity
 import com.ssafy.ganhoho.ui.nav_host.Route
@@ -81,6 +82,7 @@ fun LoginScreen(navController: NavController, deepLinkUri: Uri?) {
     val authViewModel: AuthViewModel = viewModel()
     val context = LocalContext.current as AuthActivity
     val focusManager = LocalFocusManager.current
+//    val token = authViewModel.accessToken.collectAsState().value
 
     // 로그인 결과 상태 감지
      val loginResult = authViewModel.loginResult.collectAsState().value
@@ -88,10 +90,17 @@ fun LoginScreen(navController: NavController, deepLinkUri: Uri?) {
         loginResult?.let {
             if (it.isSuccess) {
                 Log.d("LoginScreen", "로그인 성공 → 메인 이동")
-//                navController.navigate(Route.Main.route) {
-//                    popUpTo(Route.Login.route) { inclusive = true }
-//                }
-                context.navigateToMain(deepLinkUri)
+                SecureDataStore.getAccessToken(context).collect { token ->
+                    if (token != null) {
+                        findConnectedNodes(context,token)
+                        context.navigateToMain(deepLinkUri)
+                    } else {
+                        navController.navigate(Route.Login.route) {
+                            popUpTo(Route.Splash.route) { inclusive = true }
+                        }
+                    }
+                }
+
             } else {
                 Log.e("LoginScreen", "로그인 실패: error")
             }
