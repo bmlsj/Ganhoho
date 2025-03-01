@@ -39,10 +39,10 @@
 <br>
 
 ## 📌기술 스택
-<center>
 
 ### 백엔드
 
+<p align="left">
 <img src="https://img.shields.io/badge/Spring%20Boot-6DB33F?logo=springboot&logoColor=fff&style=for-the-badge">
 <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=MySQL&logoColor=white"> 
 <img src="https://img.shields.io/badge/java-007396?style=for-the-badge&logo=OpenJDK&logoColor=white">
@@ -61,7 +61,10 @@
 <img src="https://img.shields.io/badge/firebase-000000?style=for-the-badge&logo=firebase&logoColor=white">
 <img src="https://img.shields.io/badge/CLOVA_OCR_API-000000?style=for-the-badge&logo=CLOVA_OCR_API&logoColor=white">
 
+</p>
+
 ### 안드로이드 
+<p align="left">
 <img src="https://img.shields.io/badge/Android-3DDC84?logo=android&logoColor=fff&style=for-the-badge"> 
 <img src="https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=Kotlin&logoColor=white"> 
 <img src="https://img.shields.io/badge/Jetpack_Compose-4285F4?logo=Jetpack-Compose&logoColor=fff&style=for-the-badge"> 
@@ -70,34 +73,38 @@
 <img src="https://img.shields.io/badge/galaxy_watch-002E5F?logo=GalaxyWatch&logoColor=fff&style=for-the-badge"> 
 
 <img src="https://img.shields.io/badge/KAKAO_MAP_API-FFCA28?style=for-the-badge&logo=CLOVA_OCR_API&logoColor=white">
+</p>
 
 ### 웹
+<p align="left">
 <img src="https://img.shields.io/badge/vue.js-4FC08D?logo=vue.js&logoColor=fff&style=for-the-badge"> 
 <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=JavaScript&logoColor=white"> 
+</p>
 
 ### IoT
 <img src="https://img.shields.io/badge/raspberryPI-A22846?style=for-the-badge&logo=raspberryPI&logoColor=white">
 
 
 ### AI
+<p align="left">
 <img src="https://img.shields.io/badge/yolo-111F68?style=for-the-badge&logo=yolo&logoColor=white">
 <img src="https://img.shields.io/badge/numpy-013243?style=for-the-badge&logo=numpy&logoColor=white">
 <img src="https://img.shields.io/badge/Opencv-5C3EE8?style=for-the-badge&logo=Opencv&logoColor=white">
 
 <img src="https://img.shields.io/badge/CLOVA_OCR_API-00?style=for-the-badge&logo=CLOVA_OCR_API&logoColor=white">
+</p>
 
 ### 디자인
 
 <img src="https://img.shields.io/badge/Figma-\F24E1E?logo=figma&logoColor=fff&style=for-the-badge">
 
 ### 상태 관리
+<p align="left">
 <img src="https://img.shields.io/badge/git-F05032?style=for-the-badge&logo=git&logoColor=white">
 <img src="https://img.shields.io/badge/gitlab-FC6D26?style=for-the-badge&logo=gitlab&logoColor=white">
 <img src="https://img.shields.io/badge/jira-0052CC?style=for-the-badge&logo=jira&logoColor=white">
 <img src="https://img.shields.io/badge/mattermost-002E5F?style=for-the-badge&logo=mattermost&logoColor=white">
-
-</center>
-
+</p>
 <br>
 
 
