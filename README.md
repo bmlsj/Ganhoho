@@ -1,31 +1,33 @@
+
 <img src="https://velog.velcdn.com/images/bluemango0312/post/641625ab-bf58-4a74-9bd9-5e8025cfe8e8/image.png" />
 
 
-💗 **싸피 12기 2학기 공통 프로젝트**
+## 💗 **싸피 12기 2학기 공통 프로젝트**
 
 </br>
 
 **개발 기간** : `2025/01/06(월) ~ 2025/02/21(금)`
 
 
-<p align="center">
+<p align="left">
     <img width="30%" src="https://github.com/user-attachments/assets/22b4b3c9-5b17-4e15-b271-b43213c3b1ec" />
 </p>
 
 
 ## 목차
-1. 팀원 소개
-2. 기술 스택
-3. 서비스 소개
-4. 산출물
-5.  UI/UX 화면
-6. 프로젝트 후기
+1. [팀원 소개](#팀원-소개)
+2. [기술 스택](#기술-스택)
+3. [서비스 소개](#서비스-소개)
+4. [산출물](#산출물)
+5. [결과물(UI/UX 화면)](#결과물(UI/UX-화면))
+6. [프로젝트 후기](#프로젝트-후기)
 
 </br>
 
 
+
 ## 📌팀원 소개
-### D209 - 기획 폭팔단
+### D209 - 기획 폭발단
 
 | 이름    | 역할  | 별명    | 파트 |
 | ------ | ------ | ---- | ---|
@@ -110,11 +112,11 @@
 
 </br>
 
-## 📌 서비스 설명
+## 📌서비스 소개
 
 ### 1. 기획의도
 
-필요성 및 기획의도
+저희의 아이디어는 실제 간호사 분들의 불편함과 니즈에서 출발하였습니다. 현재 앱스토어 에서 간호사 분들이 주로 사용하는 앱은 ‘마이듀티’ 하나만 존재합니다. 이 앱은 일정관리와 커뮤니티 기능을 제공하고 있지만, 그룹원 외 일정 공유가 불가능한 소통의 제한성을 가지고 있으며 현장 간호사 분들의 다양한 니즈를 충족시키지 못하고 있습니다. 저희는 마이 듀티의 한계점을 보완하고 현장 간호사 분들의 실제 요구사항을 반영하고자, 직접 현장의 목소리를 듣고 Pain Points를 파악하여 새로운 앱을 기획 하였습니다.
 
 ### 2. 주요 기능(서비스)
 1. AI 모델 학습을 통한 카메라 알약 인식
@@ -122,21 +124,20 @@
 3. 근무 및 개인 캘린더 제공
 4. 친구 기능
 5. 그룹 기능
-
+   
 <br>
+</br>
 
 ## 📌산출물 
 - [API 명세서 및 Swagger](docs/API설계서.md)
 - [ERD 다이어그램](docs/ERD.md)
-- 와이어프레임
 - [시스템 아키텍처](docs/시스템아키텍처.md)
 - Flow Chart
-
 - [시연 영상](https://www.youtube.com/watch?v=yBpvuW4fWwE)
 - [최종 발표 PPT](docs/12기_공통PJT_발표자료.pdf)
 
-
 <br>
+</br>
 
 ##  📌결과물(UI/UX 화면)
 
@@ -156,14 +157,16 @@
     
     - 회원가입에서 입력한 아이디와 비밀번호를 입력하여 로그인을 할 수 있습니다.
 
-<img width=500 src="https://github.com/user-attachments/assets/df880362-6abd-4fd2-b76d-2411e8e37bf9">
+<img width=15% src="https://github.com/user-attachments/assets/4a27e0c9-3138-4b00-8c0a-be4f97e3650a">
 
-<img width=500 src="https://github.com/user-attachments/assets/56944f2d-b0e5-4671-ac92-dc75d81c6a72">
+<img width=20% src="https://github.com/user-attachments/assets/122c1463-f4b0-4678-b9f4-922e09e3c511">
 
+<br>
+</br>
 
 ### 2. 캘린더 화면(메인화면)
 - 개인 일정/ 내 근무일정
-    - 현재 내 개인스케줄과 / OCR 상 등록된 내 근무스케줄을 가져올수 있는 페이지입니다 .
+    - 현재 내 개인스케줄과 / OCR 상 등록된 내 근무 스케줄을 가져올수 있는 페이지입니다 .
 - 개인 일정 등록 흐름
     
     (1) 달력의 일별 **‘숫자’** 를 클릭합니다. 
@@ -180,7 +183,10 @@
     
     (2) 해당 페이지에서 회원에 대한 기본정보와 기본 상호작용(로그아웃, 회원정보수정, 회원탈퇴)를 제공합니다.
 
-<img width=500 src="https://github.com/user-attachments/assets/b33add34-dca9-4cc5-af88-d9d9aa258b54">
+<img width=30% src="https://github.com/user-attachments/assets/9102188a-e607-4c18-8e2a-07b1d26e3193">
+
+<br>
+</br>
 
 
 ### 3. 근무 스케쥴 등록(OCR 인식)
@@ -190,7 +196,7 @@
     
     (1) 먼저 튜토리얼 이후에 **이미지 등록 버튼**을 **클릭**합니다.
     
-    (2) 이후 근무표 이미지를 선택(실제 어플은 파일로이동)합니다.
+    (2) 이후 근무표 이미지를 선택(실제 어플은 파일로 이동)합니다.
 - 근무표가 인식되면, **전체 근무 일정**이 보이게됩니다.
     
     (이 중 내 근무표는 내 근무 일정으로 등록되어 캘린더에서 조회 가능합니다.)
@@ -198,8 +204,10 @@
 
     (3) 근무표 등록 완료 이후 “주 단위 보기” 버튼 클릭시 현재 일에 해당하는 주의 근무표로 이동
 
-<img width=500 src="https://github.com/user-attachments/assets/b3a74120-b72c-4f85-a08d-6b10182478dc">
+<img width=30% src="https://github.com/user-attachments/assets/d35dd134-3fc0-469d-8556-fc5d0b5f6b28">
 
+<br>
+</br>
 
 ### 4. AI 활용 알약 인식 및 검색
 
@@ -218,8 +226,10 @@
 1. **검색 바 활성화:** 검색 바를 클릭하여 입력 상태로 전환합니다. 
 2. **의약품 사진 ai 카메라 :** 사진 찍으면 자동으로 알약 인식
 
-<img width=500 src="https://github.com/user-attachments/assets/8b818755-72ba-4a1e-b886-364073fb0fee">
+<img width=30% src="https://github.com/user-attachments/assets/3109c552-120a-4af3-b76b-234fe03e0af3">
 
+<br>
+</br>
 
 ### 5. 그룹 화면(그룹 초대, 그룹원 근무시간표 조회)
 
@@ -244,8 +254,12 @@
     
     - 그룹 상세 페이지에서 그룹원이 **그룹초대링크 공유하기**를 누르면 링크가 복사됩니다. 이때 그룹원이 아닌 사용자는 이 링크를 통해 그룹 초대링크 페이지로 이동할 수 있고, 이때 그룹원이 아닌 사람이 그룹초대 수락을 누를시, 앱으로 이동하여 그룹에 가입되게 됩니다.
 
-<img width=500 src="https://github.com/user-attachments/assets/b1cf6e7b-f1e0-4d80-9ff0-4c40f02b6cc8">
+<img width=30% src="https://github.com/user-attachments/assets/3c87a59a-8f17-404a-ad13-f48fe8d80ffd">
 
+<img width=30% src="https://github.com/user-attachments/assets/bc336db9-8c9d-42a6-960f-40a5eb6bab60">
+
+<br>
+</br>
 
 ### 6. 친구 화면(친구 추가, 검색, 요청수락, 친구 일정보기)
 
@@ -259,8 +273,12 @@
     - 친구가 아닌 다른 사람을 검색할 수 있습니다.
     - 친구 검색에서 친구 신청을 할 수 있습니다.
 
-<img width=500 src="https://github.com/user-attachments/assets/36854642-c668-468a-aab9-d1b6eef07955">
+<img width=40% src="https://github.com/user-attachments/assets/ba32a219-4a0e-4fe4-b061-e863503c9eda">
 
+<img width=30% src="https://github.com/user-attachments/assets/b25f562c-ae45-484e-8297-b57037192850">
+
+<br>
+</br>
 
 ### 7. 환자 침대당 알림 구현(FCM)
 
@@ -286,6 +304,7 @@
 
 
 <br>
+</br>
 
 
 ## 📌 후기
@@ -295,3 +314,4 @@
 <img width=500 src="https://github.com/user-attachments/assets/61cb3f34-d57c-4253-9d9b-acc2ee1c94e3">
 
 <br>
+</br>
